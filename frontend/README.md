@@ -1,34 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TunnelSight Frontend — Next.js (pnpm only)
 
-## Getting Started
+Converted 1:1 from `../stitch_screen/*.html` (Stitch designs). Reference renders: `../stitch_screen/*.png`.
 
-First, run the development server:
+## Routes (27 screens)
+
+| Route | Screen |
+|---|---|
+| `/` | 16 landing |
+| `/overview` | 01 analyzer home |
+| `/analyze` | 02 PCAP ingestion |
+| `/analysis/progress` | 03 pipeline execution |
+| `/analysis/results` | 04 results |
+| `/analysis/configuration` | 05 protocol details |
+| `/analysis/traffic` | 06 traffic intelligence |
+| `/analysis/live` | 07 live monitoring |
+| `/analysis/compare` | 08 config comparison |
+| `/settings` | 09 system config |
+| `/dataset` | 10 testbed console |
+| `/analysis/findings` | 11 threat matrix |
+| `/analysis/reports` | 12 report center |
+| `/analysis/anomalies` | 13 anomaly detection |
+| `/analysis/assistant` | 14 AI explanation |
+| `/profile` | 15 user profile |
+| `/login`, `/register`, `/forgot-password`, `/reset-password` | 17–20 auth |
+| `/history` | 21 analysis history |
+| `/analysis/capture` | 22 capture drawer |
+| `/search` | 23 global search |
+| `/palette` | 24 command palette |
+| `/dialogs/archive-delete`, `/dialogs/live-confirm`, `/dialogs/report` | 25–27 dialogs |
+
+## Conventions
+
+- Theme tokens live in `app/globals.css` (`@theme`): main `surface-*/primary/tertiary` palette + `brand-*` system + zinc-screen tokens + layout scale. Bare `rounded` = 0.125rem (Stitch override).
+- Fonts via Google Fonts link in `app/layout.tsx` (`<html class="dark">`): IBM Plex Sans/Mono, Geist, Geist Mono, Inter, Material Symbols Outlined.
+- Sidebar active states are per-page static (verified against reference PNGs).
+- Interactive screens are `"use client"` with `useState` ports of the original inline scripts; static screens stay server components (they keep `export const metadata`).
+- `lib/api.ts` / `lib/auth.ts` are the backend clients (session cookie, `credentials: "include"`) — wiring comes in a later phase; pages currently use mock data.
+- **pnpm only.** Never add `package-lock.json`.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev      # http://localhost:3000
+pnpm build
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

@@ -1,1 +1,206 @@
 @import "tailwindcss";
+
+@theme {
+  /* ---- Main app palette (screens 01-18, 21-23) ---- */
+  --color-on-tertiary: #003824;
+  --color-primary-container: #00a896;
+  --color-on-tertiary-fixed-variant: #005236;
+  --color-inverse-on-surface: #2f3034;
+  --color-surface-container: #1e2023;
+  --color-surface-tint: #59dbc7;
+  --color-on-secondary: #2c3139;
+  --color-primary-fixed: #79f7e3;
+  --color-surface-dim: #111317;
+  --color-surface-container-lowest: #0c0e11;
+  --color-on-surface-variant: #bbcac5;
+  --color-primary: #59dbc7;
+  --color-tertiary-fixed-dim: #4edea3;
+  --color-secondary-container: #424750;
+  --color-on-secondary-fixed: #171c24;
+  --color-tertiary-container: #00aa76;
+  --color-on-secondary-container: #b1b5c0;
+  --color-outline: #869490;
+  --color-on-primary-fixed: #00201c;
+  --color-on-secondary-fixed-variant: #424750;
+  --color-on-primary: #003731;
+  --color-outline-variant: #3c4946;
+  --color-surface-container-highest: #333538;
+  --color-on-background: #e2e2e6;
+  --color-on-primary-container: #00352e;
+  --color-inverse-surface: #e2e2e6;
+  --color-on-primary-fixed-variant: #005047;
+  --color-inverse-primary: #006b5f;
+  --color-on-surface: #e2e2e6;
+  --color-on-error: #690005;
+  --color-primary-fixed-dim: #59dbc7;
+  --color-error: #ffb4ab;
+  --color-secondary-fixed: #dee2ee;
+  --color-surface: #111317;
+  --color-background: #111317;
+  --color-error-container: #93000a;
+  --color-surface-variant: #333538;
+  --color-on-error-container: #ffdad6;
+  --color-tertiary-fixed: #6ffbbe;
+  --color-tertiary: #4edea3;
+  --color-on-tertiary-fixed: #002113;
+  --color-surface-bright: #37393d;
+  --color-surface-container-high: #282a2d;
+  --color-surface-container-low: #1a1c1f;
+  --color-secondary-fixed-dim: #c2c6d1;
+  --color-on-tertiary-container: #003522;
+  --color-secondary: #c2c6d1;
+
+  /* ---- Brand system (auth/dialog screens 19, 20, 24, 25, 27) ---- */
+  --color-brand-teal: #00a896;
+  --color-brand-teal-hover: #009383;
+  --color-brand-teal-dim: rgba(0, 168, 150, 0.12);
+  --color-brand-surface: #111317;
+  --color-brand-surface-low: #1a1c1f;
+  --color-brand-surface-lowest: #0c0e11;
+  --color-brand-surface-container: #1e2126;
+  --color-brand-border: #2a2d34;
+  --color-brand-border-subtle: #202329;
+  --color-brand-muted: #8b949e;
+  --color-brand-danger: #f85149;
+  --color-brand-danger-dim: rgba(248, 81, 73, 0.1);
+  --color-brand-success: #2ea043;
+  --color-brand-success-dim: rgba(46, 160, 67, 0.1);
+
+  /* ---- Zinc-screen tokens (command palette / dialog screens 24, 25, 27) ---- */
+  --color-teal-brand: #00a896;
+  --color-teal-bright: #5eead4;
+  --color-surface-card: #16191e;
+  --color-surface-border: #2a2e35;
+  --color-surface-panel: #14171b;
+  --color-surface-base: #0c0e11;
+
+  /* ---- Layout scale ---- */
+  --spacing-header-height: 2.75rem;
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-md: 0.75rem;
+  --spacing-inspector-width: 26rem;
+  --spacing-sidebar-expanded: 16rem;
+  --spacing-gutter-table: 0.5rem;
+  --spacing-sidebar-collapsed: 3.5rem;
+  --spacing-space-2xl: 2rem;
+  --spacing-space-xl: 1.5rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-lg: 1.25rem;
+  --spacing-space-2xs: 0.125rem;
+  --spacing-space-base: 1rem;
+  --spacing-panel-padding: 0.75rem;
+
+  /* ---- Radius scale (stitch overrides) ---- */
+  --radius-sm: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+
+  /* ---- Type scale ---- */
+  --font-sans: "IBM Plex Sans", "Geist", "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", "Geist Mono", monospace;
+  --font-body-md: "IBM Plex Sans", sans-serif;
+  --font-headline-sm: "IBM Plex Sans", sans-serif;
+  --font-body-sm: "IBM Plex Sans", sans-serif;
+  --font-label-sm: "IBM Plex Sans", sans-serif;
+  --font-code-md: "IBM Plex Mono", monospace;
+  --font-headline-lg: "IBM Plex Sans", sans-serif;
+  --font-display: "IBM Plex Sans", sans-serif;
+  --font-label-md: "IBM Plex Sans", sans-serif;
+  --font-headline-md: "IBM Plex Sans", sans-serif;
+  --font-body-lg: "IBM Plex Sans", sans-serif;
+  --font-code-sm: "IBM Plex Mono", monospace;
+  --font-mono-code: "Geist Mono", monospace;
+}
+
+/* Stitch `rounded` (no suffix) = 0.125rem */
+@utility rounded {
+  border-radius: 0.125rem;
+}
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overscroll-behavior: none;
+  }
+  main > :first-child {
+    margin-top: 0 !important;
+  }
+  main > :last-child {
+    margin-bottom: 0 !important;
+  }
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Per-screen helper classes (from stitch <style> blocks) */
+.bg-grid-pattern {
+  background-size: 24px 24px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+.grid-bg {
+  background-size: 24px 24px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+.technical-grid {
+  background-size: 24px 24px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+.modal-backdrop {
+  background: rgba(8, 10, 14, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.custom-switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+}
+.custom-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.custom-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #262a33;
+  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 9999px;
+  border: 1px solid #333844;
+}
+.custom-switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #94a3b8;
+  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+}
+.custom-switch input:checked + .slider {
+  background-color: rgba(0, 168, 150, 0.25);
+  border-color: #00a896;
+}
+.custom-switch input:checked + .slider:before {
+  transform: translateX(16px);
+  background-color: #00a896;
+}
