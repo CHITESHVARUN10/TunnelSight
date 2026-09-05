@@ -2,7 +2,7 @@ export const metadata = { title: "Command Palette" };
 
 export default function CommandPalettePage() {
   return (
-    <div className="h-full bg-[#0c0e11] text-zinc-300 antialiased relative overflow-hidden flex flex-col justify-between select-none">
+    <div className="min-h-screen bg-[#0c0e11] text-zinc-300 antialiased relative overflow-hidden flex flex-col justify-between select-none">
 
 
   {/* Background App Mockup (dimmed/frosted for true overlay feel) */}

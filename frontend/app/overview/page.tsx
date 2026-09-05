@@ -3,7 +3,7 @@ export const metadata = { title: "Analyzer Home — Security Operations Overview
 
 export default function OverviewPage() {
   return (
-    <div className="bg-background font-sans text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen overflow-x-hidden">
+    <div className="type-plex bg-background font-sans text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen overflow-x-hidden">
 
 {/* LEFT SIDEBAR */}
 <aside className="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none border-r border-surface-container-highest/40">
