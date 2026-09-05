@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Generation & Forensic Evidence Modals — TunnelSight</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Geist', 'sans-serif'],
+            mono: ['Geist Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              teal: '#00a896',
+              'teal-hover': '#028e7f',
+              'teal-muted': 'rgba(0, 168, 150, 0.15)',
+              'teal-border': 'rgba(0, 168, 150, 0.35)',
+            },
+            surface: {
+              base: '#0c0e11',
+              panel: '#111317',
+              container: '#16191f',
+              elevated: '#1a1d24',
+              hover: '#22262f',
+              border: '#262a33',
+              'border-subtle': '#1c2027',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0c0e11;
+      color: #e2e8f0;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .custom-switch {
+      position: relative;
+      display: inline-block;
+      width: 34px;
+      height: 18px;
+    }
+    .custom-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #262a33;
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 9999px;
+      border: 1px solid #333844;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 2px;
+      bottom: 2px;
+      background-color: #94a3b8;
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: rgba(0, 168, 150, 0.25);
+      border-color: #00a896;
+    }
+    input:checked + .slider:before {
+      transform: translateX(16px);
+      background-color: #00a896;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#0c0e11] font-sans antialiased text-slate-300 p-6 md:p-10 flex flex-col justify-start items-center">
+
+  <!-- Background App Mock Canvas (Contextual backdrop) -->
+  <div class="fixed inset-0 pointer-events-none opacity-20 filter blur-[1px] select-none" aria-hidden="true">
+    <div class="h-14 border-b border-surface-border bg-surface-panel flex items-center justify-between px-6">
+      <div class="flex items-center gap-3">
+        <div class="w-2.5 h-2.5 rounded-full bg-brand-teal"></div>
+        <span class="font-mono text-xs text-slate-400">TunnelSight / Forensic Engine v4.18</span>
+      </div>
+      <div class="font-mono text-xs text-slate-500">CAPTURE: weak-vpn-07.pcap (4.82 GB)</div>
+    </div>
+    <div class="p-8 max-w-6xl mx-auto space-y-6">
+      <div class="h-32 rounded-lg bg-surface-container border border-surface-border"></div>
+      <div class="grid grid-cols-3 gap-6">
+        <div class="h-64 rounded-lg bg-surface-container border border-surface-border"></div>
+        <div class="h-64 rounded-lg bg-surface-container border border-surface-border"></div>
+        <div class="h-64 rounded-lg bg-surface-container border border-surface-border"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Showcase Container -->
+  <div class="relative z-10 w-full max-w-5xl flex flex-col gap-10 my-auto">
+
+    <!-- Top Badge / Indicator -->
+    <div class="flex items-center justify-between border-b border-surface-border/60 pb-4">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-brand-teal/10 text-brand-teal border border-brand-teal/20">SIH26160 MODAL SUITE</span>
+          <h1 class="text-sm font-semibold text-slate-200 uppercase tracking-wider font-mono">Modal & Diagnostic Dialog Components</h1>
+        </div>
+        <p class="text-xs text-slate-500 mt-1">High-fidelity, compact security dialogs engineered for TunnelSight IPsec Observability.</p>
+      </div>
+      <div class="text-right font-mono text-[11px] text-slate-500 hidden sm:block">
+        AUTHENTICATED SESSION: <span class="text-slate-300">analyst@tunnelsight.sec</span>
+      </div>
+    </div>
+
+    <!-- Modals Display Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+      <!-- ========================================================================= -->
+      <!-- MODAL 1: REPORT GENERATION DIALOG -->
+      <!-- ========================================================================= -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-mono font-medium text-slate-400 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-teal"></span>
+            Report Generation Dialog
+          </span>
+          <span class="text-[11px] font-mono text-slate-500">ESC to close</span>
+        </div>
+
+        <!-- The Modal Card -->
+        <div class="w-full bg-[#111317] border border-[#262a33] rounded-xl shadow-2xl shadow-black/80 overflow-hidden transition-all">
+          
+          <!-- Header -->
+          <div class="px-5 py-4 border-b border-[#1c2027] flex items-center justify-between bg-[#14171d]">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-md bg-[#1a1e27] border border-[#262a33] flex items-center justify-center text-brand-teal">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-sm font-semibold text-slate-100 tracking-tight">Generate Security Report</h2>
+                <p class="text-[11px] font-mono text-slate-400">Target trace: <span class="text-slate-300">branch-emea-gw04.pcap</span></p>
+              </div>
+            </div>
+            <button class="text-slate-400 hover:text-slate-200 p-1.5 rounded-md hover:bg-[#1f242d] transition-colors" title="Close dialog">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Body Content -->
+          <div class="p-5 space-y-5">
+
+            <!-- Report Format Selector (Conservative & Uncluttered) -->
+            <div>
+              <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-2 font-medium">Report Profile</label>
+              <div class="grid grid-cols-2 gap-2.5">
+                
+                <!-- Executive Report Radio Option -->
+                <label class="relative flex flex-col p-3 rounded-lg border border-[#2a2f3b] bg-[#161920] hover:bg-[#1a1e27] cursor-pointer transition group">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-slate-200 group-hover:text-white">Executive Report</span>
+                    <input type="radio" name="report_type" value="executive" checked class="w-3.5 h-3.5 text-brand-teal accent-[#00a896] bg-[#0c0e11] border-[#333844] focus:ring-0">
+                  </div>
+                  <span class="text-[11px] text-slate-400 leading-snug">High-level threat scoring, RFC non-conformance, and audit summary.</span>
+                </label>
+
+                <!-- Technical Report Radio Option -->
+                <label class="relative flex flex-col p-3 rounded-lg border border-[#20242e] bg-[#14161d] hover:bg-[#1a1e27] cursor-pointer transition group">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-slate-300 group-hover:text-white">Technical Report</span>
+                    <input type="radio" name="report_type" value="technical" class="w-3.5 h-3.5 text-brand-teal accent-[#00a896] bg-[#0c0e11] border-[#333844] focus:ring-0">
+                  </div>
+                  <span class="text-[11px] text-slate-500 leading-snug">Full cryptographic handshake parameters, SA lifetimes & SPI mappings.</span>
+                </label>
+
+              </div>
+            </div>
+
+            <!-- Optional Toggles -->
+            <div class="pt-1">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-medium">Optional Forensic Sections</span>
+                <span class="text-[10px] font-mono text-slate-500">Conservative defaults applied</span>
+              </div>
+
+              <div class="divide-y divide-[#1c2027] border border-[#20242e] rounded-lg bg-[#14171d]/80 overflow-hidden">
+                
+                <!-- Toggle 1: Traffic Intelligence -->
+                <div class="flex items-center justify-between px-3.5 py-2.5 hover:bg-[#181b22] transition-colors">
+                  <div class="pr-3">
+                    <div class="text-xs font-medium text-slate-200">Include Traffic Intelligence</div>
+                    <div class="text-[11px] text-slate-400">Classification breakdown of encrypted flows by behavioral fingerprint</div>
+                  </div>
+                  <label class="custom-switch flex-shrink-0">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <!-- Toggle 2: Anomaly Analysis -->
+                <div class="flex items-center justify-between px-3.5 py-2.5 hover:bg-[#181b22] transition-colors">
+                  <div class="pr-3">
+                    <div class="text-xs font-medium text-slate-200">Include Anomaly Analysis</div>
+                    <div class="text-[11px] text-slate-400">Deviation scores, packet burst telemetry, and sequence anomalies</div>
+                  </div>
+                  <label class="custom-switch flex-shrink-0">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <!-- Toggle 3: Detailed Evidence -->
+                <div class="flex items-center justify-between px-3.5 py-2.5 hover:bg-[#181b22] transition-colors">
+                  <div class="pr-3">
+                    <div class="text-xs font-medium text-slate-200">Include Detailed Evidence</div>
+                    <div class="text-[11px] text-slate-400">Frame indices, raw hex offsets of transform payloads, and RFC citations</div>
+                  </div>
+                  <label class="custom-switch flex-shrink-0">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Output Format & Notice -->
+            <div class="flex items-center justify-between px-3 py-2 rounded bg-[#0c0e11] border border-[#1e222b] text-[11px] font-mono text-slate-400">
+              <div class="flex items-center gap-2">
+                <span class="text-slate-500">FORMAT:</span>
+                <span class="text-slate-300 font-semibold">PDF + Structured JSON</span>
+              </div>
+              <div class="text-slate-500">EST. SIZE: <span class="text-slate-300 font-mono">1.2 MB</span></div>
+            </div>
+
+          </div>
+
+          <!-- Actions Footer -->
+          <div class="px-5 py-3.5 bg-[#14171d] border-t border-[#1c2027] flex items-center justify-end gap-2.5">
+            <button class="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-[#1e222b] rounded-md border border-[#262a33] transition-colors">
+              Cancel
+            </button>
+            <button class="px-4 py-1.5 text-xs font-medium text-black bg-[#00a896] hover:bg-[#028e7f] rounded-md font-sans flex items-center gap-1.5 font-semibold transition-colors shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              Generate Report
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- MODAL 2: UNKNOWN / INSUFFICIENT EVIDENCE DIALOG -->
+      <!-- ========================================================================= -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-mono font-medium text-slate-400 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            Insufficient Evidence Dialog (Transparency Pattern)
+          </span>
+          <span class="text-[11px] font-mono text-slate-500">Reusable Component</span>
+        </div>
+
+        <!-- The Modal Card -->
+        <div class="w-full bg-[#111317] border border-[#262a33] rounded-xl shadow-2xl shadow-black/80 overflow-hidden transition-all">
+          
+          <!-- Header -->
+          <div class="px-5 py-4 border-b border-[#1c2027] flex items-center justify-between bg-[#14171d]">
+            <div class="flex items-center gap-2.5">
+              <!-- Neutral Forensic Inspection Icon (Communicates integrity, not error) -->
+              <div class="w-7 h-7 rounded-md bg-[#181d26] border border-[#2a303d] flex items-center justify-center text-slate-400">
+                <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-sm font-semibold text-slate-200 tracking-tight">Parameter Unavailable</h2>
+                <p class="text-[11px] font-mono text-slate-400">Forensic Integrity & Verification Check</p>
+              </div>
+            </div>
+            <button class="text-slate-400 hover:text-slate-200 p-1.5 rounded-md hover:bg-[#1f242d] transition-colors" title="Close dialog">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Body Content -->
+          <div class="p-5 space-y-4">
+
+            <!-- Parameter Status Badge Card -->
+            <div class="p-3.5 rounded-lg bg-[#14171e] border border-[#222733] flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400">Target Forensic Metric</span>
+                <div class="text-xs font-semibold text-slate-200 mt-0.5">Perfect Forward Secrecy (PFS)</div>
+              </div>
+              <div class="text-right">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-[#1c212b] text-slate-300 border border-[#2e3544]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  PFS Status: UNKNOWN
+                </span>
+              </div>
+            </div>
+
+            <!-- Technical Reason Panel -->
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-medium">Diagnostic Explanation</label>
+              <div class="p-3.5 rounded-lg bg-[#0c0e11] border border-[#1e222b] text-xs text-slate-300 leading-relaxed font-sans">
+                The supplied capture does not contain sufficient key-exchange information to establish PFS configuration.
+                <div class="mt-2.5 pt-2.5 border-t border-[#1a1e27] font-mono text-[11px] text-slate-400 flex items-center justify-between">
+                  <span>MISSING ARTIFACT:</span>
+                  <span class="text-amber-400/90 font-medium">IKE_AUTH or CREATE_CHILD_SA Exchange</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Strict Forensic Boundary Statement -->
+            <div class="p-3 rounded-md bg-[#13161d] border-l-2 border-brand-teal/80 flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-brand-teal flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+              <p class="text-[11px] text-slate-300 font-sans leading-normal">
+                <strong class="font-medium text-slate-200">Analyzer Transparency Guarantee:</strong> The analyzer will not infer this value without sufficient evidence. Forensic standards prevent speculative deductions.
+              </p>
+            </div>
+
+            <!-- Observed Packets Context summary -->
+            <div class="grid grid-cols-3 gap-2 text-[11px] font-mono">
+              <div class="p-2 rounded bg-[#13161c] border border-[#1f232c]">
+                <div class="text-slate-500 text-[10px]">CAPTURED FRAMES</div>
+                <div class="text-slate-300 font-semibold mt-0.5">14,892 pkts</div>
+              </div>
+              <div class="p-2 rounded bg-[#13161c] border border-[#1f232c]">
+                <div class="text-slate-500 text-[10px]">HANDSHAKE FRAMES</div>
+                <div class="text-slate-300 font-semibold mt-0.5">2 (IKE_SA_INIT)</div>
+              </div>
+              <div class="p-2 rounded bg-[#13161c] border border-[#1f232c]">
+                <div class="text-slate-500 text-[10px]">REKEY EXCHANGES</div>
+                <div class="text-slate-300 font-semibold mt-0.5">0 observed</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Actions Footer -->
+          <div class="px-5 py-3.5 bg-[#14171d] border-t border-[#1c2027] flex items-center justify-between">
+            <div class="text-[11px] font-mono text-slate-500">
+              TRACE ID: <span class="text-slate-400">#TR-09241</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-[#1e222b] rounded-md border border-[#262a33] transition-colors">
+                Close
+              </button>
+              <button class="px-3.5 py-1.5 text-xs font-medium text-slate-100 bg-[#1e2430] hover:bg-[#252c3b] hover:text-white rounded-md border border-[#2d3647] font-sans flex items-center gap-1.5 transition-colors">
+                <svg class="w-3.5 h-3.5 text-brand-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"></path>
+                </svg>
+                View Related Evidence
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Forensic Principles Callout Footer -->
+    <div class="border border-surface-border/70 rounded-lg p-4 bg-surface-panel/60 text-xs text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="w-2 h-2 rounded-full bg-brand-teal"></span>
+        <span><strong>UX Architectural Note:</strong> Dialogs utilize progressive disclosure, restrained palette tokens, and monospaced diagnostic telemetry rather than consumer modal cards.</span>
+      </div>
+      <div class="font-mono text-[11px] text-slate-500 whitespace-nowrap">
+        DESIGN SYSTEM: <span class="text-slate-300">TunnelSight Engine</span>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

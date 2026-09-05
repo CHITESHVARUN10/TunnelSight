@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-primary-fixed": "#00201c",
+          "surface-container-lowest": "#0c0e11",
+          "tertiary-container": "#00aa76",
+          "secondary-fixed": "#dee2ee",
+          "on-tertiary-fixed": "#002113",
+          "surface": "#111317",
+          "error-container": "#93000a",
+          "inverse-primary": "#006b5f",
+          "surface-container": "#1e2023",
+          "surface-container-high": "#282a2d",
+          "primary": "#59dbc7",
+          "on-secondary-fixed": "#171c24",
+          "surface-dim": "#111317",
+          "on-secondary": "#2c3139",
+          "surface-tint": "#59dbc7",
+          "error": "#ffb4ab",
+          "surface-container-highest": "#333538",
+          "inverse-surface": "#e2e2e6",
+          "on-tertiary-fixed-variant": "#005236",
+          "primary-container": "#00a896",
+          "tertiary": "#4edea3",
+          "on-tertiary": "#003824",
+          "on-error": "#690005",
+          "on-secondary-container": "#b1b5c0",
+          "on-surface": "#e2e2e6",
+          "background": "#111317",
+          "on-primary": "#003731",
+          "on-surface-variant": "#bbcac5",
+          "outline": "#869490",
+          "primary-fixed": "#79f7e3",
+          "on-primary-fixed-variant": "#005047",
+          "surface-bright": "#37393d",
+          "tertiary-fixed-dim": "#4edea3",
+          "surface-variant": "#333538",
+          "secondary": "#c2c6d1",
+          "surface-container-low": "#1a1c1f",
+          "primary-fixed-dim": "#59dbc7",
+          "on-background": "#e2e2e6",
+          "on-error-container": "#ffdad6",
+          "outline-variant": "#3c4946",
+          "on-primary-container": "#00352e",
+          "secondary-fixed-dim": "#c2c6d1",
+          "secondary-container": "#424750",
+          "tertiary-fixed": "#6ffbbe",
+          "inverse-on-surface": "#2f3034",
+          "on-tertiary-container": "#003522",
+          "on-secondary-fixed-variant": "#424750"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "header-height": "2.75rem",
+          "space-xs": "0.25rem",
+          "space-md": "0.75rem",
+          "inspector-width": "26rem",
+          "sidebar-expanded": "16rem",
+          "gutter-table": "0.5rem",
+          "sidebar-collapsed": "3.5rem",
+          "space-2xl": "2rem",
+          "space-xl": "1.5rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1.25rem",
+          "space-2xs": "0.125rem",
+          "space-base": "1rem",
+          "panel-padding": "0.75rem"
+        },
+        "fontFamily": {
+          "body-md": [
+            "Inter"
+          ],
+          "headline-sm": [
+            "Geist"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-sm": [
+            "Inter"
+          ],
+          "code-md": [
+            "monospace"
+          ],
+          "headline-lg": [
+            "Geist"
+          ],
+          "display": [
+            "Geist"
+          ],
+          "label-md": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Geist"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "code-sm": [
+            "monospace"
+          ]
+        },
+        "fontSize": {
+          "body-md": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-sm": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "letterSpacing": "-0.005em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "10px",
+            {
+              "lineHeight": "12px",
+              "letterSpacing": "0.05em",
+              "fontWeight": "600"
+            }
+          ],
+          "code-md": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-lg": [
+            "20px",
+            {
+              "lineHeight": "26px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "display": [
+            "28px",
+            {
+              "lineHeight": "34px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-md": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-md": [
+            "16px",
+            {
+              "lineHeight": "22px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "code-sm": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "fontWeight": "400"
+            }
+          ]
+        }
+      }
+    }
+  }</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none"><div class="flex flex-col"><div class="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span class="material-symbols-outlined text-primary text-[20px]">security</span><div class="flex items-baseline gap-space-2xs"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span class="font-code-sm text-code-sm text-outline">/</span><span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div class="px-space-base py-space-xs bg-surface-container-low"><div class="flex items-center justify-between text-outline"><span class="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span class="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav class="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" data-path="overview" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span class="font-body-md text-body-md">Overview</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="analyze-pcap" href="#"><span class="material-symbols-outlined text-[18px]">file_open</span><span class="font-body-md text-body-md">Analyze PCAP</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="live-analysis" href="#"><span class="material-symbols-outlined text-[18px]">pulse_alert</span><span class="font-body-md text-body-md">Live Analysis</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="vpn-configurations" href="#"><span class="material-symbols-outlined text-[18px]">settings_ethernet</span><span class="font-body-md text-body-md">VPN Configurations</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="traffic-intelligence" href="#"><span class="material-symbols-outlined text-[18px]">insights</span><span class="font-body-md text-body-md">Traffic Intelligence</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="findings" href="#"><span class="material-symbols-outlined text-[18px]">policy</span><span class="font-body-md text-body-md">Findings</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span class="font-body-md text-body-md">Reports</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="dataset-testbed" href="#"><span class="material-symbols-outlined text-[18px]">dataset</span><span class="font-body-md text-body-md">Dataset / Testbed</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-space-sm bg-surface-container-lowest"><div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div class="flex items-center justify-between font-label-sm text-label-sm"><span class="text-outline uppercase">Pipeline</span><span class="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div class="w-full bg-surface-container-highest h-1 rounded"><div class="bg-primary-container h-1 rounded w-3/4"></div></div><div class="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span class="truncate">DPDK Core 0-3</span><span class="text-on-surface">0.02ms</span></div></div></div></aside><div class="pl-sidebar-expanded"><header class="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span class="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span class="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4 ACTIVE</span></div><div class="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span class="font-label-sm text-label-sm text-outline uppercase">Profile</span><span class="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div class="flex items-center gap-space-md"><div class="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span class="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span class="text-outline-variant">|</span><span class="text-outline">Buffer:</span><span class="text-tertiary">98.4% Free</span></div><button class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">search</span><span class="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd class="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div class="flex items-center gap-space-xs"><button class="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span class="material-symbols-outlined text-[18px]">download</span></button><button class="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span class="material-symbols-outlined text-[18px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div class="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-header-height w-full bg-background min-h-screen"><div class="flex flex-col w-full relative">
+<!-- Underlay Mockup: Authentic SecOps Background Workbench (Dimmed & Blurred) -->
+<div class="w-full pointer-events-none select-none opacity-40 filter blur-[2px] transition-opacity">
+<div class="p-space-base flex flex-col gap-space-base max-w-7xl mx-auto">
+<!-- Background Stats Row -->
+<div class="grid grid-cols-4 gap-space-md">
+<div class="bg-surface-container-low p-space-md rounded flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase">
+<span>Active IKEv2 SAs</span>
+<span class="material-symbols-outlined text-primary text-[16px]">key</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-surface">148 <span class="font-code-sm text-code-sm text-tertiary font-normal">↑ 4%</span></div>
+<span class="font-code-sm text-code-sm text-outline">Negotiation latency: 24.1ms</span>
+</div>
+<div class="bg-surface-container-low p-space-md rounded flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase">
+<span>ESP Throughput</span>
+<span class="material-symbols-outlined text-primary text-[16px]">speed</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-surface">4.82 <span class="font-code-sm text-code-sm text-on-surface-variant font-normal">Gbps</span></div>
+<span class="font-code-sm text-code-sm text-outline">Drop/Corrupt rate: 0.000%</span>
+</div>
+<div class="bg-surface-container-low p-space-md rounded flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase">
+<span>Compliance Violations</span>
+<span class="material-symbols-outlined text-error text-[16px]">gpp_maybe</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-error">12 <span class="font-code-sm text-code-sm text-error font-normal">P0 / P1</span></div>
+<span class="font-code-sm text-code-sm text-outline">RFC 8247 Non-conformant</span>
+</div>
+<div class="bg-surface-container-low p-space-md rounded flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase">
+<span>Capture Replay Buffer</span>
+<span class="material-symbols-outlined text-primary text-[16px]">memory</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-surface">38.4 <span class="font-code-sm text-code-sm text-on-surface-variant font-normal">GiB</span></div>
+<span class="font-code-sm text-code-sm text-tertiary">RingBuffer Ready (Core 0)</span>
+</div>
+</div>
+<!-- Background Capture Table Skeleton -->
+<div class="bg-surface-container-low rounded p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between py-space-2xs">
+<div class="font-headline-sm text-headline-sm text-on-surface">Operational Capture Stream</div>
+<div class="font-code-sm text-code-sm text-outline">Ingest: Interface eth1.400</div>
+</div>
+<div class="bg-surface-container-highest h-6 rounded w-full opacity-60"></div>
+<div class="bg-surface-container h-8 rounded w-full"></div>
+<div class="bg-surface-container h-8 rounded w-full"></div>
+<div class="bg-surface-container h-8 rounded w-full"></div>
+</div>
+</div>
+</div>
+<!-- Global Modal Layer Overlay -->
+<div class="fixed inset-0 top-header-height left-sidebar-expanded z-50 flex items-start justify-center pt-8 px-space-base bg-surface-container-lowest/85" id="palette-backdrop">
+<!-- Command Palette Container (Centered & Elevated) -->
+<div class="w-full max-w-[760px] bg-surface-container-low rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all" id="command-modal">
+<!-- Top Primary Search Bar -->
+<div class="p-space-base pb-space-sm flex flex-col gap-space-sm bg-surface-container-low">
+<div class="flex items-center gap-space-sm bg-surface-container-lowest rounded-lg px-space-md py-2.5">
+<span class="material-symbols-outlined text-primary text-[22px] select-none">search</span>
+<input autofocus="" class="w-full bg-transparent font-code-md text-code-md text-on-surface placeholder:text-outline focus:outline-none tracking-tight" id="search-input" placeholder="Search captures, tunnels, SPI (0x...), RFC findings, reports…" type="text" value="branch"/>
+<div class="flex items-center gap-space-xs select-none">
+<button class="flex items-center justify-center w-5 h-5 rounded bg-surface-container hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors" id="clear-search-btn" title="Clear query">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+<div class="flex items-center gap-1 bg-surface-container-high px-space-xs py-space-2xs rounded">
+<span class="font-code-sm text-code-sm text-outline uppercase font-semibold">ESC</span>
+</div>
+</div>
+</div>
+<!-- Scope & Category Filter Chips -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 select-none">
+<button class="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-primary-container bg-primary-container font-label-md text-label-md transition-colors">
+<span>All Results</span>
+<span class="font-code-sm text-code-sm opacity-80">37</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<span>Captures</span>
+<span class="font-code-sm text-code-sm text-primary font-medium">14</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<span>Findings</span>
+<span class="font-code-sm text-code-sm text-error font-medium">8</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<span>VPNs</span>
+<span class="font-code-sm text-code-sm text-outline">4</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<span>SPI</span>
+<span class="font-code-sm text-code-sm text-tertiary">6</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<span>Reports</span>
+<span class="font-code-sm text-code-sm text-outline">5</span>
+</button>
+</div>
+</div>
+<!-- Results Ledger Body -->
+<div class="max-h-[593px] overflow-y-auto px-space-base py-space-xs flex flex-col gap-space-md" id="results-container">
+<!-- SECTION 1: CAPTURES -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between px-space-xs py-1">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Captures (PCAP / PCAPNG)</span>
+<span class="font-code-sm text-code-sm text-outline">Matches in filename &amp; IP</span>
+</div>
+<!-- Item 1: Selected State -->
+<div class="group relative flex items-center justify-between p-space-sm rounded-lg bg-surface-container cursor-pointer transition-all">
+<!-- Left active indicator marker -->
+<div class="absolute left-0 top-1.5 bottom-1.5 w-1 bg-primary rounded-r"></div>
+<div class="flex items-start gap-space-sm pl-2 min-w-0">
+<div class="p-1.5 rounded bg-surface-container-highest text-primary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</div>
+<div class="flex flex-col gap-0.5 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-code-md text-code-md text-on-surface font-semibold truncate"><mark class="bg-primary/20 text-primary font-semibold">branch</mark>-emea-gw04.pcap</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant">PCAP</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-error-container/30 text-error font-semibold">SCORE 61 · HIGH RISK</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
+<span class="text-on-surface">IKEv2/Tunnel</span>
+<span class="text-outline">·</span>
+<span>192.0.2.14 ↔ 198.51.100.8</span>
+<span class="text-outline">·</span>
+<span class="text-outline">18m ago by j.chen</span>
+</div>
+</div>
+</div>
+<!-- Action Keys Preview on Hover/Selection -->
+<div class="flex items-center gap-space-xs shrink-0 pl-space-sm">
+<div class="flex items-center gap-1 bg-surface-container-highest px-space-xs py-0.5 rounded text-outline font-code-sm text-code-sm">
+<span>↵ Open</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-highest px-space-xs py-0.5 rounded text-outline font-code-sm text-code-sm">
+<span>Tab Inspect</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-start gap-space-sm pl-2 min-w-0">
+<div class="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">file_open</span>
+</div>
+<div class="flex flex-col gap-0.5 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-code-md text-code-md text-on-surface truncate">edge-<mark class="bg-primary/20 text-primary font-semibold">branch</mark>-tokyo-02.pcapng</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant">PCAPNG</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/30 text-tertiary font-semibold">SCORE 88 · PASS</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
+<span>IKEv2/Transport</span>
+<span class="text-outline">·</span>
+<span>203.0.113.50 ↔ 198.51.100.1</span>
+<span class="text-outline">·</span>
+<span class="text-outline">Analyzed 2h ago</span>
+</div>
+</div>
+</div>
+<div class="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
+<span>↵ Open</span>
+</div>
+</div>
+</div>
+<!-- SECTION 2: FINDINGS -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between px-space-xs py-1">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Findings &amp; Cryptographic Posture</span>
+<span class="font-code-sm text-code-sm text-error">2 RFC Non-Conformances</span>
+</div>
+<!-- Finding Item 1 -->
+<div class="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-start gap-space-sm pl-2 min-w-0">
+<div class="p-1.5 rounded bg-error-container/20 text-error shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">security_update_warning</span>
+</div>
+<div class="flex flex-col gap-0.5 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Weak Diffie-Hellman Group 2 (MODP-1024)</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-error-container text-error font-semibold uppercase">P0 CRITICAL</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
+<span class="text-error">RFC 8247 § 2.4 Violation</span>
+<span class="text-outline">·</span>
+<span>Affected: <span class="text-on-surface font-medium"><mark class="bg-primary/20 text-primary font-semibold">branch</mark>-emea-gw04</span>, legacy-radius, dc-west-vpn</span>
+</div>
+</div>
+</div>
+<div class="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
+<span>Inspect finding</span>
+</div>
+</div>
+<!-- Finding Item 2 -->
+<div class="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-start gap-space-sm pl-2 min-w-0">
+<div class="p-1.5 rounded bg-surface-container-highest text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+</div>
+<div class="flex flex-col gap-0.5 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">PFS Disabled on CHILD_SA (Phase 2 Rekey)</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface font-semibold uppercase">P1 HIGH</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
+<span>5 captures affected</span>
+<span class="text-outline">·</span>
+<span>No ephemeral key exchange in <mark class="bg-primary/20 text-primary font-semibold">branch</mark> profile</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 3: VPNs & TUNNELS -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between px-space-xs py-1">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Configured Gateways &amp; Tunnels</span>
+<span class="font-code-sm text-code-sm text-outline">IPsec Topology</span>
+</div>
+<div class="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-start gap-space-sm pl-2 min-w-0">
+<div class="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">settings_ethernet</span>
+</div>
+<div class="flex flex-col gap-0.5 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-code-md text-code-md text-on-surface font-semibold">tun-emea-gw04-core</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/20 text-tertiary font-semibold uppercase">ESTABLISHED</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
+<span>192.0.2.14 (<mark class="bg-primary/20 text-primary font-semibold">Branch</mark>-Frankfurt) ↔ 198.51.100.8 (HQ-Primary)</span>
+<span class="text-outline">·</span>
+<span class="text-outline">AES-CBC-128 / SHA256</span>
+</div>
+</div>
+</div>
+<div class="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
+<span>View Tunnel</span>
+</div>
+</div>
+</div>
+<!-- SECTION 4: SPI (SECURITY PARAMETER INDEX) -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between px-space-xs py-1">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">SPI (Security Parameter Indexes)</span>
+<span class="font-code-sm text-code-sm text-primary">In-Memory Hash Matches</span>
+</div>
+<!-- SPI Item 1 -->
+<div class="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-start gap-space-sm pl-2 min-w-0">
+<div class="p-1.5 rounded bg-surface-container text-tertiary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">tag</span>
+</div>
+<div class="flex flex-col gap-0.5 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-code-md text-code-md text-tertiary font-bold tracking-wider">0x7a89f31c</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant uppercase">Inbound SA</span>
+<span class="font-code-sm text-code-sm text-outline">In: <mark class="bg-primary/20 text-primary font-semibold">branch</mark>-emea-gw04.pcap</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
+<span>ESP_AES_GCM_16_256</span>
+<span class="text-outline">·</span>
+<span>Sequence Window: 64</span>
+<span class="text-outline">·</span>
+<span>Pkt Count: 148,209</span>
+</div>
+</div>
+</div>
+<div class="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
+<span>Jump to Hex</span>
+</div>
+</div>
+<!-- SPI Item 2 -->
+<div class="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-start gap-space-sm pl-2 min-w-0">
+<div class="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-tertiary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">tag</span>
+</div>
+<div class="flex flex-col gap-0.5 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-code-md text-code-md text-on-surface font-bold tracking-wider">0xd411e89b</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant uppercase">Outbound SA</span>
+<span class="font-code-sm text-code-sm text-outline">In: <mark class="bg-primary/20 text-primary font-semibold">branch</mark>-emea-gw04.pcap</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
+<span>ESP_AES_GCM_16_256</span>
+<span class="text-outline">·</span>
+<span>Associated Peer: 198.51.100.8</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 5: REPORTS & AUDIT EVIDENCE -->
+<div class="flex flex-col gap-1 pb-space-sm">
+<div class="flex items-center justify-between px-space-xs py-1">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Reports &amp; Exported Audits</span>
+<span class="font-code-sm text-code-sm text-outline">Signed Forensics</span>
+</div>
+<!-- Report Item 1 -->
+<div class="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-start gap-space-sm pl-2 min-w-0">
+<div class="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+</div>
+<div class="flex flex-col gap-0.5 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-code-md text-code-md text-on-surface font-semibold truncate"><mark class="bg-primary/20 text-primary font-semibold">branch</mark>-emea-security-assessment.pdf</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant">PDF</span>
+<span class="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/20 text-tertiary">ED25519 SIGNED</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
+<span>Executive Cryptographic Posture</span>
+<span class="text-outline">·</span>
+<span>2.4 MB</span>
+<span class="text-outline">·</span>
+<span class="text-outline">Oct 22, 2025</span>
+</div>
+</div>
+</div>
+<div class="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
+<span>Download</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Command Palette Terminal Footer -->
+<div class="bg-surface-container-lowest px-space-base py-space-sm flex items-center justify-between select-none">
+<!-- Keyboard shortcuts -->
+<div class="flex items-center gap-space-md font-code-sm text-code-sm text-outline">
+<div class="flex items-center gap-1">
+<kbd class="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">↑</kbd>
+<kbd class="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">↓</kbd>
+<span>Navigate</span>
+</div>
+<div class="flex items-center gap-1">
+<kbd class="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">↵</kbd>
+<span>Select</span>
+</div>
+<div class="flex items-center gap-1">
+<kbd class="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">Esc</kbd>
+<span>Dismiss</span>
+</div>
+<div class="hidden sm:flex items-center gap-1">
+<kbd class="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">⌘P</kbd>
+<span>Direct PCAP</span>
+</div>
+</div>
+<!-- Telemetry sync indicator -->
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+<span class="text-on-surface-variant">Index Synced: <span class="text-on-surface font-medium">1,428 traces</span> · <span class="text-primary font-medium">4,891 SPIs</span></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function initGlobalPalette() {
+    const input = document.getElementById('search-input');
+    const clearBtn = document.getElementById('clear-search-btn');
+    const modalBackdrop = document.getElementById('palette-backdrop');
+    const modal = document.getElementById('command-modal');
+
+    // Focus input right away
+    if (input) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+
+    // Clear search action
+    if (clearBtn && input) {
+      clearBtn.addEventListener('click', () => {
+        input.value = '';
+        input.focus();
+      });
+    }
+
+    // Close on Escape or click outside
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (modalBackdrop) {
+          modalBackdrop.classList.add('opacity-0', 'pointer-events-none');
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (modalBackdrop) {
+          modalBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+          if (input) input.focus();
+        }
+      }
+    });
+
+    if (modalBackdrop && modal) {
+      modalBackdrop.addEventListener('click', (e) => {
+        if (!modal.contains(e.target)) {
+          modalBackdrop.classList.add('opacity-0', 'pointer-events-none');
+        }
+      });
+    }
+  })();
+</script></main></div></body></html>

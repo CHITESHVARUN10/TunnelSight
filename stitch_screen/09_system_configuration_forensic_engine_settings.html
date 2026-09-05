@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-primary-fixed": "#00201c",
+          "surface-container-lowest": "#0c0e11",
+          "tertiary-container": "#00aa76",
+          "secondary-fixed": "#dee2ee",
+          "on-tertiary-fixed": "#002113",
+          "surface": "#111317",
+          "error-container": "#93000a",
+          "inverse-primary": "#006b5f",
+          "surface-container": "#1e2023",
+          "surface-container-high": "#282a2d",
+          "primary": "#59dbc7",
+          "on-secondary-fixed": "#171c24",
+          "surface-dim": "#111317",
+          "on-secondary": "#2c3139",
+          "surface-tint": "#59dbc7",
+          "error": "#ffb4ab",
+          "surface-container-highest": "#333538",
+          "inverse-surface": "#e2e2e6",
+          "on-tertiary-fixed-variant": "#005236",
+          "primary-container": "#00a896",
+          "tertiary": "#4edea3",
+          "on-tertiary": "#003824",
+          "on-error": "#690005",
+          "on-secondary-container": "#b1b5c0",
+          "on-surface": "#e2e2e6",
+          "background": "#111317",
+          "on-primary": "#003731",
+          "on-surface-variant": "#bbcac5",
+          "outline": "#869490",
+          "primary-fixed": "#79f7e3",
+          "on-primary-fixed-variant": "#005047",
+          "surface-bright": "#37393d",
+          "tertiary-fixed-dim": "#4edea3",
+          "surface-variant": "#333538",
+          "secondary": "#c2c6d1",
+          "surface-container-low": "#1a1c1f",
+          "primary-fixed-dim": "#59dbc7",
+          "on-background": "#e2e2e6",
+          "on-error-container": "#ffdad6",
+          "outline-variant": "#3c4946",
+          "on-primary-container": "#00352e",
+          "secondary-fixed-dim": "#c2c6d1",
+          "secondary-container": "#424750",
+          "tertiary-fixed": "#6ffbbe",
+          "inverse-on-surface": "#2f3034",
+          "on-tertiary-container": "#003522",
+          "on-secondary-fixed-variant": "#424750"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "header-height": "2.75rem",
+          "space-xs": "0.25rem",
+          "space-md": "0.75rem",
+          "inspector-width": "26rem",
+          "sidebar-expanded": "16rem",
+          "gutter-table": "0.5rem",
+          "sidebar-collapsed": "3.5rem",
+          "space-2xl": "2rem",
+          "space-xl": "1.5rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1.25rem",
+          "space-2xs": "0.125rem",
+          "space-base": "1rem",
+          "panel-padding": "0.75rem"
+        },
+        "fontFamily": {
+          "body-md": [
+            "Inter"
+          ],
+          "headline-sm": [
+            "Geist"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-sm": [
+            "Inter"
+          ],
+          "code-md": [
+            "monospace"
+          ],
+          "headline-lg": [
+            "Geist"
+          ],
+          "display": [
+            "Geist"
+          ],
+          "label-md": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Geist"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "code-sm": [
+            "monospace"
+          ]
+        },
+        "fontSize": {
+          "body-md": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-sm": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "letterSpacing": "-0.005em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "10px",
+            {
+              "lineHeight": "12px",
+              "letterSpacing": "0.05em",
+              "fontWeight": "600"
+            }
+          ],
+          "code-md": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-lg": [
+            "20px",
+            {
+              "lineHeight": "26px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "display": [
+            "28px",
+            {
+              "lineHeight": "34px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-md": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-md": [
+            "16px",
+            {
+              "lineHeight": "22px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "code-sm": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "fontWeight": "400"
+            }
+          ]
+        }
+      }
+    }
+  }</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none"><div class="flex flex-col"><div class="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span class="material-symbols-outlined text-primary text-[20px]">security</span><div class="flex items-baseline gap-space-2xs"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span class="font-code-sm text-code-sm text-outline">/</span><span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div class="px-space-base py-space-xs bg-surface-container-low"><div class="flex items-center justify-between text-outline"><span class="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span class="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav class="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant" data-path="overview" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span class="font-body-md text-body-md">Overview</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="analyze-pcap" href="#"><span class="material-symbols-outlined text-[18px]">file_open</span><span class="font-body-md text-body-md">Analyze PCAP</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="live-analysis" href="#"><span class="material-symbols-outlined text-[18px]">pulse_alert</span><span class="font-body-md text-body-md">Live Analysis</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="vpn-configurations" href="#"><span class="material-symbols-outlined text-[18px]">settings_ethernet</span><span class="font-body-md text-body-md">VPN Configurations</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="traffic-intelligence" href="#"><span class="material-symbols-outlined text-[18px]">insights</span><span class="font-body-md text-body-md">Traffic Intelligence</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="findings" href="#"><span class="material-symbols-outlined text-[18px]">policy</span><span class="font-body-md text-body-md">Findings</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span class="font-body-md text-body-md">Reports</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="dataset-testbed" href="#"><span class="material-symbols-outlined text-[18px]">dataset</span><span class="font-body-md text-body-md">Dataset / Testbed</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded hover:bg-surface-container hover:text-on-surface transition-colors bg-primary-container text-on-primary-container font-semibold" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-space-sm bg-surface-container-lowest"><div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div class="flex items-center justify-between font-label-sm text-label-sm"><span class="text-outline uppercase">Pipeline</span><span class="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div class="w-full bg-surface-container-highest h-1 rounded"><div class="bg-primary-container h-1 rounded w-3/4"></div></div><div class="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span class="truncate">DPDK Core 0-3</span><span class="text-on-surface">0.02ms</span></div></div></div></aside><div class="pl-sidebar-expanded"><header class="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span class="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span class="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4 ACTIVE</span></div><div class="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span class="font-label-sm text-label-sm text-outline uppercase">Profile</span><span class="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div class="flex items-center gap-space-md"><div class="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span class="text-outline">UTC</span><span class="">2025-05-18 14:32:09</span><span class="text-outline-variant">|</span><span class="text-outline">Buffer:</span><span class="text-tertiary">98.4% Free</span></div><button class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">search</span><span class="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd class="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div class="flex items-center gap-space-xs"><button class="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span class="material-symbols-outlined text-[18px]">download</span></button><button class="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span class="material-symbols-outlined text-[18px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div class="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-header-height w-full bg-background min-h-screen"><div class="flex flex-col w-full">
+<script>
+    (() => {
+      const activeNav = document.querySelector('aside nav a[data-path="settings"]');
+      if (activeNav) {
+        document.querySelectorAll('aside nav a').forEach(el => {
+          el.classList.remove('bg-primary-container', 'text-on-primary-container', 'font-semibold');
+          el.classList.add('text-on-surface-variant');
+        });
+        activeNav.classList.remove('text-on-surface-variant');
+        activeNav.classList.add('bg-primary-container', 'text-on-primary-container', 'font-semibold');
+      }
+    })();
+  </script>
+<!-- Context Header & System State Rail -->
+<div class="w-full bg-surface-container-lowest px-space-base py-space-sm flex flex-col gap-space-xs shadow-sm">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-outline">
+<span class="text-on-surface-variant font-medium">SYSTEM</span>
+<span class="">/</span>
+<span class="text-primary font-medium tracking-tight">ENGINE CONFIGURATION &amp; FORENSIC POLICIES</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="flex items-center gap-space-2xs bg-surface-container-low px-space-sm py-space-2xs rounded font-code-sm text-code-sm text-on-surface-variant">
+<span class="text-outline uppercase">Active Config:</span>
+<span class="text-on-surface">/etc/tunnelsight/engine.yaml</span>
+<span class="text-primary font-medium">(v2.4.1)</span>
+</span>
+<span class="flex items-center gap-space-2xs bg-surface-container-low px-space-sm py-space-2xs rounded font-code-sm text-code-sm text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="">DAEMON SYNCHRONIZED</span>
+</span>
+<span class="hidden md:flex items-center gap-space-2xs bg-surface-container-low px-space-sm py-space-2xs rounded font-code-sm text-code-sm text-outline">
+<span class="">COMMITTED:</span>
+<span class="text-on-surface">24m ago by secadmin-jchen</span>
+</span>
+</div>
+</div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pt-space-xs">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold">
+          System &amp; Engine Configuration
+        </h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-2xs">
+          Runtime Parameters, Protocol Dissection Engines, Inference Boundaries &amp; Forensic Provenance Governance
+        </p>
+</div>
+<div class="flex items-center gap-space-xs shrink-0">
+<button class="flex items-center gap-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface px-space-md py-space-xs rounded font-code-sm text-code-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span class="">Export Config (.yaml)</span>
+</button>
+<button class="flex items-center gap-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface px-space-md py-space-xs rounded font-code-sm text-code-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">health_and_safety</span>
+<span class="">Verify Engine Health</span>
+</button>
+<button class="flex items-center gap-space-xs bg-primary-container hover:bg-primary text-on-primary-container font-semibold px-space-md py-space-xs rounded font-code-sm text-code-sm transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span class="">Apply Runtime Changes</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Operational Worksurface -->
+<div class="w-full p-space-base space-y-space-lg"><div class="bg-surface-container-low rounded p-space-base shadow-sm space-y-space-md"><div class="flex flex-wrap items-center justify-between gap-space-sm pb-space-xs border-b border-surface-container-highest"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-primary text-[20px]">memory</span><div><div class="flex items-center gap-space-sm"><h2 class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wide font-semibold">Analysis Engines Health &amp; Pipeline</h2><span class="inline-flex items-center gap-1 bg-tertiary/10 text-tertiary px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>6/6 ACTIVE</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Core protocol dissection, hardware acceleration offload &amp; zero-copy ingestion status</p></div></div><div class="flex items-center gap-space-xs"><button class="flex items-center gap-space-xs bg-surface-container hover:bg-surface-container-high text-primary px-space-sm py-space-xs rounded font-code-sm text-code-sm transition-colors" id="btn-toggle-telemetry" onclick="document.getElementById('drawer-telemetry').classList.toggle('hidden')" type="button"><span class="material-symbols-outlined text-[16px]">tune</span><span>View Telemetry &amp; Sockets</span></button></div></div><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-sm"><div class="bg-surface-container p-space-md rounded flex flex-col justify-between gap-space-sm"><div class="flex items-start justify-between gap-space-xs"><div><div class="font-headline-sm text-headline-sm text-on-surface font-semibold">Zeek / Spicy</div><div class="font-code-sm text-code-sm text-outline">Dissection Engine • v3.2.0</div></div><span class="inline-flex items-center gap-1 bg-tertiary/10 text-tertiary px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>ONLINE</span></div><div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant pt-space-xs border-t border-surface-container-highest"><span>CPU 0-1 (Pinned)</span><span class="text-tertiary">512 MB Pool (0 drops)</span></div></div><div class="bg-surface-container p-space-md rounded flex flex-col justify-between gap-space-sm"><div class="flex items-start justify-between gap-space-xs"><div><div class="font-headline-sm text-headline-sm text-on-surface font-semibold">tshark Lua Engine</div><div class="font-code-sm text-code-sm text-outline">Frame Decoder • v4.2.4</div></div><span class="inline-flex items-center gap-1 bg-tertiary/10 text-tertiary px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>ONLINE</span></div><div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant pt-space-xs border-t border-surface-container-highest"><span>IPC-shm-0 (Atomic)</span><span class="text-on-surface">1,024 MB Ring</span></div></div><div class="bg-surface-container p-space-md rounded flex flex-col justify-between gap-space-sm"><div class="flex items-start justify-between gap-space-xs"><div><div class="font-headline-sm text-headline-sm text-on-surface font-semibold">Scapy Micro-Dissector</div><div class="font-code-sm text-code-sm text-outline">Bit Verification • v2.5.0</div></div><span class="inline-flex items-center gap-1 bg-tertiary/10 text-tertiary px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>ONLINE</span></div><div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant pt-space-xs border-t border-surface-container-highest"><span>DPDK Ring Bypass</span><span class="text-tertiary">IKEv2 &amp; ESP Target</span></div></div><div class="bg-surface-container p-space-md rounded flex flex-col justify-between gap-space-sm"><div class="flex items-start justify-between gap-space-xs"><div><div class="font-headline-sm text-headline-sm text-on-surface font-semibold">ML Traffic Classifier</div><div class="font-code-sm text-code-sm text-outline">ONNX Runtime • v1.17.1</div></div><span class="inline-flex items-center gap-1 bg-tertiary/10 text-tertiary px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>ONLINE</span></div><div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant pt-space-xs border-t border-surface-container-highest"><span>TensorRT / CUDA</span><span class="text-tertiary font-medium">0.84 ms / flow</span></div></div><div class="bg-surface-container p-space-md rounded flex flex-col justify-between gap-space-sm"><div class="flex items-start justify-between gap-space-xs"><div><div class="font-headline-sm text-headline-sm text-on-surface font-semibold">Anomaly Detector</div><div class="font-code-sm text-code-sm text-outline">IsoForest + Autoenc • v2.1</div></div><span class="inline-flex items-center gap-1 bg-tertiary/10 text-tertiary px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>ONLINE</span></div><div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant pt-space-xs border-t border-surface-container-highest"><span>AVX-512 Vectorized</span><span class="text-on-surface">0.03% Anomaly Rate</span></div></div><div class="bg-surface-container p-space-md rounded flex flex-col justify-between gap-space-sm"><div class="flex items-start justify-between gap-space-xs"><div><div class="font-headline-sm text-headline-sm text-on-surface font-semibold">Local Forensic LLM</div><div class="font-code-sm text-code-sm text-outline">SecReason-v4.2 • 14.2B</div></div><span class="inline-flex items-center gap-1 bg-tertiary/10 text-tertiary px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>ONLINE</span></div><div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant pt-space-xs border-t border-surface-container-highest"><span>NVIDIA RTX A6000 (32L)</span><span class="text-primary font-medium">9.4 GB VRAM</span></div></div></div><div class="hidden bg-surface-container-lowest p-space-sm rounded border border-surface-container-highest space-y-space-xs transition-colors" id="drawer-telemetry"><div class="flex items-center justify-between font-label-sm text-label-sm uppercase text-outline"><span>Pipeline Telemetry &amp; IPC Paths (Diagnostic Mode)</span><button class="text-outline hover:text-on-surface" onclick="document.getElementById('drawer-telemetry').classList.add('hidden')" type="button"><span class="material-symbols-outlined text-[16px]">close</span></button></div><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-space-xs font-code-sm text-code-sm"><div class="p-space-xs bg-surface-container rounded"><span class="text-outline block text-[11px]">Zeek Analyzer Plugin:</span><span class="text-primary truncate block">zeek-ipsec-analyzer</span></div><div class="p-space-xs bg-surface-container rounded"><span class="text-outline block text-[11px]">tshark Binary &amp; Script:</span><span class="text-primary truncate block font-mono">/usr/bin/tshark -X lua:ipsec_posture.lua</span></div><div class="p-space-xs bg-surface-container rounded"><span class="text-outline block text-[11px]">LLM Unix Domain Socket:</span><span class="text-primary truncate block font-mono">/run/tunnelsight/vllm.sock</span></div></div></div></div><div class="grid grid-cols-1 xl:grid-cols-2 gap-space-base"><div class="bg-surface-container-low rounded p-space-base shadow-sm space-y-space-md"><div class="flex items-center justify-between border-b border-surface-container-highest pb-space-xs"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[20px]">psychology</span><h2 class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wide font-semibold">ML Model Configuration</h2></div><span class="font-code-sm text-code-sm text-outline">ONNX Runtime 1.17.1</span></div><div class="space-y-space-md"><div><label class="font-label-sm text-label-sm text-outline uppercase block mb-space-2xs">Traffic Classification Weights</label><div class="relative"><select class="w-full bg-surface-container text-on-surface font-code-sm text-code-sm py-space-xs px-space-sm rounded appearance-none focus:outline-none focus:bg-surface-container-high cursor-pointer"><option selected="">flow-classifier-ensemble-v3.4.onnx (Current Active)</option><option>xgb-flows-baseline-v2.1.onnx</option><option>rf-payload-entropy-v1.0.onnx</option></select><span class="material-symbols-outlined absolute right-2 top-2 text-outline pointer-events-none text-[18px]">expand_more</span></div><div class="flex items-center justify-between font-code-sm text-code-sm text-outline mt-space-2xs"><span>SHA256: 8f4e2c9a...3d01</span><span class="text-primary">L3/L4 Temporal Features (54 vars)</span></div></div><div><label class="font-label-sm text-label-sm text-outline uppercase block mb-space-2xs">Anomaly Baseline Model</label><div class="relative"><select class="w-full bg-surface-container text-on-surface font-code-sm text-code-sm py-space-xs px-space-sm rounded appearance-none focus:outline-none focus:bg-surface-container-high cursor-pointer"><option selected="">isoforest-dispersion-v2.3.bin [Enterprise-Edge-Audit (7d)]</option><option>isoforest-dispersion-v2.2-datacenter.bin</option><option>autoencoder-spikegate-v1.8.bin</option></select><span class="material-symbols-outlined absolute right-2 top-2 text-outline pointer-events-none text-[18px]">expand_more</span></div></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md pt-space-xs"><div class="bg-surface-container p-space-sm rounded space-y-space-xs"><div class="flex items-center justify-between font-label-sm text-label-sm"><span class="text-outline uppercase">Classification Threshold</span><span class="font-code-sm text-code-sm text-primary font-semibold" id="label-conf-thresh">75.0%</span></div><input aria-label="Classification Threshold" class="w-full accent-primary bg-surface-container-highest rounded h-1 cursor-pointer" id="slider-conf-thresh" max="99" min="50" step="0.5" type="range" value="75"/><p class="font-code-sm text-code-sm text-outline leading-tight">Min certainty before flow label commits to metadata.</p></div><div class="bg-surface-container p-space-sm rounded space-y-space-xs"><div class="flex items-center justify-between font-label-sm text-label-sm"><span class="text-outline uppercase">Anomaly Sensitivity (Z-Score)</span><span class="font-code-sm text-code-sm text-tertiary font-semibold" id="label-anomaly-sens">0.65</span></div><input aria-label="Anomaly Sensitivity Z-Score" class="w-full accent-tertiary bg-surface-container-highest rounded h-1 cursor-pointer" id="slider-anomaly-sens" max="1.00" min="0.10" step="0.01" type="range" value="0.65"/><p class="font-code-sm text-code-sm text-outline leading-tight">Score trigger for flagged IKE disruption alerts.</p></div></div><div class="bg-surface-container-lowest p-space-sm rounded flex items-center justify-between"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-primary text-[20px]">verified_user</span><div><div class="font-headline-sm text-headline-sm text-on-surface font-medium">Feature Extraction Compliance</div><div class="font-code-sm text-code-sm text-on-surface-variant">Strict Zero-Payload Inspection (Metadata / Headers Only)</div></div></div><span class="bg-primary-container text-on-primary-container px-space-xs py-space-2xs rounded font-label-sm text-label-sm uppercase font-semibold">LOCKED ON (RFC 7296)</span></div></div></div><div class="bg-surface-container-low rounded p-space-base shadow-sm space-y-space-md"><div class="flex items-center justify-between border-b border-surface-container-highest pb-space-xs"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[20px]">terminal</span><h2 class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wide font-semibold">Local Forensic LLM Engine</h2></div><span class="bg-tertiary/10 text-tertiary px-space-xs py-space-2xs rounded font-code-sm text-code-sm font-semibold">EVIDENCE-BOUND ONLY</span></div><div class="space-y-space-md"><div><label class="font-label-sm text-label-sm text-outline uppercase block mb-space-2xs">RPC Endpoint &amp; Socket</label><div class="flex items-center gap-space-xs"><input class="w-full bg-surface-container text-on-surface font-code-sm text-code-sm py-space-xs px-space-sm rounded focus:outline-none focus:bg-surface-container-high font-mono" type="text" value="http://127.0.0.1:8080/v1"/><button class="shrink-0 bg-surface-container hover:bg-surface-container-high text-tertiary px-space-sm py-space-xs rounded font-code-sm text-code-sm flex items-center gap-space-2xs" type="button"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span><span>Test (14ms)</span></button></div></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm"><div class="bg-surface-container p-space-sm rounded space-y-space-xs"><span class="font-label-sm text-label-sm text-outline uppercase block">Model Identifier</span><div class="font-code-sm text-code-sm text-primary font-mono truncate">SecReason-v4.2-14B-Forensic.Q4_K_M</div><div class="font-code-sm text-code-sm text-outline">14.2B params • Context: 8,192 tok</div></div><div class="bg-surface-container p-space-sm rounded space-y-space-xs"><div class="flex items-center justify-between font-label-sm text-label-sm"><span class="text-outline uppercase">Sampling Temperature</span><span class="font-code-sm text-code-sm text-primary font-semibold" id="label-temperature">0.05</span></div><input aria-label="Sampling Temperature" class="w-full accent-primary bg-surface-container-highest rounded h-1 cursor-pointer" id="slider-temperature" max="0.30" min="0.00" step="0.01" type="range" value="0.05"/><p class="font-code-sm text-code-sm text-outline leading-tight">Deterministic cryptographic synthesis.</p></div></div><div><label class="font-label-sm text-label-sm text-outline uppercase block mb-space-xs">Explanation Policy Governance</label><div class="space-y-space-xs"><label class="flex items-start gap-space-sm bg-surface-container p-space-sm rounded cursor-pointer border border-primary/20"><input checked="" class="mt-0.5 accent-primary" name="llm_policy" type="radio"/><div><div class="font-body-md text-body-md text-on-surface font-medium">Strict Evidence-Bound Only (Deterministic)</div><div class="font-code-sm text-code-sm text-on-surface-variant">Prohibits speculative explanations. Synthesizes ONLY with confirmed byte offsets.</div></div></label><label class="flex items-start gap-space-sm bg-surface-container/60 p-space-sm rounded cursor-pointer"><input class="mt-0.5 accent-primary" name="llm_policy" type="radio"/><div><div class="font-body-md text-body-md text-on-surface-variant font-medium">Heuristic Contextual Synthesis</div><div class="font-code-sm text-code-sm text-outline">Allows probabilistic correlations across peer behaviors.</div></div></label></div></div></div></div></div><div class="bg-surface-container-low rounded p-space-base shadow-sm space-y-space-md"><div class="flex items-center justify-between border-b border-surface-container-highest pb-space-xs"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[20px]">verified</span><div><h2 class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wide font-semibold">Evidence Tiering &amp; Provenance Policy</h2><p class="font-code-sm text-code-sm text-outline">Cryptographic verification thresholds and forensic watermarking</p></div></div><div class="bg-surface-container px-space-sm py-space-2xs rounded font-code-sm text-code-sm text-primary">Mandatory 3-Tier Proof Hierarchy</div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-space-md"><div class="bg-surface-container p-space-md rounded flex flex-col justify-between space-y-space-sm"><div class="space-y-space-xs"><div class="flex items-center justify-between gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Tier 1: CONFIRMED</span><span class="inline-flex items-center gap-1 px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold bg-tertiary/10 text-tertiary"><span class="material-symbols-outlined text-[14px]">verified</span>100% CERTAINTY</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Deterministic byte offset extraction in IKE_SA_INIT or CREATE_CHILD_SA dissection.</p></div><div class="bg-surface-container-lowest p-space-xs rounded font-code-sm text-code-sm text-outline space-y-space-2xs"><div class="flex justify-between"><span>SPI Match:</span><span class="text-tertiary font-medium">Bit-for-bit Required</span></div><div class="flex justify-between"><span>Dissection Offset:</span><span class="text-tertiary font-medium">Mandatory RFC 7296</span></div></div></div><div class="bg-surface-container p-space-md rounded flex flex-col justify-between space-y-space-sm"><div class="space-y-space-xs"><div class="flex items-center justify-between gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Tier 2: INFERRED</span><span class="inline-flex items-center gap-1 px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold bg-[#f59e0b]/10 text-[#fbbf24]"><span class="material-symbols-outlined text-[14px]">insights</span>≥75% CONFIDENCE</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Statistical ML prediction. Requires visible INFERRED watermark badge in all UI exports.</p></div><div class="bg-surface-container-lowest p-space-xs rounded font-code-sm text-code-sm text-outline space-y-space-2xs"><div class="flex justify-between"><span>Watermark:</span><span class="text-[#fbbf24] font-medium">Mandatory Flag</span></div><div class="flex justify-between"><span>Entropy Limit:</span><span class="text-on-surface font-medium">Shannon H &gt; 7.98</span></div></div></div><div class="bg-surface-container p-space-md rounded flex flex-col justify-between space-y-space-sm"><div class="space-y-space-xs"><div class="flex items-center justify-between gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Tier 3: UNKNOWN</span><span class="inline-flex items-center gap-1 px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold bg-surface-container-highest text-outline"><span class="material-symbols-outlined text-[14px]">help</span>BLIND SPOT</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Opaque payloads or missing handshakes. Suppressing blind spots is strictly prohibited.</p></div><div class="bg-surface-container-lowest p-space-xs rounded font-code-sm text-code-sm text-outline space-y-space-2xs"><div class="flex justify-between"><span>Audit Stance:</span><span class="text-error font-medium">Explicit Log</span></div><div class="flex justify-between"><span>Suppression:</span><span class="text-outline font-medium">Forbidden</span></div></div></div></div><div class="bg-surface-container p-space-sm rounded flex flex-wrap items-center justify-between gap-space-sm font-body-sm text-body-sm"><span class="font-label-sm text-label-sm text-outline uppercase">Active Policy Toggles</span><label class="flex items-center gap-space-xs text-on-surface cursor-pointer"><input checked="" class="accent-primary rounded" type="checkbox"/><span>Require Frame Offset</span></label><label class="flex items-center gap-space-xs text-on-surface cursor-pointer"><input checked="" class="accent-primary rounded" type="checkbox"/><span>Enforce SHA256 Integrity</span></label><label class="flex items-center gap-space-xs text-on-surface cursor-pointer"><input checked="" class="accent-primary rounded" type="checkbox"/><span>Block Hallucinations on Missing Keys</span></label></div></div><div class="bg-surface-container-low rounded p-space-base shadow-sm space-y-space-md"><div class="flex items-center justify-between border-b border-surface-container-highest pb-space-xs"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[20px]">settings_input_component</span><div><h2 class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wide font-semibold">Monitored Interfaces &amp; Storage Retention</h2><p class="font-code-sm text-code-sm text-outline">DPDK zero-copy ring buffers and compliance retention thresholds</p></div></div><div class="font-code-sm text-code-sm text-outline">Engine: <span class="text-primary font-mono">Parquet + ZSTD-6</span></div></div><div class="w-full overflow-x-auto bg-surface-container rounded"><table class="w-full text-left font-code-sm text-code-sm"><thead class="bg-surface-container-high text-outline uppercase font-label-sm text-label-sm"><tr><th class="py-space-xs px-space-sm">Interface</th><th class="py-space-xs px-space-sm">Link State</th><th class="py-space-xs px-space-sm">Throughput</th><th class="py-space-xs px-space-sm">Retention</th><th class="py-space-xs px-space-sm text-right">Mode</th></tr></thead><tbody class="divide-y divide-surface-container-highest"><tr class="hover:bg-surface-container-high transition-colors"><td class="py-space-xs px-space-sm font-semibold text-primary">dpdk0 <span class="text-outline font-normal">(enp3s0f0)</span></td><td class="py-space-xs px-space-sm text-tertiary"><span class="inline-flex items-center gap-space-2xs"><span class="material-symbols-outlined text-[14px]">check_circle</span> 10 GbE Full Duplex</span></td><td class="py-space-xs px-space-sm text-on-surface">4.82 Gbps (0.00% drop)</td><td class="py-space-xs px-space-sm text-on-surface-variant">30 Days PCAP / 10-Yr Meta</td><td class="py-space-xs px-space-sm text-right"><span class="inline-flex items-center gap-1 bg-primary/10 text-primary px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="material-symbols-outlined text-[13px]">sensors</span>ACTIVE CAPTURE</span></td></tr><tr class="hover:bg-surface-container-high transition-colors"><td class="py-space-xs px-space-sm font-semibold text-primary">dpdk1 <span class="text-outline font-normal">(enp3s0f1)</span></td><td class="py-space-xs px-space-sm text-outline"><span class="inline-flex items-center gap-space-2xs"><span class="material-symbols-outlined text-[14px]">pause_circle</span> 10 GbE Standby</span></td><td class="py-space-xs px-space-sm text-outline">0.00 Gbps (Idle)</td><td class="py-space-xs px-space-sm text-on-surface-variant">Failover Mirror</td><td class="py-space-xs px-space-sm text-right"><span class="inline-flex items-center gap-1 bg-surface-container-highest text-outline px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="material-symbols-outlined text-[13px]">sync_alt</span>STANDBY REPLICATION</span></td></tr><tr class="hover:bg-surface-container-high transition-colors"><td class="py-space-xs px-space-sm font-semibold text-on-surface">pcap-tap0 <span class="text-outline font-normal">(Kernel IPC)</span></td><td class="py-space-xs px-space-sm text-tertiary"><span class="inline-flex items-center gap-space-2xs"><span class="material-symbols-outlined text-[14px]">cached</span> Loopback Synthetic</span></td><td class="py-space-xs px-space-sm text-on-surface">124.2 Mbps</td><td class="py-space-xs px-space-sm text-on-surface-variant">Session Lifetime</td><td class="py-space-xs px-space-sm text-right"><span class="inline-flex items-center gap-1 bg-tertiary/10 text-tertiary px-space-xs py-space-2xs rounded font-label-sm text-label-sm font-semibold"><span class="material-symbols-outlined text-[13px]">play_circle</span>TESTBED INGEST</span></td></tr></tbody></table></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-space-sm pt-space-xs"><div class="bg-surface-container p-space-sm rounded"><span class="font-label-sm text-label-sm text-outline uppercase block mb-space-2xs">Ring Buffer Allocation</span><div class="font-code-md text-code-md text-on-surface font-semibold">4,096 MB</div><div class="font-code-sm text-code-sm text-outline">DPDK Hugepages (2MB x 2048)</div></div><div class="bg-surface-container p-space-sm rounded"><span class="font-label-sm text-label-sm text-outline uppercase block mb-space-2xs">Max Ingest PCAP Size</span><div class="font-code-md text-code-md text-on-surface font-semibold">2,048 MB (2.0 GB)</div><div class="font-code-sm text-code-sm text-outline">Auto-split on overflow threshold</div></div><div class="bg-surface-container p-space-sm rounded"><span class="font-label-sm text-label-sm text-outline uppercase block mb-space-2xs">Watchdog Pipeline Timeout</span><div class="font-code-md text-code-md text-on-surface font-semibold">120 seconds</div><div class="font-code-sm text-code-sm text-outline">Interrupt long-running flows</div></div></div></div><div class="bg-surface-container-lowest p-space-base rounded flex flex-col sm:flex-row items-center justify-between gap-space-sm border border-surface-container-highest"><div class="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span class="material-symbols-outlined text-outline text-[18px]">info</span><span>Changes staged in memory. Commit initiates non-disruptive daemon rehash (<code class="text-primary font-mono">SIGHUP 39420</code>).</span></div><div class="flex items-center gap-space-xs"><button class="bg-surface-container hover:bg-surface-container-high text-on-surface px-space-md py-space-xs rounded font-code-sm text-code-sm transition-colors" type="button">Discard Draft</button><button class="bg-primary-container hover:bg-primary text-on-primary-container font-semibold px-space-lg py-space-xs rounded font-code-sm text-code-sm transition-colors shadow-sm" type="button">Commit &amp; Rehash Daemon</button></div></div></div>
+<!-- Interactive Sliders Wiring -->
+<script>
+    (() => {
+      const confSlider = document.getElementById('slider-conf-thresh');
+      const confLabel = document.getElementById('label-conf-thresh');
+      if (confSlider && confLabel) {
+        confSlider.addEventListener('input', (e) => {
+          confLabel.textContent = Number(e.target.value).toFixed(1) + '%';
+        });
+      }
+
+      const anomSlider = document.getElementById('slider-anomaly-sens');
+      const anomLabel = document.getElementById('label-anomaly-sens');
+      if (anomSlider && anomLabel) {
+        anomSlider.addEventListener('input', (e) => {
+          anomLabel.textContent = Number(e.target.value).toFixed(2);
+        });
+      }
+
+      const tempSlider = document.getElementById('slider-temperature');
+      const tempLabel = document.getElementById('label-temperature');
+      if (tempSlider && tempLabel) {
+        tempSlider.addEventListener('input', (e) => {
+          tempLabel.textContent = Number(e.target.value).toFixed(2);
+        });
+      }
+    })();
+  </script>
+</div></main></div>
+</body></html>

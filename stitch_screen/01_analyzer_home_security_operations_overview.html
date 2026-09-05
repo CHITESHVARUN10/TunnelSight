@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary": "#003824",
+            "primary-container": "#00a896",
+            "on-tertiary-fixed-variant": "#005236",
+            "inverse-on-surface": "#2f3034",
+            "surface-container": "#1e2023",
+            "surface-tint": "#59dbc7",
+            "on-secondary": "#2c3139",
+            "primary-fixed": "#79f7e3",
+            "surface-dim": "#111317",
+            "surface-container-lowest": "#0c0e11",
+            "on-surface-variant": "#bbcac5",
+            "primary": "#59dbc7",
+            "tertiary-fixed-dim": "#4edea3",
+            "secondary-container": "#424750",
+            "on-secondary-fixed": "#171c24",
+            "tertiary-container": "#00aa76",
+            "on-secondary-container": "#b1b5c0",
+            "outline": "#869490",
+            "on-primary-fixed": "#00201c",
+            "on-secondary-fixed-variant": "#424750",
+            "on-primary": "#003731",
+            "outline-variant": "#3c4946",
+            "surface-container-highest": "#333538",
+            "on-background": "#e2e2e6",
+            "on-primary-container": "#00352e",
+            "inverse-surface": "#e2e2e6",
+            "on-primary-fixed-variant": "#005047",
+            "inverse-primary": "#006b5f",
+            "on-surface": "#e2e2e6",
+            "on-error": "#690005",
+            "primary-fixed-dim": "#59dbc7",
+            "error": "#ffb4ab",
+            "secondary-fixed": "#dee2ee",
+            "surface": "#111317",
+            "background": "#111317",
+            "error-container": "#93000a",
+            "surface-variant": "#333538",
+            "on-error-container": "#ffdad6",
+            "tertiary-fixed": "#6ffbbe",
+            "tertiary": "#4edea3",
+            "on-tertiary-fixed": "#002113",
+            "surface-bright": "#37393d",
+            "surface-container-high": "#282a2d",
+            "surface-container-low": "#1a1c1f",
+            "secondary-fixed-dim": "#c2c6d1",
+            "on-tertiary-container": "#003522",
+            "secondary": "#c2c6d1"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "header-height": "2.75rem",
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "inspector-width": "26rem",
+            "sidebar-expanded": "16rem",
+            "gutter-table": "0.5rem",
+            "sidebar-collapsed": "3.5rem",
+            "space-2xl": "2rem",
+            "space-xl": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1.25rem",
+            "space-2xs": "0.125rem",
+            "space-base": "1rem",
+            "panel-padding": "0.75rem"
+          },
+          "fontFamily": {
+            "sans": ["'IBM Plex Sans'", "sans-serif"],
+            "mono": ["'IBM Plex Mono'", "monospace"],
+            "body-md": ["'IBM Plex Sans'", "sans-serif"],
+            "headline-sm": ["'IBM Plex Sans'", "sans-serif"],
+            "body-sm": ["'IBM Plex Sans'", "sans-serif"],
+            "label-sm": ["'IBM Plex Sans'", "sans-serif"],
+            "code-md": ["'IBM Plex Mono'", "monospace"],
+            "headline-lg": ["'IBM Plex Sans'", "sans-serif"],
+            "display": ["'IBM Plex Sans'", "sans-serif"],
+            "label-md": ["'IBM Plex Sans'", "sans-serif"],
+            "headline-md": ["'IBM Plex Sans'", "sans-serif"],
+            "body-lg": ["'IBM Plex Sans'", "sans-serif"],
+            "code-sm": ["'IBM Plex Mono'", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-background font-sans text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen overflow-x-hidden">
+<!-- LEFT SIDEBAR -->
+<aside class="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none border-r border-surface-container-highest/40">
+<div class="flex flex-col">
+<div class="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest border-b border-surface-container-highest/30">
+<span class="material-symbols-outlined text-primary text-[20px]">security</span>
+<div class="flex items-baseline gap-space-2xs">
+<span class="font-semibold text-[14px] text-on-surface tracking-tight">TunnelSight</span>
+<span class="font-mono text-[12px] text-outline">/</span>
+<span class="font-mono text-[11px] text-on-surface-variant font-medium">IPsecXray</span>
+</div>
+</div>
+<div class="px-space-base py-space-xs bg-surface-container-low border-b border-surface-container-highest/20">
+<div class="flex items-center justify-between text-outline text-[10px] uppercase font-mono tracking-wider">
+<span>Operational Posture</span>
+<span class="text-primary font-semibold">v2.4.1-rc3</span>
+</div>
+</div>
+<nav class="flex flex-col gap-1 p-space-sm mt-space-xs">
+<a aria-current="page" class="flex items-center gap-space-md px-space-md py-2 rounded bg-primary-container text-on-primary-container font-semibold text-[13px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface text-[13px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">file_open</span>
+<span>Analyze PCAP</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface text-[13px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">pulse_alert</span>
+<span>Live Analysis</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface text-[13px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">settings_ethernet</span>
+<span>VPN Configurations</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface text-[13px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">insights</span>
+<span>Traffic Intelligence</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface text-[13px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">policy</span>
+<span>Findings</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface text-[13px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">assignment</span>
+<span>Reports</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface text-[13px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">dataset</span>
+<span>Dataset / Testbed</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface text-[13px] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+<span>Settings</span>
+</a>
+</nav>
+</div>
+<div class="p-space-sm bg-surface-container-lowest border-t border-surface-container-highest/30">
+<div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-[10px] tracking-wider uppercase font-mono">
+<span class="text-outline">Pipeline</span>
+<span class="text-tertiary font-semibold">ONLINE</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded overflow-hidden">
+<div class="bg-primary-container h-1 rounded w-3/4"></div>
+</div>
+<div class="flex justify-between font-mono text-[11px] text-on-surface-variant">
+<span class="truncate">DPDK Core 0-3</span>
+<span class="text-on-surface">0.02ms</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- MAIN VIEWPORT WRAPPER -->
+<div class="pl-sidebar-expanded">
+<!-- TOP STATUS & ENGINE HEADER -->
+<header class="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base border-b border-surface-container-highest/40 select-none">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded border border-surface-container-highest/40">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-mono text-[11px] text-on-surface font-semibold">ENGINE ONLINE</span>
+<span class="text-outline-variant font-mono text-[11px]">|</span>
+<span class="font-mono text-[11px] text-on-surface-variant">DPDK RX: READY</span>
+<span class="text-outline-variant font-mono text-[11px]">|</span>
+<span class="font-mono text-[11px] text-tertiary">ML WORKERS: 4/4 ACTIVE</span>
+</div>
+<div class="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded">
+<span class="text-[10px] text-outline uppercase font-mono tracking-wide">Profile</span>
+<span class="font-mono text-[11px] text-primary font-medium">Enterprise-Edge-Audit</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="hidden 2xl:flex items-center gap-space-xs font-mono text-[11px] text-on-surface-variant">
+<span class="text-outline">UTC</span><span>2025-05-18 14:32:09</span>
+<span class="text-outline-variant">|</span>
+<span class="text-outline">Buffer:</span>
+<span class="text-tertiary">98.4% Free</span>
+</div>
+<button class="flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[15px]">search</span>
+<span class="font-mono text-[11px]">Search packets/SPI/tunnels</span>
+<kbd class="bg-surface-container-highest px-1.5 rounded font-mono text-[10px] text-outline ml-1">⌘K</kbd>
+</button>
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Export" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+<button class="relative p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notifications" type="button">
+<span class="material-symbols-outlined text-[18px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</button>
+</div>
+<div class="h-4 w-px bg-surface-container-highest mx-1"></div>
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-[16px]">person</span>
+</div>
+</div>
+</header>
+<!-- CONTENT BODY -->
+<main class="relative pt-header-height w-full bg-background min-h-screen">
+<div class="max-w-[1580px] mx-auto px-6 py-8 flex flex-col gap-8">
+<!-- CONTEXT BAR: SCOPE & QUICK ACTIONS -->
+<section class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-surface-container-highest/30">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded border border-surface-container-highest/30">
+<span class="material-symbols-outlined text-primary text-[18px]">domain_verification</span>
+<span class="text-[11px] text-outline uppercase font-mono tracking-wider">Scope</span>
+<span class="text-[13px] text-on-surface font-semibold">Production Edge &amp; Core</span>
+<span class="font-mono text-[11px] text-primary font-semibold px-2 py-0.5 bg-surface-container-highest rounded">72 Tunnels Audited</span>
+</div>
+<div class="hidden md:flex items-center gap-2 font-mono text-[12px] text-on-surface-variant pl-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span>DPDK Buffer: <strong class="text-on-surface">0.04% loss</strong></span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-8 px-3 bg-surface-container hover:bg-surface-container-high text-on-surface text-[12px] font-semibold rounded flex items-center gap-2 border border-surface-container-highest/50 transition-colors" type="button">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span>Start Live Analysis</span>
+</button>
+<button class="h-8 px-3.5 bg-primary-container hover:bg-primary text-on-primary-container text-[12px] font-semibold rounded flex items-center gap-2 shadow-sm transition-colors" id="btn-analyze-pcap" type="button">
+<span class="material-symbols-outlined text-[16px]">upload_file</span>
+<span>Analyze PCAP</span>
+<kbd class="bg-on-primary-container/20 px-1.5 rounded font-mono text-[10px]">Alt+U</kbd>
+</button>
+</div>
+</section>
+<!-- 2. SECURITY & PROTOCOL POSTURE (CLEAN & MINIMAL UNIFIED POSTURE) -->
+<section class="bg-surface-container-low rounded-lg p-6 border border-surface-container-highest/30 flex flex-col gap-6 shadow-sm">
+<!-- Top row: Status header + concise posture spectrum -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[22px]">shield_lock</span>
+<div>
+<h1 class="text-[18px] font-semibold tracking-tight text-on-surface">Security &amp; Cryptographic Posture</h1>
+<p class="text-[12px] text-on-surface-variant font-mono mt-0.5">Automated deep-packet posture assessment across 72 active tunnels</p>
+</div>
+</div>
+<!-- Status Indicators Legend -->
+<div class="flex items-center gap-4 font-mono text-[12px]">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
+<span class="text-on-surface font-semibold">41</span>
+<span class="text-outline">Hardened</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
+<span class="text-on-surface font-semibold">23</span>
+<span class="text-outline">Sub-optimal</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span>
+<span class="text-on-surface font-semibold text-[#EF4444]">8</span>
+<span class="text-[#EF4444]">Critical</span>
+</div>
+</div>
+</div>
+<!-- Minimal Horizontal Posture Segment Bar -->
+<div class="flex flex-col gap-1.5">
+<div class="h-2.5 w-full rounded-full bg-surface-container-highest flex overflow-hidden">
+<div class="bg-[#10B981] transition-all" style="width: 56.9%;" title="41 Hardened (56.9%)"></div>
+<div class="bg-[#F59E0B] transition-all" style="width: 31.9%;" title="23 Sub-optimal (31.9%)"></div>
+<div class="bg-[#EF4444] transition-all" style="width: 11.2%;" title="8 Critical (11.2%)"></div>
+</div>
+<div class="flex justify-between font-mono text-[11px] text-outline pt-0.5">
+<span>56.9% Compliant Modern Suites</span>
+<span>31.9% Deprecated Parameters</span>
+<span class="text-[#EF4444] font-medium">11.2% Immediate Vulnerabilities</span>
+</div>
+</div>
+<!-- Grid: Protocol Indicators + Forensic Provenance (Clean Minimal Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2 border-t border-surface-container-highest/30">
+<!-- Indicator 1 -->
+<div class="bg-surface-container p-4 rounded-md flex flex-col justify-between">
+<span class="text-[11px] uppercase font-mono tracking-wider text-outline">IKEv2 Adoption</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="font-mono text-[26px] font-semibold text-on-surface">86<span class="text-[16px] text-outline font-normal">%</span></span>
+<span class="text-[12px] font-mono text-primary font-medium">62 / 72</span>
+</div>
+<span class="text-[11px] text-on-surface-variant font-mono mt-1">10 legacy IKEv1 tunnels</span>
+</div>
+<!-- Indicator 2 -->
+<div class="bg-surface-container p-4 rounded-md flex flex-col justify-between">
+<span class="text-[11px] uppercase font-mono tracking-wider text-outline">PFS Enforcement</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="font-mono text-[26px] font-semibold text-on-surface">94.2<span class="text-[16px] text-outline font-normal">%</span></span>
+<span class="text-[12px] font-mono text-[#10B981] font-medium">ECDH Groups</span>
+</div>
+<span class="text-[11px] text-on-surface-variant font-mono mt-1">4 Child SAs missing PFS</span>
+</div>
+<!-- Indicator 3 -->
+<div class="bg-surface-container p-4 rounded-md flex flex-col justify-between">
+<span class="text-[11px] uppercase font-mono tracking-wider text-outline">ESP Integrity</span>
+<div class="flex items-baseline justify-between mt-2">
+<span class="font-mono text-[26px] font-semibold text-on-surface">99.8<span class="text-[16px] text-outline font-normal">%</span></span>
+<span class="text-[12px] font-mono text-tertiary font-medium">In-Order</span>
+</div>
+<span class="text-[11px] text-on-surface-variant font-mono mt-1">Zero replay sequence drops</span>
+</div>
+<!-- Provenance Summary -->
+<div class="bg-surface-container p-4 rounded-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-[11px] uppercase font-mono tracking-wider text-outline">Evidence Provenance</span>
+<span class="text-[10px] font-mono text-outline">NIST SP 800</span>
+</div>
+<div class="flex items-center gap-3 my-2 font-mono">
+<span class="text-[11px] px-2 py-0.5 rounded bg-[#10B981]/15 text-[#34D399] font-medium" title="58 Confirmed">58 Conf</span>
+<span class="text-[11px] px-2 py-0.5 rounded bg-[#F59E0B]/15 text-[#FBBF24] font-medium" title="11 Inferred">11 Inf</span>
+<span class="text-[11px] px-2 py-0.5 rounded bg-surface-container-highest text-outline font-medium" title="3 Unknown">3 Unk</span>
+</div>
+<a class="text-[11px] text-primary hover:underline font-mono inline-flex items-center gap-1" href="#">
+                Inspect Provenance →
+              </a>
+</div>
+</div>
+</section>
+<!-- 3. RECENT CAPTURES (CLEAN SUMMARY TABLE WITH PROGRESSIVE DISCLOSURE) -->
+<section class="bg-surface-container-low rounded-lg border border-surface-container-highest/30 overflow-hidden shadow-sm">
+<div class="px-6 py-4 bg-surface-container flex flex-wrap items-center justify-between gap-3 border-b border-surface-container-highest/40">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px]">table_rows</span>
+<div>
+<h2 class="text-[15px] font-semibold text-on-surface">Recent PCAP Ingestions &amp; Captures</h2>
+<p class="text-[11px] text-outline font-mono">Click any row or "Inspect →" for full cryptographic forensic payload</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<input class="h-8 w-60 bg-surface-container-lowest text-on-surface placeholder:text-outline font-mono text-[12px] px-3 rounded border border-surface-container-highest/40 outline-none focus:border-primary" placeholder="Filter capture file or status..." type="text"/>
+</div>
+<span class="font-mono text-[11px] text-outline">Showing 5 of 24</span>
+</div>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left font-sans text-[13px] whitespace-nowrap">
+<thead class="bg-surface-container-lowest text-outline font-mono text-[11px] uppercase tracking-wider select-none border-b border-surface-container-highest/30">
+<tr>
+<th class="py-3 px-6">Status</th>
+<th class="py-3 px-6">Capture</th>
+<th class="py-3 px-6">Protocol</th>
+<th class="py-3 px-6">Risk</th>
+<th class="py-3 px-6">Score</th>
+<th class="py-3 px-6">Ingested</th>
+<th class="py-3 px-6 text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-highest/30 text-on-surface">
+<!-- Row 1 -->
+<tr class="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="core-dc-chicago-gw1.pcap">
+<td class="py-4 px-6 font-mono text-[12px]">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span>
+<span class="font-semibold text-[#EF4444]">CRITICAL</span>
+</div>
+</td>
+<td class="py-4 px-6 font-mono font-medium text-on-surface">core-dc-chicago-gw1.pcap</td>
+<td class="py-4 px-6 font-mono text-on-surface-variant text-[12px]">IKEv1 / Tunnel</td>
+<td class="py-4 px-6">
+<span class="px-2 py-0.5 rounded bg-[#EF4444]/15 text-[#EF4444] font-mono text-[11px] font-semibold">HIGH</span>
+</td>
+<td class="py-4 px-6 font-mono text-[#EF4444] font-semibold">41</td>
+<td class="py-4 px-6 font-mono text-outline text-[12px]">14:18</td>
+<td class="py-4 px-6 text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+                      Inspect <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="branch-emea-gw04.pcap">
+<td class="py-4 px-6 font-mono text-[12px]">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
+<span class="font-semibold text-on-surface">AUDITED</span>
+</div>
+</td>
+<td class="py-4 px-6 font-mono font-medium text-on-surface">branch-emea-gw04.pcap</td>
+<td class="py-4 px-6 font-mono text-on-surface-variant text-[12px]">IKEv2 / Tunnel</td>
+<td class="py-4 px-6">
+<span class="px-2 py-0.5 rounded bg-[#F59E0B]/15 text-[#FBBF24] font-mono text-[11px] font-semibold">MEDIUM</span>
+</td>
+<td class="py-4 px-6 font-mono text-[#FBBF24] font-semibold">68</td>
+<td class="py-4 px-6 font-mono text-outline text-[12px]">14:02</td>
+<td class="py-4 px-6 text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+                      Inspect <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="site2site-failover.pcapng">
+<td class="py-4 px-6 font-mono text-[12px]">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
+<span class="font-semibold text-[#10B981]">PASS</span>
+</div>
+</td>
+<td class="py-4 px-6 font-mono font-medium text-on-surface">site2site-failover.pcapng</td>
+<td class="py-4 px-6 font-mono text-on-surface-variant text-[12px]">IKEv2 / Transport</td>
+<td class="py-4 px-6">
+<span class="px-2 py-0.5 rounded bg-[#10B981]/15 text-[#34D399] font-mono text-[11px] font-semibold">LOW</span>
+</td>
+<td class="py-4 px-6 font-mono text-[#34D399] font-semibold">94</td>
+<td class="py-4 px-6 font-mono text-outline text-[12px]">13:45</td>
+<td class="py-4 px-6 text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+                      Inspect <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="azure-expressroute-ipsec.pcap">
+<td class="py-4 px-6 font-mono text-[12px]">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
+<span class="font-semibold text-on-surface">AUDITED</span>
+</div>
+</td>
+<td class="py-4 px-6 font-mono font-medium text-on-surface">azure-expressroute-ipsec.pcap</td>
+<td class="py-4 px-6 font-mono text-on-surface-variant text-[12px]">IKEv2 / Tunnel</td>
+<td class="py-4 px-6">
+<span class="px-2 py-0.5 rounded bg-[#F59E0B]/15 text-[#FBBF24] font-mono text-[11px] font-semibold">MEDIUM</span>
+</td>
+<td class="py-4 px-6 font-mono text-[#FBBF24] font-semibold">72</td>
+<td class="py-4 px-6 font-mono text-outline text-[12px]">13:12</td>
+<td class="py-4 px-6 text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+                      Inspect <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="live-tap-frankfurt-ixp.pcapng">
+<td class="py-4 px-6 font-mono text-[12px]">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
+<span class="font-semibold text-[#10B981]">PASS</span>
+</div>
+</td>
+<td class="py-4 px-6 font-mono font-medium text-on-surface">live-tap-frankfurt-ixp.pcapng</td>
+<td class="py-4 px-6 font-mono text-on-surface-variant text-[12px]">IKEv2 / Tunnel</td>
+<td class="py-4 px-6">
+<span class="px-2 py-0.5 rounded bg-[#10B981]/15 text-[#34D399] font-mono text-[11px] font-semibold">LOW</span>
+</td>
+<td class="py-4 px-6 font-mono text-[#34D399] font-semibold">98</td>
+<td class="py-4 px-6 font-mono text-outline text-[12px]">12:15</td>
+<td class="py-4 px-6 text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+                      Inspect <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- 4. ACTIVE FINDINGS & TRAFFIC INTELLIGENCE (DUAL PANEL, MINIMAL) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left side: 3 high-priority findings only (7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-low rounded-lg p-6 border border-surface-container-highest/30 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[20px]">warning</span>
+<h2 class="text-[16px] font-semibold text-on-surface">High-Priority Security Findings</h2>
+</div>
+<span class="text-[11px] font-mono text-outline">Priority Queue</span>
+</div>
+<!-- 3 Minimal Finding Rows -->
+<div class="flex flex-col gap-3">
+<!-- Finding 1 -->
+<div class="bg-surface-container p-3.5 rounded-md border border-surface-container-highest/30 flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<span class="px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#EF4444] font-mono text-[10px] font-bold tracking-wider shrink-0">CRITICAL</span>
+<div class="min-w-0">
+<p class="text-[13px] font-medium text-on-surface truncate">Weak Diffie-Hellman Group 2 (1024-bit MODP)</p>
+<p class="text-[11px] font-mono text-outline mt-0.5">core-dc-chicago-gw1</p>
+</div>
+</div>
+<span class="text-[11px] font-mono text-outline shrink-0">14:18</span>
+</div>
+<!-- Finding 2 -->
+<div class="bg-surface-container p-3.5 rounded-md border border-surface-container-highest/30 flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<span class="px-2 py-0.5 rounded bg-[#F59E0B]/20 text-[#FBBF24] font-mono text-[10px] font-bold tracking-wider shrink-0">MEDIUM</span>
+<div class="min-w-0">
+<p class="text-[13px] font-medium text-on-surface truncate">PFS Disabled on Child SA</p>
+<p class="text-[11px] font-mono text-outline mt-0.5">branch-emea-gw04</p>
+</div>
+</div>
+<span class="text-[11px] font-mono text-outline shrink-0">14:02</span>
+</div>
+<!-- Finding 3 -->
+<div class="bg-surface-container p-3.5 rounded-md border border-surface-container-highest/30 flex items-center justify-between gap-4">
+<div class="flex items-center gap-3 min-w-0">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px] font-bold tracking-wider shrink-0">LOW</span>
+<div class="min-w-0">
+<p class="text-[13px] font-medium text-on-surface truncate">Unusual SA Rekey Frequency</p>
+<p class="text-[11px] font-mono text-outline mt-0.5">azure-expressroute-ipsec</p>
+</div>
+</div>
+<span class="text-[11px] font-mono text-outline shrink-0">13:12</span>
+</div>
+</div>
+</div>
+<!-- Bottom link -->
+<div class="pt-4 mt-2 border-t border-surface-container-highest/30 flex justify-between items-center">
+<span class="text-[12px] font-mono text-outline">3 flagged in last audit window</span>
+<a class="text-[12px] font-mono text-primary hover:underline font-medium inline-flex items-center gap-1" href="#">
+                View all 14 findings →
+              </a>
+</div>
+</div>
+<!-- Right side: Traffic Intelligence Snapshot (5 cols) -->
+<div class="lg:col-span-5 bg-surface-container-low rounded-lg p-6 border border-surface-container-highest/30 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[20px]">insights</span>
+<h2 class="text-[16px] font-semibold text-on-surface">Traffic Intelligence Snapshot</h2>
+</div>
+<span class="text-[11px] font-mono text-outline">DPDK DPI</span>
+</div>
+<!-- Breakdown metrics -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between text-[12px] font-mono">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-on-surface">Video Streaming</span>
+</div>
+<span class="font-semibold text-on-surface">81%</span>
+</div>
+<div class="flex items-center justify-between text-[12px] font-mono">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-on-surface">Encrypted Web (HTTPS)</span>
+</div>
+<span class="font-semibold text-on-surface">12%</span>
+</div>
+<div class="flex items-center justify-between text-[12px] font-mono">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#F59E0B]"></span>
+<span class="text-on-surface">VoIP / Realtime</span>
+</div>
+<span class="font-semibold text-on-surface">4%</span>
+</div>
+<div class="flex items-center justify-between text-[12px] font-mono">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="text-on-surface">Other Tunnel Transit</span>
+</div>
+<span class="font-semibold text-outline">3%</span>
+</div>
+<!-- Mini distribution bar -->
+<div class="h-2 w-full rounded-full bg-surface-container-highest flex overflow-hidden my-1">
+<div class="bg-primary h-full" style="width: 81%"></div>
+<div class="bg-tertiary h-full" style="width: 12%"></div>
+<div class="bg-[#F59E0B] h-full" style="width: 4%"></div>
+<div class="bg-outline h-full" style="width: 3%"></div>
+</div>
+<!-- Status note on classification -->
+<div class="bg-surface-container p-3 rounded text-[11px] font-mono text-on-surface-variant flex items-center gap-2 border border-surface-container-highest/20 mt-1">
+<span class="material-symbols-outlined text-tertiary text-[16px]">check_circle</span>
+<span>96.4% flows classified by ML entropy model (v4.1)</span>
+</div>
+</div>
+</div>
+<!-- Bottom link -->
+<div class="pt-4 mt-2 border-t border-surface-container-highest/30 flex justify-end">
+<a class="text-[12px] font-mono text-primary hover:underline font-medium inline-flex items-center gap-1" href="#">
+                View traffic analysis →
+              </a>
+</div>
+</div>
+</section>
+</div>
+<!-- 5. INTERACTIVE DETAIL DRAWER / SLIDE-OVER (PROGRESSIVE DISCLOSURE) -->
+<!-- Semi-transparent Backdrop for focused inspection -->
+<div class="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-50 transition-opacity opacity-100 block" id="drawer-backdrop"></div>
+<!-- Slide-over Drawer Panel -->
+<aside class="fixed top-0 right-0 h-full w-[440px] max-w-full bg-surface-container-low border-l border-surface-container-highest z-50 flex flex-col shadow-2xl transition-transform duration-300 translate-x-0" id="detail-drawer">
+<!-- Header -->
+<div class="p-5 bg-surface-container border-b border-surface-container-highest flex items-start justify-between">
+<div class="flex flex-col gap-1">
+<span class="text-[10px] font-mono text-outline uppercase tracking-wider">Forensic Record</span>
+<h2 class="font-mono text-[15px] font-semibold text-on-surface break-all" id="drawer-title">core-dc-chicago-gw1.pcap</h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#EF4444]/20 text-[#EF4444]" id="drawer-state-badge">CRITICAL RISK</span>
+<span class="text-[11px] font-mono text-outline">Frame #412 Dissection</span>
+</div>
+</div>
+<button class="p-1.5 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors" id="close-drawer" title="Close Drawer" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Deep Specs Content (Database ≠ Dashboard principle) -->
+<div class="flex-1 overflow-y-auto p-5 flex flex-col gap-5 text-[12px] font-mono">
+<!-- Evidence State -->
+<div class="bg-surface-container p-3.5 rounded border border-surface-container-highest/40 flex items-center justify-between">
+<span class="text-outline uppercase text-[10px] tracking-wider">Evidence State</span>
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#10B981]/15 text-[#34D399]" id="drawer-evidence">CONFIRMED (Deep Packet Parse)</span>
+</div>
+<!-- Cryptographic Suite Details -->
+<div class="flex flex-col gap-2">
+<span class="text-outline uppercase text-[10px] tracking-wider">Negotiated Cipher Suite</span>
+<div class="bg-surface-container p-3.5 rounded border border-surface-container-highest/40 flex flex-col gap-2">
+<div class="flex justify-between items-center pb-2 border-b border-surface-container-highest/30">
+<span class="text-outline">Encryption:</span>
+<span class="text-[#EF4444] font-semibold" id="drawer-cipher">3DES-CBC</span>
+</div>
+<div class="flex justify-between items-center pb-2 border-b border-surface-container-highest/30">
+<span class="text-outline">Integrity / HMAC:</span>
+<span class="text-[#EF4444] font-semibold" id="drawer-hmac">HMAC-MD5</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-outline">DH Exchange:</span>
+<span class="text-[#EF4444] font-semibold" id="drawer-dh">MODP-1024 (Group 2)</span>
+</div>
+</div>
+</div>
+<!-- SPI Keys and Endpoints -->
+<div class="flex flex-col gap-2">
+<span class="text-outline uppercase text-[10px] tracking-wider">Security Parameter Indices (SPI)</span>
+<div class="bg-surface-container p-3.5 rounded border border-surface-container-highest/40 flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="text-outline">Initiator SPI:</span>
+<span class="text-primary font-mono" id="drawer-initiator-spi">0x41f89c02</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-outline">Responder SPI:</span>
+<span class="text-primary font-mono" id="drawer-responder-spi">0x9a4f21e8</span>
+</div>
+</div>
+</div>
+<!-- Endpoints -->
+<div class="flex flex-col gap-2">
+<span class="text-outline uppercase text-[10px] tracking-wider">Transit Endpoints</span>
+<div class="bg-surface-container p-3 rounded border border-surface-container-highest/40 flex justify-between items-center text-on-surface">
+<span id="drawer-endpoints">198.51.100.1 ↔ 203.0.113.44</span>
+<span class="text-[10px] text-outline">UDP / 500</span>
+</div>
+</div>
+<!-- Forensic Volume & Entropy -->
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container p-3 rounded border border-surface-container-highest/40 flex flex-col gap-1">
+<span class="text-outline text-[10px] uppercase">Packet Count</span>
+<span class="text-[14px] text-on-surface font-semibold" id="drawer-packet-count">842,109 pkts</span>
+</div>
+<div class="bg-surface-container p-3 rounded border border-surface-container-highest/40 flex flex-col gap-1">
+<span class="text-outline text-[10px] uppercase">Nonce Entropy</span>
+<span class="text-[14px] text-tertiary font-semibold" id="drawer-entropy">7.994 b/B</span>
+</div>
+</div>
+<!-- Cryptographic SHA-256 Digest -->
+<div class="flex flex-col gap-1.5">
+<span class="text-outline uppercase text-[10px] tracking-wider">Capture SHA-256 Digest</span>
+<div class="bg-surface-container-lowest p-2.5 rounded border border-surface-container-highest/50 font-mono text-[11px] text-on-surface-variant break-all select-all">
+              7b3e819fa2c4d98a0021bde792c01948ae1c48fbb291a0391d4e0e5cb19409df
+            </div>
+</div>
+</div>
+<!-- Drawer Footer CTA -->
+<div class="p-4 bg-surface-container border-t border-surface-container-highest flex items-center justify-between gap-3">
+<button class="h-9 px-4 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-sans text-[12px] font-semibold transition-colors" id="close-drawer-btn" type="button">
+            Close
+          </button>
+<button class="h-9 px-4 rounded bg-primary-container hover:bg-primary text-on-primary-container font-sans text-[12px] font-semibold inline-flex items-center gap-1.5 transition-colors shadow-sm" type="button">
+<span>View Full Forensic Analysis</span>
+<span>→</span>
+</button>
+</div>
+</aside>
+</main>
+</div>
+<!-- VANILLA INTERACTION SCRIPT FOR PROGRESSIVE DISCLOSURE -->
+<script>
+    (function() {
+      const records = {
+        'core-dc-chicago-gw1.pcap': {
+          title: 'core-dc-chicago-gw1.pcap',
+          risk: 'CRITICAL RISK',
+          riskClass: 'bg-[#EF4444]/20 text-[#EF4444]',
+          evidence: 'CONFIRMED (Deep Packet Parse)',
+          evidenceClass: 'bg-[#10B981]/15 text-[#34D399]',
+          cipher: '3DES-CBC',
+          hmac: 'HMAC-MD5',
+          dh: 'MODP-1024 (Group 2)',
+          initSpi: '0x41f89c02',
+          respSpi: '0x9a4f21e8',
+          endpoints: '198.51.100.1 ↔ 203.0.113.44',
+          packets: '842,109 pkts',
+          entropy: '7.994 b/B'
+        },
+        'branch-emea-gw04.pcap': {
+          title: 'branch-emea-gw04.pcap',
+          risk: 'SUB-OPTIMAL (MEDIUM)',
+          riskClass: 'bg-[#F59E0B]/20 text-[#FBBF24]',
+          evidence: 'CONFIRMED (IKEv2 SA)',
+          evidenceClass: 'bg-[#10B981]/15 text-[#34D399]',
+          cipher: 'AES-128-CBC',
+          hmac: 'HMAC-SHA1-96',
+          dh: 'MODP-2048 (Group 14)',
+          initSpi: '0x2f90ab12',
+          respSpi: '0x7c4199aa',
+          endpoints: '198.51.100.99 ↔ 203.0.113.12',
+          packets: '38,104 pkts',
+          entropy: '7.912 b/B'
+        },
+        'site2site-failover.pcapng': {
+          title: 'site2site-failover.pcapng',
+          risk: 'COMPLIANT (LOW RISK)',
+          riskClass: 'bg-[#10B981]/15 text-[#34D399]',
+          evidence: 'CONFIRMED (Strict RFC)',
+          evidenceClass: 'bg-[#10B981]/15 text-[#34D399]',
+          cipher: 'ChaCha20-Poly1305',
+          hmac: 'PRF-SHA512',
+          dh: 'Curve25519 (Group 31)',
+          initSpi: '0x110e54b3',
+          respSpi: '0x992cf601',
+          endpoints: '192.0.2.55 ↔ 198.51.100.12',
+          packets: '1,204,891 pkts',
+          entropy: '7.999 b/B'
+        },
+        'azure-expressroute-ipsec.pcap': {
+          title: 'azure-expressroute-ipsec.pcap',
+          risk: 'MODERATE RISK',
+          riskClass: 'bg-[#F59E0B]/20 text-[#FBBF24]',
+          evidence: 'CONFIRMED (SA Rekey)',
+          evidenceClass: 'bg-[#10B981]/15 text-[#34D399]',
+          cipher: 'AES-256-CBC',
+          hmac: 'HMAC-SHA256',
+          dh: 'MODP-2048 (Group 14)',
+          initSpi: '0xbb509210',
+          respSpi: '0x442c88f1',
+          endpoints: '10.240.0.4 ↔ 10.100.20.1',
+          packets: '512,400 pkts',
+          entropy: '7.940 b/B'
+        },
+        'live-tap-frankfurt-ixp.pcapng': {
+          title: 'live-tap-frankfurt-ixp.pcapng',
+          risk: 'COMPLIANT (LOW RISK)',
+          riskClass: 'bg-[#10B981]/15 text-[#34D399]',
+          evidence: 'CONFIRMED (DPDK Live)',
+          evidenceClass: 'bg-[#10B981]/15 text-[#34D399]',
+          cipher: 'AES-256-GCM',
+          hmac: 'PRF-SHA384',
+          dh: 'ECP-384 (Group 19)',
+          initSpi: '0x9a4f21e8',
+          respSpi: '0xd820fa14',
+          endpoints: '192.0.2.180 ↔ 198.51.100.89',
+          packets: '241,890 pkts',
+          entropy: '7.998 b/B'
+        }
+      };
+
+      const drawer = document.getElementById('detail-drawer');
+      const backdrop = document.getElementById('drawer-backdrop');
+      const closeBtns = [document.getElementById('close-drawer'), document.getElementById('close-drawer-btn')];
+
+      function openDrawer(captureKey) {
+        const data = records[captureKey] || records['core-dc-chicago-gw1.pcap'];
+        document.getElementById('drawer-title').innerText = data.title;
+        const stateBadge = document.getElementById('drawer-state-badge');
+        stateBadge.innerText = data.risk;
+        stateBadge.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold ' + data.riskClass;
+        
+        const evBadge = document.getElementById('drawer-evidence');
+        evBadge.innerText = data.evidence;
+        evBadge.className = 'px-2 py-0.5 rounded text-[11px] font-semibold ' + data.evidenceClass;
+
+        document.getElementById('drawer-cipher').innerText = data.cipher;
+        document.getElementById('drawer-hmac').innerText = data.hmac;
+        document.getElementById('drawer-dh').innerText = data.dh;
+        document.getElementById('drawer-initiator-spi').innerText = data.initSpi;
+        document.getElementById('drawer-responder-spi').innerText = data.respSpi;
+        document.getElementById('drawer-endpoints').innerHTML = data.endpoints;
+        document.getElementById('drawer-packet-count').innerText = data.packets;
+        document.getElementById('drawer-entropy').innerText = data.entropy;
+
+        drawer.classList.remove('translate-x-full');
+        drawer.classList.add('translate-x-0');
+        backdrop.classList.remove('hidden');
+        backdrop.classList.remove('opacity-0');
+        backdrop.classList.add('opacity-100');
+      }
+
+      function hideDrawer() {
+        drawer.classList.add('translate-x-full');
+        drawer.classList.remove('translate-x-0');
+        backdrop.classList.add('opacity-0');
+        setTimeout(() => backdrop.classList.add('hidden'), 200);
+      }
+
+      // Wire row clicks
+      document.querySelectorAll('.table-row-item').forEach(row => {
+        row.addEventListener('click', (e) => {
+          const cap = row.getAttribute('data-capture');
+          openDrawer(cap);
+        });
+      });
+
+      closeBtns.forEach(b => {
+        if (b) b.addEventListener('click', hideDrawer);
+      });
+
+      backdrop.addEventListener('click', hideDrawer);
+
+      // Keyboard escape to close
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') hideDrawer();
+      });
+
+      // Analyze PCAP simulate
+      const analyzeBtn = document.getElementById('btn-analyze-pcap');
+      if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', () => {
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = '.pcap,.pcapng,.cap';
+          fileInput.onchange = (e) => {
+            if (e.target.files.length > 0) {
+              alert('TunnelSight: PCAP "' + e.target.files[0].name + '" accepted. Ingesting into analyzer queue.');
+            }
+          };
+          fileInput.click();
+        });
+      }
+    })();
+  </script>
+</body></html>

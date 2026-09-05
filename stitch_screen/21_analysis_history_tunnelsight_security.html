@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-primary-fixed": "#00201c",
+          "surface-container-lowest": "#0c0e11",
+          "tertiary-container": "#00aa76",
+          "secondary-fixed": "#dee2ee",
+          "on-tertiary-fixed": "#002113",
+          "surface": "#111317",
+          "error-container": "#93000a",
+          "inverse-primary": "#006b5f",
+          "surface-container": "#1e2023",
+          "surface-container-high": "#282a2d",
+          "primary": "#59dbc7",
+          "on-secondary-fixed": "#171c24",
+          "surface-dim": "#111317",
+          "on-secondary": "#2c3139",
+          "surface-tint": "#59dbc7",
+          "error": "#ffb4ab",
+          "surface-container-highest": "#333538",
+          "inverse-surface": "#e2e2e6",
+          "on-tertiary-fixed-variant": "#005236",
+          "primary-container": "#00a896",
+          "tertiary": "#4edea3",
+          "on-tertiary": "#003824",
+          "on-error": "#690005",
+          "on-secondary-container": "#b1b5c0",
+          "on-surface": "#e2e2e6",
+          "background": "#111317",
+          "on-primary": "#003731",
+          "on-surface-variant": "#bbcac5",
+          "outline": "#869490",
+          "primary-fixed": "#79f7e3",
+          "on-primary-fixed-variant": "#005047",
+          "surface-bright": "#37393d",
+          "tertiary-fixed-dim": "#4edea3",
+          "surface-variant": "#333538",
+          "secondary": "#c2c6d1",
+          "surface-container-low": "#1a1c1f",
+          "primary-fixed-dim": "#59dbc7",
+          "on-background": "#e2e2e6",
+          "on-error-container": "#ffdad6",
+          "outline-variant": "#3c4946",
+          "on-primary-container": "#00352e",
+          "secondary-fixed-dim": "#c2c6d1",
+          "secondary-container": "#424750",
+          "tertiary-fixed": "#6ffbbe",
+          "inverse-on-surface": "#2f3034",
+          "on-tertiary-container": "#003522",
+          "on-secondary-fixed-variant": "#424750"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "header-height": "2.75rem",
+          "space-xs": "0.25rem",
+          "space-md": "0.75rem",
+          "inspector-width": "26rem",
+          "sidebar-expanded": "16rem",
+          "gutter-table": "0.5rem",
+          "sidebar-collapsed": "3.5rem",
+          "space-2xl": "2rem",
+          "space-xl": "1.5rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1.25rem",
+          "space-2xs": "0.125rem",
+          "space-base": "1rem",
+          "panel-padding": "0.75rem"
+        },
+        "fontFamily": {
+          "body-md": [
+            "Inter"
+          ],
+          "headline-sm": [
+            "Geist"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-sm": [
+            "Inter"
+          ],
+          "code-md": [
+            "monospace"
+          ],
+          "headline-lg": [
+            "Geist"
+          ],
+          "display": [
+            "Geist"
+          ],
+          "label-md": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Geist"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "code-sm": [
+            "monospace"
+          ]
+        },
+        "fontSize": {
+          "body-md": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-sm": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "letterSpacing": "-0.005em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "10px",
+            {
+              "lineHeight": "12px",
+              "letterSpacing": "0.05em",
+              "fontWeight": "600"
+            }
+          ],
+          "code-md": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-lg": [
+            "20px",
+            {
+              "lineHeight": "26px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "display": [
+            "28px",
+            {
+              "lineHeight": "34px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-md": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-md": [
+            "16px",
+            {
+              "lineHeight": "22px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "code-sm": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "fontWeight": "400"
+            }
+          ]
+        }
+      }
+    }
+  }</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none"><div class="flex flex-col"><div class="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span class="material-symbols-outlined text-primary text-[20px]">security</span><div class="flex items-baseline gap-space-2xs"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span class="font-code-sm text-code-sm text-outline">/</span><span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div class="px-space-base py-space-xs bg-surface-container-low"><div class="flex items-center justify-between text-outline"><span class="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span class="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav class="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" data-path="overview" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span class="font-body-md text-body-md">Overview</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="analyze-pcap" href="#"><span class="material-symbols-outlined text-[18px]">file_open</span><span class="font-body-md text-body-md">Analyze PCAP</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="live-analysis" href="#"><span class="material-symbols-outlined text-[18px]">pulse_alert</span><span class="font-body-md text-body-md">Live Analysis</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="vpn-configurations" href="#"><span class="material-symbols-outlined text-[18px]">settings_ethernet</span><span class="font-body-md text-body-md">VPN Configurations</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="traffic-intelligence" href="#"><span class="material-symbols-outlined text-[18px]">insights</span><span class="font-body-md text-body-md">Traffic Intelligence</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="findings" href="#"><span class="material-symbols-outlined text-[18px]">policy</span><span class="font-body-md text-body-md">Findings</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span class="font-body-md text-body-md">Reports</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="dataset-testbed" href="#"><span class="material-symbols-outlined text-[18px]">dataset</span><span class="font-body-md text-body-md">Dataset / Testbed</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-space-sm bg-surface-container-lowest"><div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div class="flex items-center justify-between font-label-sm text-label-sm"><span class="text-outline uppercase">Pipeline</span><span class="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div class="w-full bg-surface-container-highest h-1 rounded"><div class="bg-primary-container h-1 rounded w-3/4"></div></div><div class="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span class="truncate">DPDK Core 0-3</span><span class="text-on-surface">0.02ms</span></div></div></div></aside><div class="pl-sidebar-expanded"><header class="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span class="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span class="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4 ACTIVE</span></div><div class="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span class="font-label-sm text-label-sm text-outline uppercase">Profile</span><span class="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div class="flex items-center gap-space-md"><div class="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span class="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span class="text-outline-variant">|</span><span class="text-outline">Buffer:</span><span class="text-tertiary">98.4% Free</span></div><button class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">search</span><span class="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd class="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div class="flex items-center gap-space-xs"><button class="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span class="material-symbols-outlined text-[18px]">download</span></button><button class="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span class="material-symbols-outlined text-[18px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div class="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-header-height w-full bg-background min-h-screen"><div class="flex flex-col w-full">
+<!-- Subtle Ambient Glow & Context Grid -->
+<div class="relative w-full px-space-base py-space-md flex flex-col gap-space-md max-w-[1920px] mx-auto">
+<div class="pointer-events-none absolute top-0 left-1/3 w-[500px] h-[180px] bg-primary/5 rounded-full blur-3xl -z-10"></div>
+<!-- Header Section: Breathable, High Contrast & High Signal -->
+<section class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md pb-space-xs">
+<div class="flex flex-col gap-space-2xs">
+<div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Forensic Records</span>
+<span>/</span>
+<span class="text-on-surface">Execution Logbook</span>
+</div>
+<div class="flex items-baseline gap-space-sm">
+<h1 class="font-display text-display text-on-surface tracking-tight font-semibold">Analysis History</h1>
+<span class="font-code-sm text-code-sm text-outline hidden sm:inline-block">session-scoped ledger</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+          Review previous captures, posture scores, negotiated cryptographic suites, and posture regressions across verified tunnels.
+        </p>
+</div>
+<!-- Quick stats pills: restrained, structured metrics -->
+<div class="flex flex-wrap items-center gap-space-xs self-start lg:self-center">
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">analytics</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider leading-none">Total Runs</span>
+<span class="font-code-md text-code-md text-on-surface font-semibold leading-tight">1,428</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">hub</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider leading-none">Assessed Tunnels</span>
+<span class="font-code-md text-code-md text-on-surface font-semibold leading-tight">24 Active</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">schedule</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider leading-none">Last Replay</span>
+<div class="flex items-center gap-space-2xs">
+<span class="font-code-md text-code-md text-primary font-medium leading-tight">14m ago</span>
+<span class="font-code-sm text-code-sm text-outline-variant">by</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">j.chen</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Controls / Compact Toolbar -->
+<div class="bg-surface-container-low rounded-lg p-space-xs shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-space-xs">
+<!-- Search and Dropdown Filter Pills -->
+<div class="flex flex-wrap items-center gap-space-xs flex-1 min-w-0">
+<!-- Search bar -->
+<div class="relative min-w-[280px] sm:min-w-[320px] flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-space-xs top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
+<input class="w-full h-[30px] pl-7 pr-12 bg-surface text-on-surface font-code-sm text-code-sm placeholder:text-outline/70 rounded focus:outline-none focus:bg-surface-container-high transition-colors" id="filter-input" placeholder="Filter by capture name, tunnel ID, tag..." type="text"/>
+<span class="absolute right-space-xs top-1/2 -translate-y-1/2 font-code-sm text-[10px] text-outline bg-surface-container-highest px-1 py-0.5 rounded pointer-events-none">⌘K</span>
+</div>
+<!-- Filter Pills -->
+<div class="flex flex-wrap items-center gap-space-2xs">
+<!-- Date Filter -->
+<button class="h-[30px] px-space-xs bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded flex items-center gap-space-2xs font-code-sm text-code-sm transition-colors" type="button">
+<span class="text-outline">Date:</span>
+<span class="text-on-surface font-medium">Past 30 Days</span>
+<span class="material-symbols-outlined text-[14px] text-outline">expand_more</span>
+</button>
+<!-- Risk Filter -->
+<button class="h-[30px] px-space-xs bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded flex items-center gap-space-2xs font-code-sm text-code-sm transition-colors" type="button">
+<span class="text-outline">Risk:</span>
+<span class="text-on-surface font-medium">All Risk Levels</span>
+<span class="material-symbols-outlined text-[14px] text-outline">expand_more</span>
+</button>
+<!-- Protocol Filter -->
+<button class="h-[30px] px-space-xs bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded flex items-center gap-space-2xs font-code-sm text-code-sm transition-colors" type="button">
+<span class="text-outline">Proto:</span>
+<span class="text-on-surface font-medium">All Protocols</span>
+<span class="material-symbols-outlined text-[14px] text-outline">expand_more</span>
+</button>
+<!-- Mode Filter -->
+<button class="h-[30px] px-space-xs bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded flex items-center gap-space-2xs font-code-sm text-code-sm transition-colors" type="button">
+<span class="text-outline">Mode:</span>
+<span class="text-on-surface font-medium">All Modes</span>
+<span class="material-symbols-outlined text-[14px] text-outline">expand_more</span>
+</button>
+<!-- Analyst Filter -->
+<button class="h-[30px] px-space-xs bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded flex items-center gap-space-2xs font-code-sm text-code-sm transition-colors" type="button">
+<span class="text-outline">Analyst:</span>
+<span class="text-on-surface font-medium">All</span>
+<span class="material-symbols-outlined text-[14px] text-outline">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Action Toggles -->
+<div class="flex items-center gap-space-xs self-end xl:self-auto shrink-0">
+<button class="h-[30px] px-space-xs text-outline hover:text-primary font-label-md text-label-md transition-colors flex items-center gap-space-2xs" id="reset-filter-btn" type="button">
+<span class="material-symbols-outlined text-[14px]">restart_alt</span>
+<span>Reset Filters</span>
+</button>
+<div class="flex items-center bg-surface-container p-0.5 rounded">
+<button class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-surface text-primary shadow-xs" id="toggle-density-spacious" title="Spacious Grid" type="button">Spacious</button>
+<button class="px-space-xs py-0.5 rounded font-label-sm text-label-sm text-outline hover:text-on-surface" id="toggle-density-compact" title="Compact Rows" type="button">Compact</button>
+</div>
+</div>
+</div>
+<!-- Main Workspace Split-Pane: Responsive Layout containing Data Table & Docked Detail Drawer -->
+<div class="relative flex items-start gap-space-md w-full">
+<!-- Data Table Card Container -->
+<div class="flex-1 min-w-0 bg-surface-container-low rounded-xl shadow-md overflow-hidden flex flex-col">
+<!-- Table Scroll Gutter -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse" id="history-table">
+<thead>
+<tr class="bg-surface-container h-8 text-outline font-label-sm text-label-sm tracking-wider uppercase select-none">
+<th class="w-10 px-space-sm font-semibold">Status</th>
+<th class="px-space-sm font-semibold">Capture File</th>
+<th class="px-space-sm font-semibold">Protocol</th>
+<th class="px-space-sm font-semibold">Mode</th>
+<th class="px-space-sm font-semibold">Posture Score</th>
+<th class="px-space-sm font-semibold">Risk Classification</th>
+<th class="px-space-sm font-semibold">Analyzed</th>
+<th class="px-space-sm text-right font-semibold pr-space-md">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 font-body-md text-body-md text-on-surface" id="table-body">
+<!-- ROW 1: branch-emea-gw04.pcap -->
+<tr class="group h-12 bg-surface hover:bg-surface-container transition-colors cursor-pointer" data-capture="branch-emea-gw04.pcap">
+<td class="px-space-sm">
+<div class="flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-tertiary" title="Completed Audit"></span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-colors">description</span>
+<span class="font-code-md text-code-md text-on-surface font-medium truncate">branch-emea-gw04.pcap</span>
+<span class="font-code-sm text-[10px] bg-surface-container-highest text-outline px-1 rounded uppercase">pcap</span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IKEv2</span>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-outline">Tunnel</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-12 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full w-[61%]"></div>
+</div>
+<span class="font-code-md text-code-md font-semibold text-error">61<span class="text-outline font-normal text-code-sm">/100</span></span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1 h-5 px-2 rounded font-code-sm text-code-sm font-semibold bg-error-container/40 text-error tracking-wide">
+                    HIGH
+                  </span>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface">2 hours ago</span>
+<span class="font-code-sm text-[10px] text-outline">Oct 24, 14:12 · <span class="text-on-surface-variant">j.chen</span></span>
+</div>
+</td>
+<td class="px-space-sm text-right pr-space-md">
+<button class="row-inspect-btn px-space-xs py-1 rounded font-code-sm text-code-sm text-primary hover:text-on-primary hover:bg-primary transition-colors inline-flex items-center gap-1" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- ROW 2: site2site-prod.pcapng -->
+<tr class="group h-12 bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer" data-capture="site2site-prod.pcapng">
+<td class="px-space-sm">
+<div class="flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-tertiary" title="Completed Audit"></span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-colors">description</span>
+<span class="font-code-md text-code-md text-on-surface font-medium truncate">site2site-prod.pcapng</span>
+<span class="font-code-sm text-[10px] bg-surface-container-highest text-outline px-1 rounded uppercase">pcapng</span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IKEv2</span>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-outline">Tunnel</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-12 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full rounded-full w-[94%]"></div>
+</div>
+<span class="font-code-md text-code-md font-semibold text-tertiary">94<span class="text-outline font-normal text-code-sm">/100</span></span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1 h-5 px-2 rounded font-code-sm text-code-sm font-semibold bg-tertiary-container/20 text-tertiary tracking-wide">
+                    LOW
+                  </span>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface">5 hours ago</span>
+<span class="font-code-sm text-[10px] text-outline">Oct 24, 11:38 · <span class="text-on-surface-variant">m.vasquez</span></span>
+</div>
+</td>
+<td class="px-space-sm text-right pr-space-md">
+<button class="row-inspect-btn px-space-xs py-1 rounded font-code-sm text-code-sm text-outline-variant hover:text-primary hover:bg-surface-container-highest transition-colors inline-flex items-center gap-1" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- ROW 3: dc-west-vpn.pcap -->
+<tr class="group h-12 bg-surface hover:bg-surface-container transition-colors cursor-pointer" data-capture="dc-west-vpn.pcap">
+<td class="px-space-sm">
+<div class="flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-tertiary" title="Completed Audit"></span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-colors">description</span>
+<span class="font-code-md text-code-md text-on-surface font-medium truncate">dc-west-vpn.pcap</span>
+<span class="font-code-sm text-[10px] bg-surface-container-highest text-outline px-1 rounded uppercase">pcap</span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IKEv1</span>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-outline">Tunnel</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-12 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full w-[67%]"></div>
+</div>
+<span class="font-code-md text-code-md font-semibold text-secondary">67<span class="text-outline font-normal text-code-sm">/100</span></span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1 h-5 px-2 rounded font-code-sm text-code-sm font-semibold bg-secondary-container/40 text-secondary-fixed tracking-wide">
+                    MEDIUM
+                  </span>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface">Yesterday</span>
+<span class="font-code-sm text-[10px] text-outline">Oct 23, 18:04 · <span class="text-on-surface-variant">s.patel</span></span>
+</div>
+</td>
+<td class="px-space-sm text-right pr-space-md">
+<button class="row-inspect-btn px-space-xs py-1 rounded font-code-sm text-code-sm text-outline-variant hover:text-primary hover:bg-surface-container-highest transition-colors inline-flex items-center gap-1" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- ROW 4: weak-vpn-07.pcap (ACTIVE / HIGHLIGHTED ROW) -->
+<tr class="group h-12 bg-surface-container-high text-on-surface transition-colors cursor-pointer relative shadow-inner" data-capture="weak-vpn-07.pcap">
+<td class="px-space-sm relative">
+<!-- Leading active indicator strip -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse" title="Active Focus"></span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-[16px] text-primary">flag</span>
+<span class="font-code-md text-code-md text-primary font-semibold truncate">weak-vpn-07.pcap</span>
+<span class="font-code-sm text-[10px] bg-primary-container text-on-primary-container font-semibold px-1 rounded uppercase">pcap</span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold">IKEv2</span>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant">Tunnel</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-12 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full w-[47%]"></div>
+</div>
+<span class="font-code-md text-code-md font-semibold text-error">47<span class="text-outline font-normal text-code-sm">/100</span></span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1 h-5 px-2 rounded font-code-sm text-code-sm font-semibold bg-error-container text-error tracking-wide">
+                    HIGH
+                  </span>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Oct 22</span>
+<span class="font-code-sm text-[10px] text-outline">Oct 22, 14:02 · <span class="text-primary font-medium">j.chen</span></span>
+</div>
+</td>
+<td class="px-space-sm text-right pr-space-md">
+<button class="row-inspect-btn px-space-xs py-1 rounded font-code-sm text-code-sm text-on-primary bg-primary font-semibold inline-flex items-center gap-1 shadow-xs" type="button">
+<span>Active</span>
+<span class="material-symbols-outlined text-[14px]">read_more</span>
+</button>
+</td>
+</tr>
+<!-- ROW 5: aws-transit-gw01.pcapng -->
+<tr class="group h-12 bg-surface hover:bg-surface-container transition-colors cursor-pointer" data-capture="aws-transit-gw01.pcapng">
+<td class="px-space-sm">
+<div class="flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-tertiary" title="Completed Audit"></span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-colors">description</span>
+<span class="font-code-md text-code-md text-on-surface font-medium truncate">aws-transit-gw01.pcapng</span>
+<span class="font-code-sm text-[10px] bg-surface-container-highest text-outline px-1 rounded uppercase">pcapng</span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IKEv2</span>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-outline">Transport</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-12 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full rounded-full w-[88%]"></div>
+</div>
+<span class="font-code-md text-code-md font-semibold text-tertiary">88<span class="text-outline font-normal text-code-sm">/100</span></span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1 h-5 px-2 rounded font-code-sm text-code-sm font-semibold bg-tertiary-container/20 text-tertiary tracking-wide">
+                    LOW
+                  </span>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface">Oct 21</span>
+<span class="font-code-sm text-[10px] text-outline">Oct 21, 09:15 · <span class="text-on-surface-variant">automations</span></span>
+</div>
+</td>
+<td class="px-space-sm text-right pr-space-md">
+<button class="row-inspect-btn px-space-xs py-1 rounded font-code-sm text-code-sm text-outline-variant hover:text-primary hover:bg-surface-container-highest transition-colors inline-flex items-center gap-1" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- ROW 6: legacy-radius-ipsec.pcap -->
+<tr class="group h-12 bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer" data-capture="legacy-radius-ipsec.pcap">
+<td class="px-space-sm">
+<div class="flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-error" title="Critical Policy Violation"></span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-[16px] text-error">warning</span>
+<span class="font-code-md text-code-md text-on-surface font-medium truncate">legacy-radius-ipsec.pcap</span>
+<span class="font-code-sm text-[10px] bg-surface-container-highest text-outline px-1 rounded uppercase">pcap</span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IKEv1</span>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-outline">Tunnel</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-12 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-error-container h-full rounded-full w-[38%]"></div>
+</div>
+<span class="font-code-md text-code-md font-semibold text-error">38<span class="text-outline font-normal text-code-sm">/100</span></span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1 h-5 px-2 rounded font-code-sm text-code-sm font-semibold bg-error-container text-on-error-container tracking-wide animate-pulse">
+                    CRITICAL
+                  </span>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface">Oct 19</span>
+<span class="font-code-sm text-[10px] text-outline">Oct 19, 22:40 · <span class="text-on-surface-variant">r.kumar</span></span>
+</div>
+</td>
+<td class="px-space-sm text-right pr-space-md">
+<button class="row-inspect-btn px-space-xs py-1 rounded font-code-sm text-code-sm text-outline-variant hover:text-primary hover:bg-surface-container-highest transition-colors inline-flex items-center gap-1" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- ROW 7: edge-gw-04-us-east.pcap -->
+<tr class="group h-12 bg-surface hover:bg-surface-container transition-colors cursor-pointer" data-capture="edge-gw-04-us-east.pcap">
+<td class="px-space-sm">
+<div class="flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-tertiary" title="Completed Audit"></span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-colors">description</span>
+<span class="font-code-md text-code-md text-on-surface font-medium truncate">edge-gw-04-us-east.pcap</span>
+<span class="font-code-sm text-[10px] bg-surface-container-highest text-outline px-1 rounded uppercase">pcap</span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IKEv2</span>
+</td>
+<td class="px-space-sm">
+<span class="font-code-sm text-code-sm text-outline">Tunnel</span>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-12 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full w-[52%]"></div>
+</div>
+<span class="font-code-md text-code-md font-semibold text-error">52<span class="text-outline font-normal text-code-sm">/100</span></span>
+</div>
+</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1 h-5 px-2 rounded font-code-sm text-code-sm font-semibold bg-error-container/40 text-error tracking-wide">
+                    HIGH
+                  </span>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface">Oct 18</span>
+<span class="font-code-sm text-[10px] text-outline">Oct 18, 16:55 · <span class="text-on-surface-variant">j.chen</span></span>
+</div>
+</td>
+<td class="px-space-sm text-right pr-space-md">
+<button class="row-inspect-btn px-space-xs py-1 rounded font-code-sm text-code-sm text-outline-variant hover:text-primary hover:bg-surface-container-highest transition-colors inline-flex items-center gap-1" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Table Footer -->
+<div class="bg-surface-container h-12 px-space-base flex flex-col sm:flex-row items-center justify-between gap-space-xs select-none">
+<div class="flex items-center gap-space-md">
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+              Showing <span class="font-semibold text-on-surface font-code-sm">1–7</span> of <span class="font-semibold text-on-surface font-code-sm">1,428</span> captures
+            </span>
+<div class="flex items-center gap-space-2xs">
+<span class="font-label-sm text-label-sm text-outline uppercase">View:</span>
+<button class="font-code-sm text-code-sm text-primary font-semibold bg-surface-container-high px-1.5 py-0.5 rounded" type="button">25 per page</button>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-xs py-1 rounded font-code-sm text-code-sm text-outline-variant bg-surface-container-low cursor-not-allowed flex items-center gap-1" disabled="" type="button">
+<span class="material-symbols-outlined text-[14px]">chevron_left</span>
+<span>Previous</span>
+</button>
+<div class="flex items-center gap-1">
+<span class="w-6 h-6 rounded bg-primary-container text-on-primary-container font-code-sm text-code-sm font-semibold flex items-center justify-center">1</span>
+<button class="w-6 h-6 rounded text-on-surface-variant hover:bg-surface-container-highest font-code-sm text-code-sm flex items-center justify-center" type="button">2</button>
+<button class="w-6 h-6 rounded text-on-surface-variant hover:bg-surface-container-highest font-code-sm text-code-sm flex items-center justify-center" type="button">3</button>
+<span class="text-outline font-code-sm px-1">…</span>
+<button class="w-6 h-6 rounded text-on-surface-variant hover:bg-surface-container-highest font-code-sm text-code-sm flex items-center justify-center" type="button">58</button>
+</div>
+<button class="px-space-xs py-1 rounded font-code-sm text-code-sm text-on-surface hover:text-primary hover:bg-surface-container-highest flex items-center gap-1 transition-colors" type="button">
+<span>Next</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right-Side Capture Detail Drawer (Docked, Open & Fully Populated for Selected Analysis) -->
+<aside class="w-full xl:w-inspector-width bg-surface-container-low rounded-xl shadow-xl flex flex-col shrink-0 overflow-hidden self-start sticky top-header-height" id="detail-drawer">
+<!-- Drawer Top Bar -->
+<div class="bg-surface-container px-space-base py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-2xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate" id="drawer-capture-name">weak-vpn-07.pcap</span>
+<span class="font-code-sm text-[9px] bg-primary-container text-on-primary-container px-1 rounded uppercase">Selected</span>
+</div>
+<span class="font-code-sm text-[10px] text-outline">Oct 22, 2025 · 14:02:19 UTC</span>
+</div>
+</div>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-highest transition-colors" id="drawer-close-btn" title="Close Drawer" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Drawer Content Body -->
+<div class="p-space-base flex flex-col gap-space-md max-h-[calc(100vh-14rem)] overflow-y-auto">
+<!-- Score & Risk Banner -->
+<div class="bg-surface-container rounded-lg p-space-sm flex flex-col gap-space-xs shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-baseline gap-space-2xs">
+<span class="font-display text-[26px] font-semibold text-error tracking-tight">47</span>
+<span class="font-code-sm text-code-sm text-outline">/ 100</span>
+<span class="font-label-sm text-label-sm text-outline-variant ml-1 uppercase">Posture Score</span>
+</div>
+<span class="inline-flex items-center gap-1 h-5 px-2 rounded font-code-sm text-code-sm font-semibold bg-error-container text-error tracking-wide">
+                HIGH RISK
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              Non-compliant cryptographic suite &amp; weak ephemeral key exchange detected. RFC 8247 minimum security thresholds failed.
+            </p>
+</div>
+<!-- Protocol & Association Architecture -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<span>Negotiated Security Context</span>
+<span class="font-code-sm text-[10px] text-tertiary">CONFIRMED</span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs font-code-sm text-code-sm">
+<div class="bg-surface-container p-space-xs rounded flex flex-col">
+<span class="text-outline text-[10px] uppercase font-label-sm">Protocol / Mode</span>
+<span class="text-on-surface font-medium">IKEv2 · Tunnel</span>
+</div>
+<div class="bg-surface-container p-space-xs rounded flex flex-col">
+<span class="text-outline text-[10px] uppercase font-label-sm">Anti-Replay Window</span>
+<span class="text-on-surface font-medium">64 Packets (Enabled)</span>
+</div>
+<div class="bg-surface-container p-space-xs rounded flex flex-col">
+<span class="text-outline text-[10px] uppercase font-label-sm">Initiator Gateway</span>
+<span class="text-on-surface font-medium">192.0.2.14</span>
+</div>
+<div class="bg-surface-container p-space-xs rounded flex flex-col">
+<span class="text-outline text-[10px] uppercase font-label-sm">Responder Gateway</span>
+<span class="text-on-surface font-medium">198.51.100.8</span>
+</div>
+</div>
+</div>
+<!-- Top Curated Findings -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<span>Priority Cryptographic Findings</span>
+<span class="font-code-sm text-[10px] text-error font-medium">3 Detected</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<!-- Finding P0 -->
+<div class="p-space-xs rounded bg-surface-container flex items-start gap-space-xs">
+<span class="font-code-sm text-[10px] font-semibold text-error bg-error-container/40 px-1 py-0.5 rounded shrink-0">P0</span>
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Weak Diffie-Hellman Group 2 (MODP-1024)</span>
+<span class="font-code-sm text-[11px] text-on-surface-variant mt-0.5">Negotiated in IKE_SA_INIT. RFC 8247 deprecates bit length &lt; 2048.</span>
+</div>
+</div>
+<!-- Finding P1 -->
+<div class="p-space-xs rounded bg-surface-container flex items-start gap-space-xs">
+<span class="font-code-sm text-[10px] font-semibold text-secondary-fixed bg-secondary-container/40 px-1 py-0.5 rounded shrink-0">P1</span>
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface font-medium">PFS Disabled on CHILD_SA</span>
+<span class="font-code-sm text-[11px] text-on-surface-variant mt-0.5">Perfect Forward Secrecy omitted during phase 2 rekeying sequence.</span>
+</div>
+</div>
+<!-- Finding P2 -->
+<div class="p-space-xs rounded bg-surface-container flex items-start gap-space-xs">
+<span class="font-code-sm text-[10px] font-semibold text-secondary-fixed bg-secondary-container/40 px-1 py-0.5 rounded shrink-0">P2</span>
+<div class="flex flex-col leading-tight">
+<span class="font-body-sm text-body-sm text-on-surface font-medium">3DES-CBC Cipher Offered</span>
+<span class="font-code-sm text-[11px] text-on-surface-variant mt-0.5">Legacy sweet32 vulnerable transform proposed in SA payload #3.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Traffic & Ingestion Summary Metric Strip -->
+<div class="bg-surface-container rounded-lg p-space-sm flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<span>Capture Ingestion Telemetry</span>
+<span class="material-symbols-outlined text-[14px] text-tertiary">memory</span>
+</div>
+<div class="flex flex-col gap-1 font-code-sm text-code-sm text-on-surface-variant">
+<div class="flex justify-between">
+<span class="text-outline">Packet Volume:</span>
+<span class="text-on-surface font-medium">1,482,091 packets</span>
+</div>
+<div class="flex justify-between">
+<span class="text-outline">Wire Data Rate:</span>
+<span class="text-on-surface font-medium">1.48 Gbps</span>
+</div>
+<div class="flex justify-between">
+<span class="text-outline">Processing Duration:</span>
+<span class="text-on-surface font-medium">18.4s</span>
+</div>
+<div class="flex justify-between">
+<span class="text-outline">Ingestion Pipeline:</span>
+<span class="text-primary font-medium">DPDK Ring 0 (Worker 2)</span>
+</div>
+</div>
+</div>
+<!-- Quick Drawer Actions & Clear Hierarchy -->
+<div class="flex flex-col gap-space-xs pt-space-xs">
+<!-- Primary Action -->
+<button class="w-full h-8 px-space-base bg-primary-container hover:bg-primary text-on-primary-container font-headline-sm text-headline-sm rounded flex items-center justify-center gap-space-xs transition-colors shadow-sm" type="button">
+<span>Open Full Analysis</span>
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+<div class="grid grid-cols-2 gap-space-xs">
+<!-- Secondary Action -->
+<button class="h-8 px-space-sm bg-surface-container hover:bg-surface-container-high text-on-surface font-body-sm text-body-sm font-medium rounded flex items-center justify-center gap-space-2xs transition-colors" type="button">
+<span class="material-symbols-outlined text-[15px] text-outline">picture_as_pdf</span>
+<span>Generate Report</span>
+</button>
+<!-- Tertiary Action -->
+<button class="h-8 px-space-sm bg-surface-container hover:bg-surface-container-high text-on-surface font-body-sm text-body-sm font-medium rounded flex items-center justify-center gap-space-2xs transition-colors" type="button">
+<span class="material-symbols-outlined text-[15px] text-outline">compare_arrows</span>
+<span>Compare...</span>
+</button>
+</div>
+<!-- Contextual raw evidence drilldown link -->
+<div class="pt-space-xs flex justify-center">
+<a class="font-code-sm text-code-sm text-primary hover:text-primary-fixed inline-flex items-center gap-1 transition-colors" href="#">
+<span class="material-symbols-outlined text-[14px]">dataset</span>
+<span>View Raw Evidence / PCAP Trace</span>
+</a>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+<!-- Interactive behavior: row selection, drawer toggle, density toggle, search mock -->
+<script>
+    (function() {
+      const rows = document.querySelectorAll('#table-body tr');
+      const drawer = document.getElementById('detail-drawer');
+      const drawerCloseBtn = document.getElementById('drawer-close-btn');
+      const drawerCaptureName = document.getElementById('drawer-capture-name');
+      const filterInput = document.getElementById('filter-input');
+      const resetBtn = document.getElementById('reset-filter-btn');
+      const btnSpacious = document.getElementById('toggle-density-spacious');
+      const btnCompact = document.getElementById('toggle-density-compact');
+
+      // Row Selection Updates Drawer
+      rows.forEach(row => {
+        row.addEventListener('click', function(e) {
+          rows.forEach(r => {
+            r.classList.remove('bg-surface-container-high', 'shadow-inner');
+            const ind = r.querySelector('.absolute.left-0.top-0');
+            if (ind) ind.remove();
+            const dot = r.querySelector('.bg-primary.animate-pulse');
+            if (dot) dot.className = 'w-2 h-2 rounded-full bg-tertiary';
+          });
+
+          this.classList.add('bg-surface-container-high', 'shadow-inner');
+          
+          // Insert active leading indicator
+          const firstCell = this.cells[0];
+          if (!firstCell.querySelector('.bg-primary')) {
+            const ind = document.createElement('div');
+            ind.className = 'absolute left-0 top-0 bottom-0 w-1 bg-primary';
+            firstCell.prepend(ind);
+          }
+
+          const capName = this.getAttribute('data-capture') || 'capture.pcap';
+          if (drawerCaptureName) {
+            drawerCaptureName.textContent = capName;
+          }
+
+          if (drawer) {
+            drawer.classList.remove('hidden');
+          }
+        });
+      });
+
+      // Close drawer
+      if (drawerCloseBtn && drawer) {
+        drawerCloseBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          drawer.classList.add('hidden');
+        });
+      }
+
+      // Density Toggles
+      if (btnCompact && btnSpacious) {
+        btnCompact.addEventListener('click', function() {
+          btnCompact.className = 'px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-surface text-primary shadow-xs';
+          btnSpacious.className = 'px-space-xs py-0.5 rounded font-label-sm text-label-sm text-outline hover:text-on-surface';
+          rows.forEach(r => {
+            r.classList.remove('h-12');
+            r.classList.add('h-9');
+          });
+        });
+
+        btnSpacious.addEventListener('click', function() {
+          btnSpacious.className = 'px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-surface text-primary shadow-xs';
+          btnCompact.className = 'px-space-xs py-0.5 rounded font-label-sm text-label-sm text-outline hover:text-on-surface';
+          rows.forEach(r => {
+            r.classList.remove('h-9');
+            r.classList.add('h-12');
+          });
+        });
+      }
+
+      // Filter input dynamic search
+      if (filterInput) {
+        filterInput.addEventListener('input', function() {
+          const val = this.value.toLowerCase().trim();
+          rows.forEach(r => {
+            const txt = r.textContent.toLowerCase();
+            r.style.display = txt.includes(val) ? '' : 'none';
+          });
+        });
+      }
+
+      // Reset filters
+      if (resetBtn && filterInput) {
+        resetBtn.addEventListener('click', function() {
+          filterInput.value = '';
+          rows.forEach(r => r.style.display = '');
+          if (drawer) drawer.classList.remove('hidden');
+        });
+      }
+
+      // Keyboard shortcut ⌘K focus
+      window.addEventListener('keydown', function(e) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          if (filterInput) filterInput.focus();
+        }
+      });
+    })();
+  </script>
+</div></main></div></body></html>

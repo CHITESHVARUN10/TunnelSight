@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-container":"#424750","on-surface-variant":"#bbcac5","tertiary-fixed-dim":"#4edea3","inverse-primary":"#006b5f","primary":"#59dbc7","on-secondary-fixed":"#171c24","outline-variant":"#3c4946","background":"#111317","on-secondary-container":"#b1b5c0","tertiary":"#4edea3","on-primary":"#003731","on-secondary-fixed-variant":"#424750","on-error":"#690005","on-tertiary-fixed":"#002113","on-error-container":"#ffdad6","secondary":"#c2c6d1","inverse-surface":"#e2e2e6","error":"#ffb4ab","on-primary-fixed-variant":"#005047","surface-tint":"#59dbc7","surface-container-highest":"#333538","on-surface":"#e2e2e6","surface-container":"#1e2023","on-primary-container":"#00352e","on-secondary":"#2c3139","surface-container-lowest":"#0c0e11","error-container":"#93000a","on-background":"#e2e2e6","inverse-on-surface":"#2f3034","primary-container":"#00a896","on-tertiary-fixed-variant":"#005236","primary-fixed-dim":"#59dbc7","secondary-fixed":"#dee2ee","surface-dim":"#111317","surface-bright":"#37393d","secondary-fixed-dim":"#c2c6d1","surface-container-low":"#1a1c1f","primary-fixed":"#79f7e3","on-tertiary":"#003824","surface":"#111317","on-tertiary-container":"#003522","tertiary-container":"#00aa76","outline":"#869490","tertiary-fixed":"#6ffbbe","on-primary-fixed":"#00201c","surface-variant":"#333538","surface-container-high":"#282a2d"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"sidebar-collapsed":"3.5rem","space-lg":"1.25rem","space-md":"0.75rem","space-2xl":"2rem","space-xs":"0.25rem","space-base":"1rem","inspector-width":"26rem","space-sm":"0.5rem","space-xl":"1.5rem","header-height":"2.75rem","gutter-table":"0.5rem","sidebar-expanded":"16rem","panel-padding":"0.75rem","space-2xs":"0.125rem"},"fontFamily":{"headline-lg":["Geist"],"display":["Geist"],"label-sm":["Inter"],"code-md":["monospace"],"label-md":["Inter"],"headline-sm":["Geist"],"body-md":["Inter"],"body-lg":["Inter"],"headline-md":["Geist"],"code-sm":["monospace"],"body-sm":["Inter"]},"fontSize":{"headline-lg":["20px",{"lineHeight":"26px","letterSpacing":"-0.015em","fontWeight":"600"}],"display":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"600"}],"label-sm":["10px",{"lineHeight":"12px","letterSpacing":"0.05em","fontWeight":"600"}],"code-md":["12px",{"lineHeight":"16px","fontWeight":"500"}],"label-md":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"500"}],"headline-sm":["14px",{"lineHeight":"20px","letterSpacing":"-0.005em","fontWeight":"600"}],"body-md":["13px",{"lineHeight":"18px","fontWeight":"400"}],"body-lg":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-md":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}],"code-sm":["11px",{"lineHeight":"14px","fontWeight":"400"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col justify-between selection:bg-primary selection:text-on-primary"><header class="w-full h-header-height flex items-center justify-between px-space-xl bg-surface-container-low/60 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50"><div class="flex items-center gap-space-sm"><div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div><span class="font-headline-sm text-headline-sm text-on-surface tracking-wider uppercase font-semibold">TunnelSight</span><span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container px-space-xs py-space-2xs rounded">v2.4.0-SEC</span></div><div class="flex items-center gap-space-base"><span class="font-code-sm text-code-sm text-on-surface-variant flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[14px]">lock</span>FIPS 140-3 COMPLIANT</span></div></header><main class="w-full flex-1 flex flex-col items-center justify-center p-space-base bg-surface relative"><div class="flex flex-col w-full items-center justify-center py-space-xl">
+<div class="w-full max-w-5xl bg-surface-container-lowest rounded shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+<!-- LEFT PANEL: Technical Identity & Operational Telemetry -->
+<div class="lg:col-span-5 bg-surface-container-low p-space-2xl flex flex-col justify-between relative overflow-hidden">
+<!-- Faint Architectural Coordinate Grid Overlay -->
+<svg class="absolute inset-0 w-full h-full opacity-10 pointer-events-none" height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="28" id="sec-grid" patternunits="userSpaceOnUse" width="28">
+<path class="text-on-surface-variant" d="M 28 0 L 0 0 0 28" fill="none" stroke="currentColor" stroke-width="0.75"></path>
+</pattern>
+</defs>
+<rect fill="url(#sec-grid)" height="100%" width="100%"></rect>
+</svg>
+<!-- Top Branding Block -->
+<div class="relative z-10 flex flex-col gap-space-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 bg-primary-container text-on-primary-container flex items-center justify-center rounded">
+<span class="font-code-md text-code-md font-bold tracking-tighter">>_</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface uppercase tracking-wider">TunnelSight</span>
+<span class="font-label-sm text-label-sm text-primary tracking-widest uppercase">IPsec Security Intelligence</span>
+</div>
+</div>
+<div class="space-y-space-xs mt-space-md">
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Evidence-driven analysis for authorized IPsec deployments. High-throughput protocol dissection, state integrity validation, and continuous cryptographic compliance auditing.
+          </p>
+</div>
+<!-- Telemetry / Node Metadata Spec Sheet -->
+<div class="bg-surface-container p-space-md rounded space-y-space-xs font-code-sm text-code-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span class="text-secondary">KERNEL SUB</span>
+<span class="text-on-surface font-medium">4.18.0-FIPS // ZERO-COPY</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span class="text-secondary">INGRESS RING</span>
+<span class="text-primary font-medium">DPDK RX POOL · ACTIVE</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span class="text-secondary">ENCRYPT SUITE</span>
+<span class="text-on-surface font-medium">AES-256-GCM / SHA-384</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span class="text-secondary">NODE REF</span>
+<span class="text-on-surface font-medium">sec-gw02.us-east.tier3</span>
+</div>
+</div>
+</div>
+<!-- Bottom System Status & Compliance Attestation -->
+<div class="relative z-10 mt-space-2xl pt-space-base space-y-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-space-2xs bg-surface-container text-tertiary font-code-sm text-code-sm rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+            ENGINE: ONLINE (DPDK 22.11)
+          </span>
+<span class="inline-flex items-center px-space-xs py-space-2xs bg-surface-container text-on-surface-variant font-code-sm text-code-sm rounded">
+            LATENCY: 0.24ms
+          </span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">
+          FIPS 140-3 & CNSA 1.0 COMPLIANT ARCHITECTURE
+        </p>
+</div>
+</div>
+<!-- RIGHT PANEL: Authentication Form -->
+<div class="lg:col-span-7 bg-surface-container p-space-2xl flex flex-col justify-center">
+<div class="w-full max-w-md mx-auto space-y-space-lg">
+<!-- Header -->
+<div class="space-y-space-2xs">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Sign in</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Enter your credentials to access the analytical workbench.
+          </p>
+</div>
+<!-- Form Elements -->
+<form class="space-y-space-md" onsubmit="event.preventDefault();">
+<!-- Email Field -->
+<div class="space-y-space-xs">
+<label class="block font-label-md text-label-md text-on-surface uppercase tracking-wider" for="work-email">
+              Work Email
+            </label>
+<div class="relative">
+<input autocomplete="username" class="w-full h-8 px-space-sm bg-surface-container-lowest text-on-surface font-code-sm text-code-sm rounded placeholder:text-on-secondary-container focus:outline-none focus:bg-surface-container-high transition-colors" id="work-email" name="email" placeholder="analyst@enterprise.internal" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-space-xs">
+<label class="block font-label-md text-label-md text-on-surface uppercase tracking-wider" for="auth-password">
+              Password
+            </label>
+<div class="relative flex items-center">
+<input autocomplete="current-password" class="w-full h-8 px-space-sm pr-space-xl bg-surface-container-lowest text-on-surface font-code-sm text-code-sm rounded placeholder:text-on-secondary-container focus:outline-none focus:bg-surface-container-high transition-colors" id="auth-password" name="password" placeholder="••••••••••••••••" required="" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute right-space-xs p-space-2xs text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none" id="toggle-password-btn" type="button">
+<span class="material-symbols-outlined text-[16px]" id="toggle-icon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Options Row -->
+<div class="flex items-center justify-between font-label-md text-label-md pt-space-2xs">
+<label class="flex items-center gap-space-xs cursor-pointer select-none text-on-surface-variant hover:text-on-surface transition-colors">
+<input class="w-3.5 h-3.5 bg-surface-container-lowest text-primary rounded focus:ring-0 focus:outline-none accent-[#00a896]" type="checkbox"/>
+<span>Keep session active for 12h</span>
+</label>
+<a class="text-primary hover:text-primary-fixed transition-colors" href="#">Forgot password?</a>
+</div>
+<!-- Primary Submit -->
+<button class="w-full h-8 bg-primary-container hover:bg-[#14b8a6] text-on-primary font-headline-sm text-headline-sm font-semibold rounded flex items-center justify-center gap-space-xs transition-colors mt-space-sm shadow-sm" type="submit">
+<span>Sign In to Terminal</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</form>
+<!-- Divider -->
+<div class="relative flex items-center justify-center py-space-xs">
+<div class="w-full h-[1px] bg-secondary-container"></div>
+<span class="absolute bg-surface-container px-space-sm font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
+            Enterprise Access
+          </span>
+</div>
+<!-- Enterprise SSO Button -->
+<div>
+<button class="w-full h-8 bg-surface-container-low hover:bg-surface-container-highest text-on-surface font-label-md text-label-md font-medium rounded flex items-center justify-center gap-space-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-primary text-[16px]">domain</span>
+<span>Authenticate via Enterprise IdP (SAML 2.0 / OIDC)</span>
+</button>
+</div>
+<!-- Security Guarantee & Request Access Footer -->
+<div class="pt-space-sm space-y-space-sm">
+<div class="flex items-center justify-center gap-space-xs text-on-surface-variant font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[14px] text-tertiary">verified_user</span>
+<span>TLS 1.3 · Mutual Auth & FIDO2 / WebAuthn supported</span>
+</div>
+<div class="text-center font-body-sm text-body-sm text-on-surface-variant">
+<span>Unauthorized deployment?</span>
+<a class="text-primary hover:text-primary-fixed font-medium ml-space-xs transition-colors" href="#">Request access token</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const toggleBtn = document.getElementById('toggle-password-btn');
+    const pwdInput = document.getElementById('auth-password');
+    const icon = document.getElementById('toggle-icon');
+
+    if (toggleBtn && pwdInput && icon) {
+      toggleBtn.addEventListener('click', function() {
+        const isPassword = pwdInput.getAttribute('type') === 'password';
+        pwdInput.setAttribute('type', isPassword ? 'text' : 'password');
+        icon.textContent = isPassword ? 'visibility_off' : 'visibility';
+      });
+    }
+  })();
+</script></main><footer class="w-full py-space-md px-space-xl flex flex-col sm:flex-row items-center justify-between gap-space-sm text-on-surface-variant bg-surface-container-lowest/40 font-code-sm text-code-sm"><div class="flex items-center gap-space-md"><span class="flex items-center gap-space-xs"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>CORE TELEMETRY READY</span><span>© 2024 TUNNELSIGHT INC.</span></div><div class="flex items-center gap-space-base"><a class="hover:text-on-surface transition-colors" href="#">SECURITY ADVISORY</a><a class="hover:text-on-surface transition-colors" href="#">HARDWARE TOKENS</a><a class="hover:text-on-surface transition-colors" href="#">PROTOCOL DOCS</a></div></footer></body></html>

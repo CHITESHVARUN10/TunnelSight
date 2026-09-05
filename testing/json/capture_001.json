@@ -1,0 +1,12 @@
+{
+  "capture_id": "TEST-001",
+  "ike_version": "IKEv2",
+  "ipsec_protocol": "ESP",
+  "mode": "tunnel",
+  "cipher": "AES-256-GCM",
+  "dh_group": 19,
+  "pfs": true,
+  "replay_protection": true,
+  "ip_version": "IPv4",
+  "traffic_type": "video"
+}

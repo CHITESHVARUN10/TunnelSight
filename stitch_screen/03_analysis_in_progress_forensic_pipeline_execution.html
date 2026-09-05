@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-primary-fixed": "#00201c",
+          "surface-container-lowest": "#0c0e11",
+          "tertiary-container": "#00aa76",
+          "secondary-fixed": "#dee2ee",
+          "on-tertiary-fixed": "#002113",
+          "surface": "#111317",
+          "error-container": "#93000a",
+          "inverse-primary": "#006b5f",
+          "surface-container": "#1e2023",
+          "surface-container-high": "#282a2d",
+          "primary": "#59dbc7",
+          "on-secondary-fixed": "#171c24",
+          "surface-dim": "#111317",
+          "on-secondary": "#2c3139",
+          "surface-tint": "#59dbc7",
+          "error": "#ffb4ab",
+          "surface-container-highest": "#333538",
+          "inverse-surface": "#e2e2e6",
+          "on-tertiary-fixed-variant": "#005236",
+          "primary-container": "#00a896",
+          "tertiary": "#4edea3",
+          "on-tertiary": "#003824",
+          "on-error": "#690005",
+          "on-secondary-container": "#b1b5c0",
+          "on-surface": "#e2e2e6",
+          "background": "#111317",
+          "on-primary": "#003731",
+          "on-surface-variant": "#bbcac5",
+          "outline": "#869490",
+          "primary-fixed": "#79f7e3",
+          "on-primary-fixed-variant": "#005047",
+          "surface-bright": "#37393d",
+          "tertiary-fixed-dim": "#4edea3",
+          "surface-variant": "#333538",
+          "secondary": "#c2c6d1",
+          "surface-container-low": "#1a1c1f",
+          "primary-fixed-dim": "#59dbc7",
+          "on-background": "#e2e2e6",
+          "on-error-container": "#ffdad6",
+          "outline-variant": "#3c4946",
+          "on-primary-container": "#00352e",
+          "secondary-fixed-dim": "#c2c6d1",
+          "secondary-container": "#424750",
+          "tertiary-fixed": "#6ffbbe",
+          "inverse-on-surface": "#2f3034",
+          "on-tertiary-container": "#003522",
+          "on-secondary-fixed-variant": "#424750"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "header-height": "2.75rem",
+          "space-xs": "0.25rem",
+          "space-md": "0.75rem",
+          "inspector-width": "26rem",
+          "sidebar-expanded": "16rem",
+          "gutter-table": "0.5rem",
+          "sidebar-collapsed": "3.5rem",
+          "space-2xl": "2rem",
+          "space-xl": "1.5rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1.25rem",
+          "space-2xs": "0.125rem",
+          "space-base": "1rem",
+          "panel-padding": "0.75rem"
+        },
+        "fontFamily": {
+          "body-md": [
+            "Inter"
+          ],
+          "headline-sm": [
+            "Geist"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-sm": [
+            "Inter"
+          ],
+          "code-md": [
+            "monospace"
+          ],
+          "headline-lg": [
+            "Geist"
+          ],
+          "display": [
+            "Geist"
+          ],
+          "label-md": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Geist"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "code-sm": [
+            "monospace"
+          ]
+        },
+        "fontSize": {
+          "body-md": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-sm": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "letterSpacing": "-0.005em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "10px",
+            {
+              "lineHeight": "12px",
+              "letterSpacing": "0.05em",
+              "fontWeight": "600"
+            }
+          ],
+          "code-md": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-lg": [
+            "20px",
+            {
+              "lineHeight": "26px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "display": [
+            "28px",
+            {
+              "lineHeight": "34px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-md": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-md": [
+            "16px",
+            {
+              "lineHeight": "22px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "code-sm": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "fontWeight": "400"
+            }
+          ]
+        }
+      }
+    }
+  }</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none"><div class="flex flex-col"><div class="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span class="material-symbols-outlined text-primary text-[20px]">security</span><div class="flex items-baseline gap-space-2xs"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span class="font-code-sm text-code-sm text-outline">/</span><span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div class="px-space-base py-space-xs bg-surface-container-low"><div class="flex items-center justify-between text-outline"><span class="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span class="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav class="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" data-path="overview" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span class="font-body-md text-body-md">Overview</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="analyze-pcap" href="#"><span class="material-symbols-outlined text-[18px]">file_open</span><span class="font-body-md text-body-md">Analyze PCAP</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="live-analysis" href="#"><span class="material-symbols-outlined text-[18px]">pulse_alert</span><span class="font-body-md text-body-md">Live Analysis</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="vpn-configurations" href="#"><span class="material-symbols-outlined text-[18px]">settings_ethernet</span><span class="font-body-md text-body-md">VPN Configurations</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="traffic-intelligence" href="#"><span class="material-symbols-outlined text-[18px]">insights</span><span class="font-body-md text-body-md">Traffic Intelligence</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="findings" href="#"><span class="material-symbols-outlined text-[18px]">policy</span><span class="font-body-md text-body-md">Findings</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span class="font-body-md text-body-md">Reports</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="dataset-testbed" href="#"><span class="material-symbols-outlined text-[18px]">dataset</span><span class="font-body-md text-body-md">Dataset / Testbed</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-space-sm bg-surface-container-lowest"><div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div class="flex items-center justify-between font-label-sm text-label-sm"><span class="text-outline uppercase">Pipeline</span><span class="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div class="w-full bg-surface-container-highest h-1 rounded"><div class="bg-primary-container h-1 rounded w-3/4"></div></div><div class="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span class="truncate">DPDK Core 0-3</span><span class="text-on-surface">0.02ms</span></div></div></div></aside><div class="pl-sidebar-expanded"><header class="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span class="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span class="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4 ACTIVE</span></div><div class="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span class="font-label-sm text-label-sm text-outline uppercase">Profile</span><span class="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div class="flex items-center gap-space-md"><div class="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span class="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span class="text-outline-variant">|</span><span class="text-outline">Buffer:</span><span class="text-tertiary">98.4% Free</span></div><button class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">search</span><span class="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd class="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div class="flex items-center gap-space-xs"><button class="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span class="material-symbols-outlined text-[18px]">download</span></button><button class="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span class="material-symbols-outlined text-[18px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div class="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-header-height w-full bg-background min-h-screen"><div class="flex flex-col w-full max-w-7xl mx-auto px-space-base py-space-md gap-space-lg select-none">
+<!-- Subheader Operational Control Strip & File Identity -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md border-b border-outline-variant/30 pb-space-md">
+<div class="flex flex-wrap items-center gap-space-md min-w-0">
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded">
+<span class="material-symbols-outlined text-primary text-[16px]">folder_zip</span>
+<span class="font-code-md text-code-md text-on-surface font-semibold tracking-tight">core-dc-chicago-gw1.pcap</span>
+</div>
+<div class="flex items-center gap-space-sm font-code-sm text-code-sm text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="text-outline">VOL:</span> 1.42 GB</span>
+<span class="text-outline-variant">/</span>
+<span class="flex items-center gap-1"><span class="text-outline">INGEST:</span> 14:18:22 UTC</span>
+<span class="text-outline-variant">/</span>
+<span class="flex items-center gap-1"><span class="text-outline">SESSION:</span> #8820-A</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-high px-space-xs py-space-2xs rounded text-label-sm font-label-sm uppercase tracking-wider text-tertiary">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+PIPELINE ACTIVE
+</div>
+</div>
+<!-- Primary Controls -->
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<button class="flex items-center gap-space-xs bg-surface-container px-space-md py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors text-body-sm font-body-sm" id="pauseBtn" onclick="togglePause()">
+<span class="material-symbols-outlined text-[16px]" id="pauseIcon">pause</span>
+<span id="pauseLabel">Pause</span>
+</button>
+<button class="flex items-center gap-space-xs bg-error-container/20 px-space-md py-space-xs rounded text-error hover:bg-error-container/40 transition-colors text-body-sm font-body-sm" onclick="cancelAnalysis()">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+<span>Cancel</span>
+</button>
+<div class="h-4 w-px bg-surface-container-highest mx-space-2xs"></div>
+<button class="flex items-center gap-space-xs bg-primary text-on-primary px-space-md py-space-xs rounded font-body-sm font-semibold hover:bg-primary-fixed transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]">stream</span>
+<span>Inspect Partial Results</span>
+</button>
+</div>
+</div>
+<!-- Overall Aggregate Forensic Progress Card -->
+<div class="bg-surface-container-low rounded p-space-base flex flex-col gap-space-sm">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-sm">
+<div class="flex items-baseline gap-space-sm">
+<span class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Forensic Decapsulation &amp; Verification</span>
+<span class="font-code-md text-code-md text-primary font-semibold" id="globalPercentText">69% COMPLETE</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">ETA: <span class="text-on-surface font-medium" id="etaTimer">~13s remaining</span></span>
+</div>
+<div class="flex items-center gap-space-lg font-code-sm text-code-sm">
+<div class="flex items-center gap-space-xs">
+<span class="text-outline uppercase text-label-sm font-label-sm">Throughput:</span>
+<span class="text-tertiary font-semibold" id="rxRate">48,010</span>
+<span class="text-on-surface-variant">pkts/sec</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="text-outline uppercase text-label-sm font-label-sm">Ingested Total:</span>
+<span class="text-on-surface font-semibold">842,109</span>
+<span class="text-on-surface-variant">pkts</span>
+</div>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="w-full bg-surface-container h-1.5 rounded overflow-hidden flex">
+<div class="bg-primary h-full transition-all duration-500 ease-out" id="globalProgressBar" style="width: 69%;"></div>
+<div class="bg-tertiary/40 h-full w-4 animate-pulse"></div>
+</div>
+</div>
+<!-- Multi-Pane Execution & Progressive Telemetry Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg w-full">
+<!-- Left Column: Streamlined 11 Pipeline Stages (7 cols) -->
+<div class="xl:col-span-7 flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-2xs">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Pipeline Topology</span>
+<span class="text-outline-variant font-code-sm text-code-sm">/</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">11 Verification Passes</span>
+</div>
+<div class="flex items-center gap-space-md font-label-sm text-label-sm">
+<span class="flex items-center gap-1 text-tertiary"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> 6 Complete</span>
+<span class="flex items-center gap-1 text-primary"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> 2 Running</span>
+<span class="flex items-center gap-1 text-error"><span class="w-1.5 h-1.5 rounded-full bg-error"></span> 1 Warning</span>
+<span class="flex items-center gap-1 text-outline"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span> 2 Pending</span>
+</div>
+</div>
+<!-- Cleaned Streamlined Stages List -->
+<div class="flex flex-col gap-space-2xs">
+<!-- Stage 01 -->
+<div class="bg-surface-container-low rounded px-space-md py-space-xs flex items-center justify-between gap-space-sm hover:bg-surface-container transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-outline font-semibold w-6">01</span>
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">PCAP Ingestion &amp; Magic Header Verification</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="font-code-sm text-code-sm text-outline hidden sm:inline">112ms</span>
+<span class="bg-tertiary/10 text-tertiary font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider">COMPLETE</span>
+</div>
+</div>
+<!-- Stage 02 -->
+<div class="bg-surface-container-low rounded px-space-md py-space-xs flex items-center justify-between gap-space-sm hover:bg-surface-container transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-outline font-semibold w-6">02</span>
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">DPDK Packet Parsing &amp; Framing</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="font-code-sm text-code-sm text-outline hidden sm:inline">480ms</span>
+<span class="bg-tertiary/10 text-tertiary font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider">COMPLETE</span>
+</div>
+</div>
+<!-- Stage 03 -->
+<div class="bg-surface-container-low rounded px-space-md py-space-xs flex items-center justify-between gap-space-sm hover:bg-surface-container transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-outline font-semibold w-6">03</span>
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">IKE Detection &amp; SA Handshake Extraction</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="font-code-sm text-code-sm text-outline hidden sm:inline">210ms</span>
+<span class="bg-tertiary/10 text-tertiary font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider">COMPLETE</span>
+</div>
+</div>
+<!-- Stage 04 -->
+<div class="bg-surface-container-low rounded px-space-md py-space-xs flex items-center justify-between gap-space-sm hover:bg-surface-container transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-outline font-semibold w-6">04</span>
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">ESP/AH Decapsulation &amp; Integrity Inspection</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="font-code-sm text-code-sm text-outline hidden sm:inline">1.84s</span>
+<span class="bg-tertiary/10 text-tertiary font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider">COMPLETE</span>
+</div>
+</div>
+<!-- Stage 05 -->
+<div class="bg-surface-container-low rounded px-space-md py-space-xs flex items-center justify-between gap-space-sm hover:bg-surface-container transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-outline font-semibold w-6">05</span>
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">IPsec Protocol Normalization</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="font-code-sm text-code-sm text-outline hidden sm:inline">340ms</span>
+<span class="bg-tertiary/10 text-tertiary font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider">COMPLETE</span>
+</div>
+</div>
+<!-- Stage 06: WARNING with single clean summary line and clickable action -->
+<div class="bg-surface-container rounded px-space-md py-space-xs flex flex-col gap-1 hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-error font-semibold w-6">06</span>
+<div class="flex items-center gap-space-xs truncate">
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">Deterministic Security Assessment</span>
+<span class="material-symbols-outlined text-error text-[16px]">warning</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="font-code-sm text-code-sm text-outline hidden sm:inline">590ms</span>
+<span class="bg-error-container/30 text-error font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider">WARNING</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-code-sm font-code-sm pl-8 text-error">
+<span class="truncate">Weak MODP-1024 / DH Group 2 flagged in 3 proposals</span>
+<span class="text-primary hover:text-on-surface flex items-center gap-0.5 text-label-sm font-label-sm flex-shrink-0">View Evidence <span class="material-symbols-outlined text-[14px]">arrow_forward</span></span>
+</div>
+</div>
+<!-- Stage 07 -->
+<div class="bg-surface-container-low rounded px-space-md py-space-xs flex items-center justify-between gap-space-sm hover:bg-surface-container transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-outline font-semibold w-6">07</span>
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">Encrypted Flow Segmentation &amp; Windowing</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="font-code-sm text-code-sm text-outline hidden sm:inline">620ms</span>
+<span class="bg-tertiary/10 text-tertiary font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider">COMPLETE</span>
+</div>
+</div>
+<!-- Stage 08: ACTIVE / INSPECTED STAGE -->
+<div class="bg-surface-container-high rounded px-space-md py-space-xs flex flex-col gap-1 transition-colors cursor-pointer">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-primary font-bold w-6">08</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold truncate">ML Encrypted Traffic Classification</span>
+<span class="bg-surface-container-highest text-primary font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider hidden sm:inline">INSPECTION ACTIVE</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="font-code-sm text-code-sm text-primary font-medium">71%</span>
+<span class="bg-primary/20 text-primary font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> RUNNING
+</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-lowest h-1 rounded overflow-hidden mt-0.5">
+<div class="bg-primary h-full transition-all duration-300" style="width: 71%;"></div>
+</div>
+</div>
+<!-- Stage 09: RUNNING -->
+<div class="bg-surface-container rounded px-space-md py-space-xs flex flex-col gap-1 hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-outline font-bold w-6">09</span>
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">Anomaly &amp; Tunnel Sequence Detection</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="font-code-sm text-code-sm text-primary font-medium">42%</span>
+<span class="bg-primary/20 text-primary font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> RUNNING
+</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-lowest h-1 rounded overflow-hidden mt-0.5">
+<div class="bg-primary/80 h-full transition-all duration-300" style="width: 42%;"></div>
+</div>
+</div>
+<!-- Stage 10: PENDING -->
+<div class="bg-surface-container-low/50 rounded px-space-md py-space-xs flex items-center justify-between gap-space-sm opacity-60">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-outline w-6">10</span>
+<span class="font-body-md text-body-md text-on-surface truncate">Evidence-Grounded AI Explanation</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="bg-surface-container-highest text-outline font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider">PENDING</span>
+</div>
+</div>
+<!-- Stage 11: PENDING -->
+<div class="bg-surface-container-low/50 rounded px-space-md py-space-xs flex items-center justify-between gap-space-sm opacity-60">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-code-sm text-code-sm text-outline w-6">11</span>
+<span class="font-body-md text-body-md text-on-surface truncate">RFC Forensic Audit &amp; Report Generation</span>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<span class="bg-surface-container-highest text-outline font-label-sm text-label-sm px-space-xs py-space-2xs rounded font-semibold uppercase tracking-wider">PENDING</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Focused Telemetry & Progressive Detail Inspection (5 cols) -->
+<div class="xl:col-span-5 flex flex-col gap-space-md">
+<!-- Essential 4-Card Forensic Metric Summary -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between pb-space-2xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Live Pipeline Metrics</span>
+<span class="font-code-sm text-code-sm text-tertiary font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> DPDK BUS ACTIVE
+</span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs">
+<div class="bg-surface-container p-space-sm rounded flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase truncate">Packets Processed</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1">842,109</span>
+<span class="font-code-sm text-code-sm text-tertiary mt-0.5">96.4% ESP Payload</span>
+</div>
+<div class="bg-surface-container p-space-sm rounded flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase truncate">Encrypted Flows</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold mt-1">24 Flows</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant mt-0.5">5s Window Size</span>
+</div>
+<div class="bg-surface-container p-space-sm rounded flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase truncate">Anomaly Flags</span>
+<span class="font-headline-sm text-headline-sm text-error font-bold mt-1">3 Flagged</span>
+<span class="font-code-sm text-code-sm text-error mt-0.5">1 High, 2 Moderate</span>
+</div>
+<div class="bg-surface-container p-space-sm rounded flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase truncate">RX Throughput</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold mt-1">48.0k <span class="text-body-sm font-normal text-on-surface-variant">pkts/s</span></span>
+<span class="font-code-sm text-code-sm text-tertiary mt-0.5">0 Frame Drops</span>
+</div>
+</div>
+</div>
+<!-- Progressive Stage Detail Drawer / Inspection Pane for Stage 08 -->
+<div class="bg-surface-container-low rounded p-space-sm flex flex-col gap-space-sm flex-1">
+<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant/30">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">insights</span>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider font-semibold">Stage 08 Inspection: ML Classification</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-xs py-space-2xs text-label-sm font-label-sm rounded bg-surface-container text-primary font-medium">Stage Details</button>
+<button class="px-space-xs py-space-2xs text-label-sm font-label-sm rounded text-outline hover:text-on-surface transition-colors">Live TTY</button>
+</div>
+</div>
+<!-- Stage 08 Telemetry & Feature Progress -->
+<div class="grid grid-cols-2 gap-space-xs">
+<div class="bg-surface-container px-space-sm py-space-xs rounded flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Feature Vectors</span>
+<span class="font-code-md text-code-md text-on-surface font-bold mt-0.5">184 / 256</span>
+<span class="font-code-sm text-code-sm text-primary">71.8% Converged</span>
+</div>
+<div class="bg-surface-container px-space-sm py-space-xs rounded flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Inferred Overlay</span>
+<span class="font-code-md text-code-md text-tertiary font-bold mt-0.5">WireGuard/ESP</span>
+<span class="font-code-sm text-code-sm text-tertiary">98.2% Confidence</span>
+</div>
+</div>
+<!-- Shannon Byte Entropy Quick Glance -->
+<div class="bg-surface-container px-space-sm py-space-xs rounded flex flex-col gap-1">
+<div class="flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-outline uppercase">Entropy Variance (ESP Windows)</span>
+<span class="font-code-sm text-code-sm text-tertiary">7.994 bits/byte (Nominal AES-GCM)</span>
+</div>
+<div class="h-4 w-full flex items-end gap-1 pt-1">
+<div class="flex-1 bg-tertiary-container/50 rounded-t h-full"></div>
+<div class="flex-1 bg-tertiary-container/60 rounded-t h-full"></div>
+<div class="flex-1 bg-tertiary-container/70 rounded-t h-full"></div>
+<div class="flex-1 bg-tertiary-container/80 rounded-t h-full"></div>
+<div class="flex-1 bg-error/60 rounded-t h-2/3" title="Entropy Dip in Flow #08"></div>
+<div class="flex-1 bg-tertiary-container/90 rounded-t h-full"></div>
+<div class="flex-1 bg-tertiary h-full rounded-t"></div>
+<div class="flex-1 bg-tertiary h-full rounded-t"></div>
+</div>
+</div>
+<!-- Worker Execution Stream TTY Log (Streamlined) -->
+<div class="bg-surface-container-lowest rounded p-space-sm flex flex-col flex-1 min-h-[220px]">
+<div class="flex items-center justify-between pb-space-2xs mb-space-2xs border-b border-outline-variant/30">
+<div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-[14px]">terminal</span>
+<span>Worker Stream (4 Cores)</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+<span class="text-primary font-medium text-label-sm">LIVE</span>
+<button class="text-outline hover:text-on-surface text-label-sm ml-2" onclick="clearTerminal()">CLEAR</button>
+</div>
+</div>
+<div class="flex-1 font-code-sm text-code-sm overflow-y-auto space-y-1 text-on-surface-variant select-text pr-1" id="terminalStream">
+<div class="text-outline">14:18:22.004 [system] Initiated DPDK ring buffer bind on core [0,1,2,3]</div>
+<div class="text-on-surface">14:18:22.380 [worker-01] IKE_SA_INIT detected: SPIi=0x8fa10c0291, SPIr=0x0000000000</div>
+<div class="text-error font-medium">14:18:22.990 [worker-02] WARN: Fallback SA proposal contains MODP-1024 (Group 2)</div>
+<div class="text-on-surface">14:18:23.511 [worker-03] ESP SPI 0x41f89c02: sequence counter 1042 verified</div>
+<div class="text-primary font-medium">14:18:24.015 [ml-worker-1] Feature vector compiled: flow #08, entropy=7.998</div>
+<div class="text-tertiary">14:18:24.320 [ml-worker-2] Traffic category: IPsec/WireGuard overlay (98.2%)</div>
+<div class="text-primary animate-pulse" id="terminalLiveLine">14:18:24.712 [worker-02] Sequence counter initialized. Window check running...</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  let isPaused = false;
+  let currentPercent = 69;
+  let etaSeconds = 13;
+
+  const terminalStream = document.getElementById('terminalStream');
+  const liveLine = document.getElementById('terminalLiveLine');
+  const percentText = document.getElementById('globalPercentText');
+  const progressBar = document.getElementById('globalProgressBar');
+  const etaTimer = document.getElementById('etaTimer');
+  const rxRate = document.getElementById('rxRate');
+
+  const simulatedLogs = [
+    { text: "14:18:25.004 [worker-01] Sequence delta checked on SPI 0x9021da3b: jitter 0.04ms", color: "text-on-surface" },
+    { text: "14:18:25.180 [ml-worker-0] Vector window #121 parsed: Packet length variance sigma=342.1", color: "text-primary" },
+    { text: "14:18:25.390 [worker-03] ESP anti-replay window check passed: zero packet reordering", color: "text-on-surface" },
+    { text: "14:18:25.612 [worker-02] IKE INFORMATIONAL exchange: DPD (Dead Peer Detection) ACK received", color: "text-tertiary" },
+    { text: "14:18:25.801 [ml-worker-3] Model inference batch #5 complete. 22/24 flows classified", color: "text-primary" },
+    { text: "14:18:26.040 [worker-01] Sequence counter SPI 0x09bc311e reached 102,400", color: "text-on-surface" }
+  ];
+
+  let logIndex = 0;
+
+  const streamInterval = setInterval(() => {
+    if (isPaused) return;
+
+    if (logIndex < simulatedLogs.length && terminalStream && liveLine) {
+      const entry = simulatedLogs[logIndex];
+      const div = document.createElement('div');
+      div.className = entry.color;
+      div.textContent = entry.text;
+      terminalStream.insertBefore(div, liveLine);
+      terminalStream.scrollTop = terminalStream.scrollHeight;
+      logIndex++;
+    }
+
+    if (currentPercent < 99) {
+      currentPercent += 1;
+      if (percentText) percentText.textContent = `${currentPercent}% COMPLETE`;
+      if (progressBar) progressBar.style.width = `${currentPercent}%`;
+      
+      if (etaTimer) {
+        if (etaSeconds > 1) {
+          etaSeconds -= 1;
+          etaTimer.textContent = `~${etaSeconds}s remaining`;
+        } else {
+          etaTimer.textContent = `Finalizing forensic bundle...`;
+        }
+      }
+
+      if (rxRate) {
+        const randomRate = 48000 + Math.floor(Math.random() * 800);
+        rxRate.textContent = randomRate.toLocaleString();
+      }
+    }
+  }, 1800);
+
+  function togglePause() {
+    isPaused = !isPaused;
+    const label = document.getElementById('pauseLabel');
+    const icon = document.getElementById('pauseIcon');
+    const btn = document.getElementById('pauseBtn');
+    
+    if (isPaused) {
+      if (label) label.textContent = "Resume";
+      if (icon) icon.textContent = "play_arrow";
+      if (btn) btn.classList.add('bg-primary-container', 'text-on-primary-container');
+    } else {
+      if (label) label.textContent = "Pause";
+      if (icon) icon.textContent = "pause";
+      if (btn) btn.classList.remove('bg-primary-container', 'text-on-primary-container');
+    }
+  }
+
+  function cancelAnalysis() {
+    if (confirm("Are you sure you want to terminate the active forensic pipeline? Intermediate memory states will be discarded.")) {
+      clearInterval(streamInterval);
+      if (percentText) {
+        percentText.textContent = "PIPELINE ABORTED";
+        percentText.classList.remove("text-primary");
+        percentText.classList.add("text-error");
+      }
+      if (progressBar) {
+        progressBar.classList.remove("bg-primary");
+        progressBar.classList.add("bg-error");
+      }
+      if (etaTimer) etaTimer.textContent = "Analysis cancelled by operator";
+    }
+  }
+
+  function clearTerminal() {
+    if (!terminalStream) return;
+    const lines = terminalStream.querySelectorAll('div:not(#terminalLiveLine)');
+    lines.forEach(line => line.remove());
+  }
+</script></main></div></body></html>

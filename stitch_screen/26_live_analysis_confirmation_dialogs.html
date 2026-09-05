@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Live Analysis Confirmation Modals — TunnelSight</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-lowest": "#0c0e11",
+            "surface-container-low": "#1a1c1f",
+            "surface-container": "#1e2023",
+            "surface-container-high": "#282a2d",
+            "surface-container-highest": "#333538",
+            "surface": "#111317",
+            "surface-dim": "#111317",
+            "surface-bright": "#37393d",
+            "background": "#111317",
+            "on-surface": "#e2e2e6",
+            "on-surface-variant": "#bbcac5",
+            "outline": "#869490",
+            "outline-variant": "#3c4946",
+            "primary": "#59dbc7",
+            "primary-container": "#00a896",
+            "on-primary": "#003731",
+            "on-primary-container": "#00352e",
+            "tertiary": "#4edea3",
+            "tertiary-container": "#00aa76",
+            "on-tertiary": "#003824",
+            "error": "#ffb4ab",
+            "error-container": "#93000a",
+            "on-error": "#690005",
+            "warning": "#f59e0b",
+            "warning-container": "#78350f"
+          },
+          spacing: {
+            "header-height": "2.75rem",
+            "sidebar-expanded": "16rem",
+            "space-2xs": "0.125rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "space-base": "1rem",
+            "space-lg": "1.25rem",
+            "space-xl": "1.5rem",
+            "space-2xl": "2rem"
+          },
+          fontFamily: {
+            sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+            mono: ["JetBrains Mono", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-background font-sans text-sm text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+
+  <!-- Persistent Authenticated Shell Navigation Underlay -->
+  <aside class="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-30 flex flex-col justify-between select-none border-r border-surface-container-highest/40">
+    <div class="flex flex-col">
+      <div class="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest border-b border-surface-container-highest/40">
+        <span class="material-symbols-outlined text-primary text-[20px]">security</span>
+        <div class="flex items-baseline gap-space-2xs">
+          <span class="font-semibold text-on-surface tracking-tight text-sm">TunnelSight</span>
+          <span class="font-mono text-xs text-outline">/</span>
+          <span class="font-mono text-xs text-on-surface-variant font-medium">IPsecXray</span>
+        </div>
+      </div>
+      <div class="px-space-base py-space-xs bg-surface-container-low border-b border-surface-container-highest/30">
+        <div class="flex items-center justify-between text-outline text-[11px] font-mono">
+          <span class="uppercase tracking-wider">Operational Posture</span>
+          <span class="text-primary">v2.4.1-rc3</span>
+        </div>
+      </div>
+      <nav class="flex flex-col gap-0.5 p-space-sm mt-space-xs text-xs">
+        <a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+          <span class="material-symbols-outlined text-[18px]">dashboard</span>
+          <span>Overview</span>
+        </a>
+        <a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+          <span class="material-symbols-outlined text-[18px]">file_open</span>
+          <span>Analyze PCAP</span>
+        </a>
+        <a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-xs rounded bg-primary-container text-on-primary-container font-semibold transition-colors" href="#">
+          <span class="material-symbols-outlined text-[18px]">pulse_alert</span>
+          <span>Live Analysis</span>
+        </a>
+        <a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+          <span class="material-symbols-outlined text-[18px]">settings_ethernet</span>
+          <span>VPN Configurations</span>
+        </a>
+        <a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+          <span class="material-symbols-outlined text-[18px]">insights</span>
+          <span>Traffic Intelligence</span>
+        </a>
+        <a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+          <span class="material-symbols-outlined text-[18px]">policy</span>
+          <span>Findings</span>
+        </a>
+        <a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+          <span class="material-symbols-outlined text-[18px]">assignment</span>
+          <span>Reports</span>
+        </a>
+        <a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+          <span class="material-symbols-outlined text-[18px]">dataset</span>
+          <span>Dataset / Testbed</span>
+        </a>
+        <a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+          <span class="material-symbols-outlined text-[18px]">tune</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+    </div>
+    <div class="p-space-sm bg-surface-container-lowest border-t border-surface-container-highest/40">
+      <div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs text-xs">
+        <div class="flex items-center justify-between text-[10px] font-mono">
+          <span class="text-outline uppercase">Pipeline</span>
+          <span class="text-tertiary">ONLINE</span>
+        </div>
+        <div class="w-full bg-surface-container-highest h-1 rounded overflow-hidden">
+          <div class="bg-primary-container h-1 rounded w-3/4"></div>
+        </div>
+        <div class="flex justify-between text-[11px] font-mono text-on-surface-variant">
+          <span>DPDK Ring 0</span>
+          <span class="text-on-surface">0.02ms</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="pl-sidebar-expanded">
+    <!-- Header -->
+    <header class="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-20 flex items-center justify-between px-space-base select-none border-b border-surface-container-highest/40">
+      <div class="flex items-center gap-space-md">
+        <div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded border border-surface-container-highest/40 text-xs">
+          <span class="inline-block w-2 h-2 rounded-full bg-tertiary"></span>
+          <span class="font-mono text-on-surface font-medium">ENGINE ONLINE</span>
+          <span class="text-outline-variant font-mono">|</span>
+          <span class="font-mono text-on-surface-variant">DPDK RX: READY</span>
+          <span class="text-outline-variant font-mono">|</span>
+          <span class="font-mono text-tertiary">ML WORKERS: 4/4</span>
+        </div>
+        <div class="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-xs border border-surface-container-highest/30">
+          <span class="text-[10px] text-outline font-mono uppercase">Profile</span>
+          <span class="font-mono text-primary font-medium">Enterprise Edge Audit</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-md text-xs">
+        <div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded text-on-surface-variant font-mono">
+          <span class="material-symbols-outlined text-[16px]">search</span>
+          <span>Search captures, SPI, tunnels</span>
+          <kbd class="bg-surface-container-highest px-1 rounded text-[10px] text-outline">⌘K</kbd>
+        </div>
+        <div class="h-4 w-px bg-surface-container-highest"></div>
+        <div class="w-7 h-7 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[16px]">person</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Underlay (Live Analysis Console) -->
+    <main class="relative pt-header-height w-full bg-background min-h-screen flex flex-col p-space-base">
+      <!-- Background Content (Simulated Workbench underneath dialogs) -->
+      <div class="flex flex-col gap-space-base max-w-7xl w-full mx-auto opacity-35 filter blur-[1.5px] pointer-events-none select-none">
+        <div class="flex items-center justify-between pb-space-xs border-b border-surface-container-highest/40">
+          <div class="flex flex-col">
+            <h1 class="text-lg font-semibold text-on-surface tracking-tight">Live IPsec Analysis — Continuous Interface Monitoring</h1>
+            <span class="text-xs text-outline font-mono">dpdk0 · Promiscuous Ingest · Circular Ring Buffer Active</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-1 rounded bg-tertiary/10 text-tertiary font-mono text-xs border border-tertiary/20 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span> CAPTURING
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-space-md">
+          <div class="bg-surface-container-low p-space-md rounded border border-surface-container-highest/40 flex flex-col gap-1">
+            <span class="text-[11px] font-mono text-outline uppercase">Active ESP Flows</span>
+            <div class="text-xl font-mono text-on-surface font-semibold">128 <span class="text-xs text-tertiary font-normal">Active</span></div>
+            <span class="text-[11px] font-mono text-outline">Zero drop rate on ring</span>
+          </div>
+          <div class="bg-surface-container-low p-space-md rounded border border-surface-container-highest/40 flex flex-col gap-1">
+            <span class="text-[11px] font-mono text-outline uppercase">Wire Packets</span>
+            <div class="text-xl font-mono text-on-surface font-semibold">1,842,901</div>
+            <span class="text-[11px] font-mono text-outline">Avg: 94.2 kpps</span>
+          </div>
+          <div class="bg-surface-container-low p-space-md rounded border border-surface-container-highest/40 flex flex-col gap-1">
+            <span class="text-[11px] font-mono text-outline uppercase">Session Elapsed</span>
+            <div class="text-xl font-mono text-primary font-semibold">00:18:42</div>
+            <span class="text-[11px] font-mono text-outline">Buffer retention: 4.8 GiB</span>
+          </div>
+          <div class="bg-surface-container-low p-space-md rounded border border-surface-container-highest/40 flex flex-col gap-1">
+            <span class="text-[11px] font-mono text-outline uppercase">Security Findings</span>
+            <div class="text-xl font-mono text-error font-semibold">3 <span class="text-xs text-error/80 font-normal">Flagged</span></div>
+            <span class="text-[11px] font-mono text-outline">1 P0 Critical (DH Grp 2)</span>
+          </div>
+        </div>
+
+        <!-- Wire Telemetry Table preview -->
+        <div class="bg-surface-container-low rounded border border-surface-container-highest/40 p-space-md flex flex-col gap-2">
+          <div class="flex justify-between items-center text-xs font-mono text-outline">
+            <span>PACKET INGEST STREAM</span>
+            <span>SHOWING LAST 5 FRAMES</span>
+          </div>
+          <div class="h-24 bg-surface-container-lowest rounded p-2 font-mono text-xs text-outline space-y-1">
+            <div>14:32:01.002 [ESP] SPI 0x7a89f31c SEQ 148209 LEN 1420 192.0.2.14 -> 198.51.100.8</div>
+            <div>14:32:01.008 [ESP] SPI 0xd411e89b SEQ 94103 LEN 256 198.51.100.8 -> 192.0.2.14</div>
+            <div>14:32:01.014 [IKE_AUTH] CHILD_SA rekey detected NO_PFS (Transform ID 2)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Presentation Canvas for Confirmation Modals (Interactive Switcher & Clean Side-by-Side Context) -->
+      <div class="fixed inset-0 top-header-height left-sidebar-expanded z-40 bg-surface-container-lowest/80 backdrop-blur-[2px] flex flex-col items-center justify-center p-space-base overflow-y-auto">
+
+        <!-- Top Switcher Bar for Reviewers -->
+        <div class="mb-6 flex items-center gap-2 bg-surface-container-low border border-surface-container-highest/60 p-1 rounded-lg text-xs select-none shadow-lg">
+          <span class="text-outline px-2 font-mono text-[11px] uppercase tracking-wider">Dialog View:</span>
+          <button id="tab-start" onclick="switchModal('start')" class="px-3 py-1.5 rounded font-medium transition-all bg-primary-container text-on-primary-container font-mono">
+            1. Start Live Analysis
+          </button>
+          <button id="tab-stop" onclick="switchModal('stop')" class="px-3 py-1.5 rounded font-medium transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-mono">
+            2. Stop Live Analysis
+          </button>
+          <button id="tab-both" onclick="switchModal('both')" class="px-3 py-1.5 rounded font-medium transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-mono">
+            Compare Both
+          </button>
+        </div>
+
+        <!-- Dialogs Wrapper Container -->
+        <div id="modals-container" class="w-full max-w-4xl flex items-center justify-center gap-8 flex-wrap">
+
+          <!-- ========================================================= -->
+          <!-- DIALOG 1: START LIVE ANALYSIS                             -->
+          <!-- ========================================================= -->
+          <div id="modal-start" class="w-full max-w-[460px] bg-surface-container-low rounded-xl border border-surface-container-highest/80 shadow-2xl overflow-hidden transition-all duration-200">
+            <!-- Modal Header -->
+            <div class="px-5 pt-5 pb-3 border-b border-surface-container-highest/40 flex items-start justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shrink-0">
+                  <span class="material-symbols-outlined text-[19px]">pulse_alert</span>
+                </div>
+                <div>
+                  <h2 class="font-semibold text-base text-on-surface tracking-tight leading-snug">Start live analysis?</h2>
+                  <p class="text-[11px] font-mono text-outline mt-0.5">Continuous interface ingest &amp; protocol inspection</p>
+                </div>
+              </div>
+              <button class="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container transition-colors" title="Close" onclick="showDismissMessage('Start analysis cancelled')">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <!-- Modal Content / Parameters -->
+            <div class="px-5 py-4 flex flex-col gap-3.5">
+              <!-- Parameter List Cards -->
+              <div class="bg-surface-container-lowest/80 rounded-lg border border-surface-container-highest/50 divide-y divide-surface-container-highest/40">
+                <!-- Interface Row -->
+                <div class="p-3 flex items-center justify-between text-xs">
+                  <span class="text-on-surface-variant font-medium">Interface</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    <span class="font-mono text-on-surface font-semibold bg-surface-container px-2 py-0.5 rounded border border-surface-container-highest/50">eth0</span>
+                  </div>
+                </div>
+
+                <!-- Analysis Profile Row -->
+                <div class="p-3 flex items-center justify-between text-xs">
+                  <span class="text-on-surface-variant font-medium">Analysis Profile</span>
+                  <span class="font-mono text-primary font-medium">Enterprise Edge Audit</span>
+                </div>
+
+                <!-- Engines Row -->
+                <div class="p-3 flex items-center justify-between text-xs">
+                  <span class="text-on-surface-variant font-medium">Engines</span>
+                  <div class="flex items-center gap-1">
+                    <span class="font-mono text-[11px] text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-surface-container-highest/50">IPsec</span>
+                    <span class="text-outline-variant font-mono text-xs">+</span>
+                    <span class="font-mono text-[11px] text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-surface-container-highest/50">ML</span>
+                    <span class="text-outline-variant font-mono text-xs">+</span>
+                    <span class="font-mono text-[11px] text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded border border-tertiary/30">Anomaly Detection</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Authorization Notice -->
+              <div class="flex items-start gap-2.5 p-3 rounded-lg bg-surface-container/60 border border-surface-container-highest/40 text-xs">
+                <span class="material-symbols-outlined text-outline text-[16px] shrink-0 mt-0.5">verified_user</span>
+                <p class="text-[11px] text-on-surface-variant leading-relaxed">
+                  <span class="font-medium text-on-surface">Small authorization notice:</span> Only capture traffic on interfaces you are authorized to monitor.
+                </p>
+              </div>
+            </div>
+
+            <!-- Modal Actions Footer -->
+            <div class="px-5 py-3.5 bg-surface-container-lowest/90 border-t border-surface-container-highest/50 flex items-center justify-end gap-2.5">
+              <button onclick="showDismissMessage('Start analysis cancelled')" class="px-3.5 py-1.5 rounded text-xs font-mono text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" type="button">
+                Cancel
+              </button>
+              <button onclick="simulateAction('Live analysis initiated on eth0')" class="px-4 py-1.5 rounded text-xs font-mono font-medium text-on-primary-container bg-primary hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-1.5" type="button">
+                <span class="material-symbols-outlined text-[15px]">play_arrow</span>
+                <span>Start Analysis</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ========================================================= -->
+          <!-- DIALOG 2: STOP LIVE ANALYSIS                              -->
+          <!-- ========================================================= -->
+          <div id="modal-stop" class="w-full max-w-[460px] bg-surface-container-low rounded-xl border border-surface-container-highest/80 shadow-2xl overflow-hidden transition-all duration-200">
+            <!-- Modal Header -->
+            <div class="px-5 pt-5 pb-3 border-b border-surface-container-highest/40 flex items-start justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-warning/10 border border-warning/25 flex items-center justify-center text-warning shrink-0">
+                  <span class="material-symbols-outlined text-[19px]">stop_circle</span>
+                </div>
+                <div>
+                  <h2 class="font-semibold text-base text-on-surface tracking-tight leading-snug">Stop live analysis?</h2>
+                  <p class="text-[11px] font-mono text-outline mt-0.5">Finalize buffer ingest and save session trace</p>
+                </div>
+              </div>
+              <button class="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container transition-colors" title="Close" onclick="showDismissMessage('Analysis continuing')">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <!-- Modal Content / Session Statistics -->
+            <div class="px-5 py-4 flex flex-col gap-3.5">
+              <div class="flex items-center justify-between text-xs text-outline font-mono">
+                <span class="uppercase tracking-wider text-[10px]">Session Statistics</span>
+                <span class="text-tertiary flex items-center gap-1 text-[11px]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                  Active on eth0
+                </span>
+              </div>
+
+              <!-- Metrics Grid (Useful session stats) -->
+              <div class="grid grid-cols-2 gap-2 bg-surface-container-lowest/80 p-2.5 rounded-lg border border-surface-container-highest/50">
+                <!-- Duration -->
+                <div class="bg-surface-container/60 p-2.5 rounded border border-surface-container-highest/30 flex flex-col">
+                  <span class="text-[10px] font-mono text-outline uppercase tracking-wider">Duration</span>
+                  <div class="text-base font-mono font-semibold text-on-surface mt-0.5">00:18:42</div>
+                </div>
+
+                <!-- Packets -->
+                <div class="bg-surface-container/60 p-2.5 rounded border border-surface-container-highest/30 flex flex-col">
+                  <span class="text-[10px] font-mono text-outline uppercase tracking-wider">Packets</span>
+                  <div class="text-base font-mono font-semibold text-on-surface mt-0.5">1,842,901</div>
+                </div>
+
+                <!-- ESP Flows -->
+                <div class="bg-surface-container/60 p-2.5 rounded border border-surface-container-highest/30 flex flex-col">
+                  <span class="text-[10px] font-mono text-outline uppercase tracking-wider">ESP Flows</span>
+                  <div class="text-base font-mono font-semibold text-primary mt-0.5">128</div>
+                </div>
+
+                <!-- Findings -->
+                <div class="bg-surface-container/60 p-2.5 rounded border border-surface-container-highest/30 flex flex-col">
+                  <span class="text-[10px] font-mono text-outline uppercase tracking-wider">Findings</span>
+                  <div class="text-base font-mono font-semibold text-error mt-0.5 flex items-center gap-1.5">
+                    <span>3</span>
+                    <span class="text-[10px] font-sans px-1.5 py-0.2 rounded bg-error/15 text-error font-medium">1 Critical</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-[11px] font-mono text-on-surface-variant flex items-center justify-between px-1">
+                <span class="text-outline">Trace Destination:</span>
+                <span class="text-on-surface font-medium">/var/log/tunnelsight/live-eth0-001842.pcap</span>
+              </div>
+            </div>
+
+            <!-- Modal Actions Footer -->
+            <div class="px-5 py-3.5 bg-surface-container-lowest/90 border-t border-surface-container-highest/50 flex items-center justify-end gap-2.5">
+              <button onclick="simulateAction('Resuming live monitor on eth0')" class="px-3.5 py-1.5 rounded text-xs font-mono text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" type="button">
+                Continue Analysis
+              </button>
+              <button onclick="simulateAction('Capture saved: live-eth0-001842.pcap')" class="px-4 py-1.5 rounded text-xs font-mono font-medium text-on-primary-container bg-primary hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-1.5" type="button">
+                <span class="material-symbols-outlined text-[15px]">save</span>
+                <span>Stop &amp; Save Capture</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Toast Feedback Banner -->
+        <div id="toast" class="opacity-0 pointer-events-none transition-all duration-200 mt-5 px-3 py-1.5 rounded bg-surface-container-high border border-primary/40 text-xs font-mono text-on-surface flex items-center gap-2 shadow-lg">
+          <span class="w-2 h-2 rounded-full bg-primary"></span>
+          <span id="toast-text">Action executed</span>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function switchModal(view) {
+      const modalStart = document.getElementById('modal-start');
+      const modalStop = document.getElementById('modal-stop');
+      const tabStart = document.getElementById('tab-start');
+      const tabStop = document.getElementById('tab-stop');
+      const tabBoth = document.getElementById('tab-both');
+      const container = document.getElementById('modals-container');
+
+      // Reset tab active styling
+      [tabStart, tabStop, tabBoth].forEach(btn => {
+        btn.className = "px-3 py-1.5 rounded font-medium transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-mono";
+      });
+
+      if (view === 'start') {
+        modalStart.classList.remove('hidden');
+        modalStop.classList.add('hidden');
+        tabStart.className = "px-3 py-1.5 rounded font-medium transition-all bg-primary-container text-on-primary-container font-mono";
+        container.className = "w-full max-w-md flex items-center justify-center";
+      } else if (view === 'stop') {
+        modalStart.classList.add('hidden');
+        modalStop.classList.remove('hidden');
+        tabStop.className = "px-3 py-1.5 rounded font-medium transition-all bg-primary-container text-on-primary-container font-mono";
+        container.className = "w-full max-w-md flex items-center justify-center";
+      } else {
+        modalStart.classList.remove('hidden');
+        modalStop.classList.remove('hidden');
+        tabBoth.className = "px-3 py-1.5 rounded font-medium transition-all bg-primary-container text-on-primary-container font-mono";
+        container.className = "w-full max-w-4xl flex items-center justify-center gap-8 flex-wrap";
+      }
+    }
+
+    function simulateAction(msg) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      toastText.innerText = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+
+    function showDismissMessage(msg) {
+      simulateAction(msg);
+    }
+
+    // Default to displaying both in comparative side-by-side or clean toggle
+    window.addEventListener('DOMContentLoaded', () => {
+      // Start with both visible for comprehensive designer inspection
+      switchModal('both');
+    });
+  </script>
+</body>
+</html>

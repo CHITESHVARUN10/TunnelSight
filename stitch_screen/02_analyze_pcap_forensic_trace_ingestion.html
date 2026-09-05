@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-primary-fixed": "#00201c",
+          "surface-container-lowest": "#0c0e11",
+          "tertiary-container": "#00aa76",
+          "secondary-fixed": "#dee2ee",
+          "on-tertiary-fixed": "#002113",
+          "surface": "#111317",
+          "error-container": "#93000a",
+          "inverse-primary": "#006b5f",
+          "surface-container": "#1e2023",
+          "surface-container-high": "#282a2d",
+          "primary": "#59dbc7",
+          "on-secondary-fixed": "#171c24",
+          "surface-dim": "#111317",
+          "on-secondary": "#2c3139",
+          "surface-tint": "#59dbc7",
+          "error": "#ffb4ab",
+          "surface-container-highest": "#333538",
+          "inverse-surface": "#e2e2e6",
+          "on-tertiary-fixed-variant": "#005236",
+          "primary-container": "#00a896",
+          "tertiary": "#4edea3",
+          "on-tertiary": "#003824",
+          "on-error": "#690005",
+          "on-secondary-container": "#b1b5c0",
+          "on-surface": "#e2e2e6",
+          "background": "#111317",
+          "on-primary": "#003731",
+          "on-surface-variant": "#bbcac5",
+          "outline": "#869490",
+          "primary-fixed": "#79f7e3",
+          "on-primary-fixed-variant": "#005047",
+          "surface-bright": "#37393d",
+          "tertiary-fixed-dim": "#4edea3",
+          "surface-variant": "#333538",
+          "secondary": "#c2c6d1",
+          "surface-container-low": "#1a1c1f",
+          "primary-fixed-dim": "#59dbc7",
+          "on-background": "#e2e2e6",
+          "on-error-container": "#ffdad6",
+          "outline-variant": "#3c4946",
+          "on-primary-container": "#00352e",
+          "secondary-fixed-dim": "#c2c6d1",
+          "secondary-container": "#424750",
+          "tertiary-fixed": "#6ffbbe",
+          "inverse-on-surface": "#2f3034",
+          "on-tertiary-container": "#003522",
+          "on-secondary-fixed-variant": "#424750"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "header-height": "2.75rem",
+          "space-xs": "0.25rem",
+          "space-md": "0.75rem",
+          "inspector-width": "26rem",
+          "sidebar-expanded": "16rem",
+          "gutter-table": "0.5rem",
+          "sidebar-collapsed": "3.5rem",
+          "space-2xl": "2rem",
+          "space-xl": "1.5rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1.25rem",
+          "space-2xs": "0.125rem",
+          "space-base": "1rem",
+          "panel-padding": "0.75rem"
+        },
+        "fontFamily": {
+          "body-md": [
+            "Inter", "system-ui", "sans-serif"
+          ],
+          "headline-sm": [
+            "Geist", "Inter", "sans-serif"
+          ],
+          "body-sm": [
+            "Inter", "system-ui", "sans-serif"
+          ],
+          "label-sm": [
+            "Inter", "sans-serif"
+          ],
+          "code-md": [
+            "monospace"
+          ],
+          "headline-lg": [
+            "Geist", "Inter", "sans-serif"
+          ],
+          "display": [
+            "Geist", "Inter", "sans-serif"
+          ],
+          "label-md": [
+            "Inter", "sans-serif"
+          ],
+          "headline-md": [
+            "Geist", "Inter", "sans-serif"
+          ],
+          "body-lg": [
+            "Inter", "system-ui", "sans-serif"
+          ],
+          "code-sm": [
+            "monospace"
+          ]
+        },
+        "fontSize": {
+          "body-md": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-sm": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "letterSpacing": "-0.005em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "400"
+            }
+          ],
+          "label-sm": [
+            "10px",
+            {
+              "lineHeight": "12px",
+              "letterSpacing": "0.05em",
+              "fontWeight": "600"
+            }
+          ],
+          "code-md": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-lg": [
+            "20px",
+            {
+              "lineHeight": "26px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "display": [
+            "28px",
+            {
+              "lineHeight": "34px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-md": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-md": [
+            "16px",
+            {
+              "lineHeight": "22px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "code-sm": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "fontWeight": "400"
+            }
+          ]
+        }
+      }
+    }
+  }</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden"><aside class="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none border-r border-surface-container-high/40"><div class="flex flex-col"><div class="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span class="material-symbols-outlined text-primary text-[20px]">security</span><div class="flex items-baseline gap-space-2xs"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span class="font-code-sm text-code-sm text-outline">/</span><span class="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div class="px-space-base py-space-xs bg-surface-container-low border-b border-surface-container-high/40"><div class="flex items-center justify-between text-outline"><span class="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span class="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav class="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="overview" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span class="font-body-md text-body-md">Overview</span></a><a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-xs rounded bg-primary-container text-on-primary-container font-semibold transition-colors" data-path="analyze-pcap" href="#"><span class="material-symbols-outlined text-[18px]">file_open</span><span class="font-body-md text-body-md">Analyze PCAP</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="live-analysis" href="#"><span class="material-symbols-outlined text-[18px]">pulse_alert</span><span class="font-body-md text-body-md">Live Analysis</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="vpn-configurations" href="#"><span class="material-symbols-outlined text-[18px]">settings_ethernet</span><span class="font-body-md text-body-md">VPN Configurations</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="traffic-intelligence" href="#"><span class="material-symbols-outlined text-[18px]">insights</span><span class="font-body-md text-body-md">Traffic Intelligence</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="findings" href="#"><span class="material-symbols-outlined text-[18px]">policy</span><span class="font-body-md text-body-md">Findings</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span class="font-body-md text-body-md">Reports</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="dataset-testbed" href="#"><span class="material-symbols-outlined text-[18px]">dataset</span><span class="font-body-md text-body-md">Dataset / Testbed</span></a><a class="flex items-center gap-space-md px-space-md py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-space-sm bg-surface-container-lowest border-t border-surface-container-high/40"><div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div class="flex items-center justify-between font-label-sm text-label-sm"><span class="text-outline uppercase">Pipeline</span><span class="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div class="w-full bg-surface-container-highest h-1 rounded"><div class="bg-primary-container h-1 rounded w-3/4"></div></div><div class="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span class="truncate">DPDK Core 0-3</span><span class="text-on-surface">0.02ms</span></div></div></div></aside><div class="pl-sidebar-expanded"><header class="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none border-b border-surface-container-high/40"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span class="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span class="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span class="text-outline-variant font-code-sm text-code-sm">|</span><span class="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4</span></div><div class="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span class="font-label-sm text-label-sm text-outline uppercase">Profile</span><span class="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div class="flex items-center gap-space-md"><div class="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span class="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span class="text-outline-variant">|</span><span class="text-outline">Buffer:</span><span class="text-tertiary">98.4% Free</span></div><button class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">search</span><span class="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd class="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div class="flex items-center gap-space-xs"><button class="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span class="material-symbols-outlined text-[18px]">download</span></button><button class="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span class="material-symbols-outlined text-[18px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div class="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-header-height w-full bg-background min-h-screen"><div class="flex flex-col w-full pb-space-2xl">
+<!-- Top Sub-Nav Telemetry Banner (Lightweight & Clean) -->
+<div class="px-space-base py-space-xs bg-surface-container-low border-b border-surface-container-high/40 flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm">
+<span class="text-outline">FORENSICS</span>
+<span class="text-outline-variant">/</span>
+<span class="text-primary font-medium">ANALYZE_PCAP</span>
+<span class="ml-space-sm px-space-xs py-0.5 rounded bg-surface-container-highest font-label-sm text-label-sm uppercase tracking-wider text-tertiary">Ready</span>
+</div>
+<div class="flex items-center gap-space-md font-code-sm text-code-sm text-outline">
+<span>RFC 7296 / RFC 4303 / SP 800-77r1</span>
+<span class="text-outline-variant">•</span>
+<span>DPDK Intake Buffer Active</span>
+</div>
+</div>
+<!-- Main Viewport Workspace with Generous Breathing Room -->
+<div class="p-space-xl max-w-7xl w-full mx-auto flex flex-col gap-space-xl">
+<!-- Header Title & Quick Actions -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div>
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-semibold">Analyze Capture</h1>
+<span class="px-space-xs py-0.5 rounded font-code-sm text-code-sm bg-surface-container-high text-on-surface-variant font-medium">SESSION #8820-A</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+          Forensic intake pipeline for cryptographic posture, replay detection, and encrypted traffic profiling.
+        </p>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-space-xs bg-surface-container hover:bg-surface-container-high px-space-md py-space-xs rounded text-on-surface transition-colors font-code-sm text-code-sm border border-outline-variant/30" id="load-sample-btn" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">play_arrow</span>
+<span>Load sample trace: site2site-ikev2-anomalous.pcapng</span>
+</button>
+</div>
+</div>
+<!-- Primary Streamlined Upload Area -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded p-space-xl shadow-xl flex flex-col gap-space-md">
+<!-- Drop Target Terminal Box -->
+<div class="border-2 border-dashed border-outline-variant/50 hover:border-primary/60 bg-surface-container-low hover:bg-surface-container rounded-lg p-space-2xl flex flex-col items-center justify-center text-center transition-all cursor-pointer group" id="drop-zone">
+<input accept=".pcap,.pcapng,.cap,.erf" class="hidden" id="pcap-file-input" type="file"/>
+<div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:scale-105 group-hover:bg-primary group-hover:text-on-primary transition-all shadow-inner">
+<span class="material-symbols-outlined text-[30px]">upload_file</span>
+</div>
+<div class="mt-space-md flex flex-col items-center">
+<div class="font-headline-md text-headline-md text-on-surface tracking-wide">
+            Drop PCAP here
+          </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 max-w-sm">
+            or click to browse your forensic capture files from local disk
+          </p>
+</div>
+<div class="mt-space-md flex items-center gap-space-sm">
+<button class="flex items-center gap-space-xs bg-primary text-on-primary px-space-lg py-space-xs rounded font-headline-sm text-headline-sm font-semibold hover:bg-primary-fixed transition-colors" id="trigger-select-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+<span>Select Capture</span>
+</button>
+<kbd class="px-space-sm py-space-xs rounded bg-surface-container-highest font-code-sm text-code-sm text-outline border border-surface-container-high">⌘O / Ctrl+O</kbd>
+</div>
+<!-- Concise Secondary Metadata Row -->
+<div class="mt-space-lg pt-space-md border-t border-surface-container-highest/60 flex flex-wrap justify-center items-center gap-x-space-md gap-y-space-xs font-code-sm text-code-sm text-outline">
+<span>Formats: .pcap, .pcapng, .cap</span>
+<span class="text-outline-variant">•</span>
+<span>Max size: 4 GB</span>
+<span class="text-outline-variant">•</span>
+<span class="text-tertiary">Integrity verification: SHA-256 Enabled</span>
+</div>
+</div>
+<!-- Options & Concise 1-Line Evidence Notice -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm px-space-xs">
+<label class="flex items-center gap-space-sm cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded bg-surface-container-lowest text-primary accent-primary focus:ring-0" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Strict RFC compliance validation</span>
+</label>
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">lock</span>
+<span>Decryption keys optional: flow telemetry classifies tunnels without breaking crypto.</span>
+<button class="text-primary hover:underline font-medium inline-flex items-center ml-1" id="evidence-policy-link" type="button">
+            Evidence Policy Details →
+          </button>
+</div>
+</div>
+</div>
+<!-- Streamlined Forensic Pipeline Execution Modules -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">tune</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Forensic Pipeline Modules</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline">Profile: NIST-FIPS-140-3-STRICT</span>
+</div>
+<!-- 5 Compact, Crisp Modular Status Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-sm">
+<!-- Card 01 -->
+<div class="p-space-md rounded bg-surface-container-low border border-surface-container-high/50 flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">MOD_01</span>
+<span class="px-space-xs py-0.5 rounded font-code-sm text-[10px] bg-tertiary-container/30 text-tertiary font-medium">READY</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-medium">Crypto &amp; Protocol</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">IKE &amp; ESP validation</p>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
+<button class="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<span>Inspect config</span>
+<span class="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</div>
+</div>
+<!-- Card 02 -->
+<div class="p-space-md rounded bg-surface-container-low border border-surface-container-high/50 flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">MOD_02</span>
+<span class="px-space-xs py-0.5 rounded font-code-sm text-[10px] bg-tertiary-container/30 text-tertiary font-medium">READY</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-medium">ML Flow</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Encrypted flow fingerprinting</p>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
+<button class="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<span>Inspect config</span>
+<span class="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</div>
+</div>
+<!-- Card 03 -->
+<div class="p-space-md rounded bg-surface-container-low border border-surface-container-high/50 flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">MOD_03</span>
+<span class="px-space-xs py-0.5 rounded font-code-sm text-[10px] bg-tertiary-container/30 text-tertiary font-medium">READY</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-medium">Tunnel Integrity</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Replay &amp; sequence skew</p>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
+<button class="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<span>Inspect config</span>
+<span class="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</div>
+</div>
+<!-- Card 04 -->
+<div class="p-space-md rounded bg-surface-container-low border border-surface-container-high/50 flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">MOD_04</span>
+<span class="px-space-xs py-0.5 rounded font-code-sm text-[10px] bg-surface-container-highest text-tertiary font-medium">LOCKED</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-medium">Evidence Provenance</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Deterministic verification</p>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
+<button class="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<span>Inspect config</span>
+<span class="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</div>
+</div>
+<!-- Card 05 -->
+<div class="p-space-md rounded bg-surface-container-low border border-surface-container-high/50 flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">MOD_05</span>
+<span class="px-space-xs py-0.5 rounded font-code-sm text-[10px] bg-tertiary-container/30 text-tertiary font-medium">READY</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-medium">Forensic Export</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">RFC audit &amp; STIX 2.1</p>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
+<button class="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<span>Inspect config</span>
+<span class="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Clean Recent Captures History (Progressive Disclosure) -->
+<div class="flex flex-col gap-space-sm mt-space-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">history</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Recent Captures</h2>
+<span class="px-space-xs py-0.5 rounded bg-surface-container font-code-sm text-code-sm text-outline">5 Recorded</span>
+</div>
+<div class="flex items-center gap-space-sm font-code-sm text-code-sm">
+<input class="bg-surface-container-low border border-surface-container-high/50 px-space-sm py-1 rounded text-on-surface placeholder:text-outline text-body-sm focus:outline-none focus:border-primary" placeholder="Filter captures..." type="text"/>
+<button class="p-1 rounded bg-surface-container-low border border-surface-container-high/50 text-on-surface-variant hover:text-on-surface" title="Refresh" type="button">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+</button>
+</div>
+</div>
+<!-- Clean Streamlined Table (Clutter Removed) -->
+<div class="bg-surface-container-low rounded border border-surface-container-high/40 overflow-hidden shadow-sm">
+<table class="w-full text-left font-body-sm text-body-sm border-collapse">
+<thead>
+<tr class="bg-surface-container/60 font-label-sm text-label-sm uppercase tracking-wider text-outline select-none border-b border-surface-container-high/40">
+<th class="py-space-sm px-space-md">Status</th>
+<th class="py-space-sm px-space-md">Capture Name</th>
+<th class="py-space-sm px-space-md">Volume</th>
+<th class="py-space-sm px-space-md">Risk</th>
+<th class="py-space-sm px-space-md">Ingested</th>
+<th class="py-space-sm px-space-md text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high/30 font-code-sm text-code-sm">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container/50 transition-colors group cursor-pointer inspect-trigger-row" data-name="core-dc-chicago-gw1.pcap" data-packets="842,109" data-risk="HIGH" data-sha="4f81a792e091bfa3c6781290bb34e91a784d12c82098b1a3c75d40192e5912a0" data-source="Edge TAP (SPAN 04)" data-suite="IKEv1 Aggressive / ESP 3DES-CBC / DH Group 2" data-time="18:32 UTC" data-vol="1.42 GB">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-on-surface font-medium">AUDITED</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-medium text-on-surface">core-dc-chicago-gw1.pcap</td>
+<td class="py-space-sm px-space-md text-on-surface-variant">1.42 GB</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-error-container/60 text-error">HIGH</span>
+</td>
+<td class="py-space-sm px-space-md text-outline">18:32 UTC</td>
+<td class="py-space-sm px-space-md text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<span>Inspect</span>
+<span class="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container/50 transition-colors group cursor-pointer inspect-trigger-row" data-name="live-tap-frankfurt-ixp.pcapng" data-packets="2,190,412" data-risk="LOW" data-sha="b1704e6c98234ea7f12a90098bc91124f4e75d0124b48d9a203f69b1834288dc" data-source="IXP Mirror (DPDK Ring)" data-suite="IKEv2 (RFC 7296) / ESP AES-256-GCM / Curve25519" data-time="17:51 UTC" data-vol="3.80 GB">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-tertiary font-medium">PASS</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-medium text-on-surface">live-tap-frankfurt-ixp.pcapng</td>
+<td class="py-space-sm px-space-md text-on-surface-variant">3.80 GB</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-tertiary-container/40 text-tertiary">LOW</span>
+</td>
+<td class="py-space-sm px-space-md text-outline">17:51 UTC</td>
+<td class="py-space-sm px-space-md text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<span>Inspect</span>
+<span class="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container/50 transition-colors group cursor-pointer inspect-trigger-row" data-name="site2site-failover.pcapng" data-packets="145,820" data-risk="MEDIUM" data-sha="88fa2904c6019b8823d04a9192b512c091f822a611c095e49021da66230192b5" data-source="Disaster Recovery Ingest" data-suite="IKEv2 Transport / ChaCha20-Poly1305 / MODP-2048 (No PFS)" data-time="15:04 UTC" data-vol="210 MB">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-on-surface font-medium">AUDITED</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-medium text-on-surface">site2site-failover.pcapng</td>
+<td class="py-space-sm px-space-md text-on-surface-variant">210 MB</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-secondary-container text-secondary-fixed">MEDIUM</span>
+</td>
+<td class="py-space-sm px-space-md text-outline">15:04 UTC</td>
+<td class="py-space-sm px-space-md text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<span>Inspect</span>
+<span class="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container/50 transition-colors group cursor-pointer inspect-trigger-row" data-name="branch-emea-gw04.pcap" data-packets="412,090" data-risk="MEDIUM" data-sha="cc0210a489110db44199c0182aa410499bcf812903ea770182bb1948cc02aa41" data-source="FortiGate Mirror Ingest" data-suite="IKEv2 Tunnel / AES-128-CBC / HMAC-SHA1-96" data-time="13:34 UTC" data-vol="640 MB">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-on-surface font-medium">AUDITED</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-medium text-on-surface">branch-emea-gw04.pcap</td>
+<td class="py-space-sm px-space-md text-on-surface-variant">640 MB</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-secondary-container text-secondary-fixed">MEDIUM</span>
+</td>
+<td class="py-space-sm px-space-md text-outline">13:34 UTC</td>
+<td class="py-space-sm px-space-md text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<span>Inspect</span>
+<span class="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container/50 transition-colors group cursor-pointer inspect-trigger-row" data-name="azure-expressroute-ipsec.pcap" data-packets="670,119" data-risk="LOW" data-sha="11e73990812bfa701934bc8166f20918c55e90145b98aa1248c0812911e766f2" data-source="Cloud Ingress Collector" data-suite="IKEv2 Site-to-Site / AES-256-CBC / HMAC-SHA256" data-time="09:19 UTC" data-vol="890 MB">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-on-surface font-medium">AUDITED</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-medium text-on-surface">azure-expressroute-ipsec.pcap</td>
+<td class="py-space-sm px-space-md text-on-surface-variant">890 MB</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-tertiary-container/40 text-tertiary">LOW</span>
+</td>
+<td class="py-space-sm px-space-md text-outline">09:19 UTC</td>
+<td class="py-space-sm px-space-md text-right">
+<button class="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<span>Inspect</span>
+<span class="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main></div>
+<!-- Slide-Over Forensic Detail Drawer (Progressive Disclosure) -->
+<div class="fixed inset-0 z-50 pointer-events-none transition-all duration-300" id="drawer-backdrop">
+<!-- Backdrop Overlay -->
+<div class="absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-300 pointer-events-none" id="drawer-overlay"></div>
+<!-- Drawer Surface -->
+<div class="absolute right-0 top-0 bottom-0 w-full max-w-lg bg-surface-container-low border-l border-surface-container-high/60 shadow-2xl flex flex-col justify-between translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto" id="forensic-drawer">
+<!-- Drawer Header -->
+<div class="p-space-lg bg-surface-container-lowest border-b border-surface-container-high/60 flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">manage_search</span>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold">Forensic Capture Detail</div>
+<div class="font-code-sm text-[11px] text-outline" id="drawer-header-subtitle">SESSION #8820-A • PROVENANCE VERIFIED</div>
+</div>
+</div>
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container transition-colors" id="close-drawer-btn" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Drawer Scrollable Content -->
+<div class="p-space-lg flex-1 overflow-y-auto flex flex-col gap-space-lg">
+<!-- Primary Target Info -->
+<div class="bg-surface-container-lowest p-space-md rounded border border-surface-container-high/40 flex flex-col gap-space-xs">
+<div class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Capture Archive</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold break-all" id="drawer-filename">core-dc-chicago-gw1.pcap</div>
+<div class="flex items-center gap-space-md mt-1 font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Volume: <strong class="text-on-surface" id="drawer-volume">1.42 GB</strong></span>
+<span class="text-outline-variant">•</span>
+<span class="text-on-surface-variant">Packets: <strong class="text-on-surface" id="drawer-packets">842,109</strong></span>
+<span class="text-outline-variant">•</span>
+<span class="text-on-surface-variant">Risk: <strong class="text-error" id="drawer-risk">HIGH</strong></span>
+</div>
+</div>
+<!-- Detailed Parameter Specs -->
+<div class="flex flex-col gap-space-sm">
+<div class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">Forensic Audit Parameters</div>
+<div class="bg-surface-container-lowest rounded border border-surface-container-high/40 divide-y divide-surface-container-high/30 font-code-sm text-code-sm">
+<div class="p-space-sm flex flex-col gap-1">
+<span class="text-outline text-[11px]">Trace SHA-256</span>
+<span class="text-on-surface break-all select-all font-mono text-[11px]" id="drawer-sha">4f81a792e091bfa3c6781290bb34e91a784d12c82098b1a3c75d40192e5912a0</span>
+</div>
+<div class="p-space-sm flex items-center justify-between">
+<span class="text-outline">Capture Interface</span>
+<span class="text-on-surface font-medium" id="drawer-source">Edge TAP (SPAN 04)</span>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<span class="text-outline text-[11px]">IKE / ESP Parameters</span>
+<span class="text-on-surface font-medium" id="drawer-suite">IKEv1 Aggressive / ESP 3DES-CBC</span>
+</div>
+<div class="p-space-sm flex items-center justify-between">
+<span class="text-outline">Diffie-Hellman Group</span>
+<span class="text-error font-medium" id="drawer-dh">MODP-1024 (Group 2 - Insecure)</span>
+</div>
+<div class="p-space-sm flex items-center justify-between">
+<span class="text-outline">Anti-Replay Window</span>
+<span class="text-on-surface">64 Packets (Strict)</span>
+</div>
+</div>
+</div>
+<!-- Evidence Provenance Card -->
+<div class="bg-surface-container-lowest p-space-md rounded border border-surface-container-high/40 flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-tertiary">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span class="font-headline-sm text-[13px] font-semibold">Evidence Provenance</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Deterministic rule justification confirms weak key exchange without requiring private payload disclosure. Findings are grounded strictly in packet header records.
+        </p>
+<div class="mt-space-xs flex items-center gap-space-sm text-[11px] font-code-sm text-outline">
+<span>VALIDATION: DETERMINISTIC</span>
+<span>•</span>
+<span class="text-tertiary">ZERO_HALLUCINATION</span>
+</div>
+</div>
+</div>
+<!-- Drawer Footer Action -->
+<div class="p-space-lg bg-surface-container-lowest border-t border-surface-container-high/60 flex flex-col gap-space-xs">
+<button class="w-full py-space-sm px-space-md rounded bg-primary text-on-primary font-headline-sm text-headline-sm font-semibold hover:bg-primary-fixed transition-colors flex items-center justify-center gap-space-xs shadow-md" type="button">
+<span>Proceed to Deep Inspection</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<div class="text-center">
+<button class="font-code-sm text-[11px] text-outline hover:text-on-surface pt-1" id="cancel-drawer-btn" type="button">
+            Close Panel
+          </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Minimal Policy Modal (triggered by "Evidence Policy Details →") -->
+<div class="fixed inset-0 z-50 hidden flex items-center justify-center p-space-md" id="policy-modal">
+<div class="absolute inset-0 bg-black/70" id="policy-backdrop"></div>
+<div class="relative bg-surface-container rounded-lg max-w-lg w-full p-space-lg border border-surface-container-high shadow-2xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs border-b border-surface-container-high">
+<div class="flex items-center gap-space-xs text-primary">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+<span class="font-headline-sm text-headline-sm font-semibold">Forensic Evidence &amp; Decryption Policy</span>
+</div>
+<button class="text-outline hover:text-on-surface" id="close-policy-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex flex-col gap-space-sm leading-relaxed">
+<p>
+        Payload decryption keys (IKE Secret / ESP Private Key) are entirely optional. TunnelSight models analyze flow dynamics, packet timing entropy, and encapsulated frame structures without requiring plaintext inspection.
+      </p>
+<p>
+        In accordance with forensic chain-of-custody standards, all analytical claims are tagged strictly as <span class="font-code-sm text-on-surface bg-surface-container-high px-1 rounded">CONFIRMED</span> or <span class="font-code-sm text-outline bg-surface-container-high px-1 rounded">INFERRED</span> to ensure verifiable provenance.
+      </p>
+</div>
+<div class="flex justify-end pt-space-xs">
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-space-md py-space-xs rounded font-code-sm text-code-sm transition-colors" id="ack-policy-btn" type="button">
+        Acknowledge
+      </button>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Sidebar Active Highlight
+    try {
+      const navLinks = document.querySelectorAll('aside nav a');
+      navLinks.forEach(link => {
+        if (link.getAttribute('data-path') === 'analyze-pcap') {
+          link.classList.remove('text-on-surface-variant');
+          link.classList.add('bg-primary-container', 'text-on-primary-container', 'font-semibold');
+        } else {
+          link.classList.remove('bg-primary-container', 'text-on-primary-container', 'font-semibold');
+          link.classList.add('text-on-surface-variant');
+        }
+      });
+    } catch (e) {}
+
+    // File Drop & Load Actions
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('pcap-file-input');
+    const triggerBtn = document.getElementById('trigger-select-btn');
+    const loadSampleBtn = document.getElementById('load-sample-btn');
+
+    if (triggerBtn && fileInput) {
+      triggerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
+    }
+
+    if (dropZone && fileInput) {
+      dropZone.addEventListener('click', () => {
+        fileInput.click();
+      });
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.add('bg-surface-container-high/80');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove('bg-surface-container-high/80');
+        });
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFile(files[0].name, files[0].size);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleFile(e.target.files[0].name, e.target.files[0].size);
+        }
+      });
+    }
+
+    if (loadSampleBtn) {
+      loadSampleBtn.addEventListener('click', () => {
+        handleFile('site2site-ikev2-anomalous.pcapng', 8421092);
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'o') {
+        e.preventDefault();
+        if (fileInput) fileInput.click();
+      }
+    });
+
+    function handleFile(name, size) {
+      const title = dropZone.querySelector('.font-headline-md');
+      const desc = dropZone.querySelector('.font-body-sm');
+      if (title) {
+        title.textContent = 'Ingesting: ' + name;
+        title.classList.add('text-primary');
+      }
+      if (desc) {
+        desc.textContent = 'Computing SHA-256 and validating RFC frame compliance...';
+      }
+      setTimeout(() => {
+        if (desc) {
+          desc.textContent = 'Capture parsed successfully. 2 IKEv2 SAs, 4 ESP tunnels extracted.';
+        }
+        // Open drawer for the newly ingested sample
+        openDrawer({
+          name: name,
+          vol: (size / (1024 * 1024)).toFixed(2) + ' MB',
+          packets: '29,481',
+          risk: 'MEDIUM',
+          sha: '992a01f89bc1042781da2418e90145b98aa1248c0812911e766f2849120bc91a',
+          source: 'Interactive Upload Buffer',
+          suite: 'IKEv2 / ESP AES-GCM / MODP-2048'
+        });
+      }, 700);
+    }
+
+    // Drawer Logic (Progressive Disclosure)
+    const drawerBackdrop = document.getElementById('drawer-backdrop');
+    const drawerOverlay = document.getElementById('drawer-overlay');
+    const drawer = document.getElementById('forensic-drawer');
+    const closeDrawerBtn = document.getElementById('close-drawer-btn');
+    const cancelDrawerBtn = document.getElementById('cancel-drawer-btn');
+
+    function openDrawer(data) {
+      if (!drawer) return;
+
+      if (data) {
+        document.getElementById('drawer-filename').textContent = data.name || 'core-dc-chicago-gw1.pcap';
+        document.getElementById('drawer-volume').textContent = data.vol || '1.42 GB';
+        document.getElementById('drawer-packets').textContent = data.packets || '842,109';
+        
+        const riskEl = document.getElementById('drawer-risk');
+        riskEl.textContent = data.risk || 'HIGH';
+        if (data.risk === 'HIGH') {
+          riskEl.className = 'text-error';
+        } else if (data.risk === 'LOW') {
+          riskEl.className = 'text-tertiary';
+        } else {
+          riskEl.className = 'text-secondary-fixed';
+        }
+
+        document.getElementById('drawer-sha').textContent = data.sha || '4f81a792e091bfa3c6781290bb34e91a784d12c82098b1a3c75d40192e5912a0';
+        document.getElementById('drawer-source').textContent = data.source || 'Edge TAP (SPAN 04)';
+        document.getElementById('drawer-suite').textContent = data.suite || 'IKEv1 Aggressive / ESP 3DES-CBC';
+        
+        const dhEl = document.getElementById('drawer-dh');
+        if (data.risk === 'HIGH') {
+          dhEl.textContent = 'MODP-1024 (Group 2 - Insecure)';
+          dhEl.className = 'text-error font-medium';
+        } else if (data.risk === 'LOW') {
+          dhEl.textContent = 'Curve25519 (Group 19 - Hardened)';
+          dhEl.className = 'text-tertiary font-medium';
+        } else {
+          dhEl.textContent = 'MODP-2048 (Group 14 - Acceptable)';
+          dhEl.className = 'text-on-surface font-medium';
+        }
+      }
+
+      drawerBackdrop.classList.remove('pointer-events-none');
+      drawerOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      drawerOverlay.classList.add('opacity-100', 'pointer-events-auto');
+      drawer.classList.remove('translate-x-full');
+    }
+
+    function closeDrawer() {
+      if (!drawer) return;
+      drawerOverlay.classList.remove('opacity-100', 'pointer-events-auto');
+      drawerOverlay.classList.add('opacity-0', 'pointer-events-none');
+      drawer.classList.add('translate-x-full');
+      setTimeout(() => {
+        drawerBackdrop.classList.add('pointer-events-none');
+      }, 300);
+    }
+
+    if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
+    if (cancelDrawerBtn) cancelDrawerBtn.addEventListener('click', closeDrawer);
+    if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
+
+    // Row Inspect Click Handlers
+    const inspectRows = document.querySelectorAll('.inspect-trigger-row');
+    inspectRows.forEach(row => {
+      row.addEventListener('click', () => {
+        openDrawer({
+          name: row.getAttribute('data-name'),
+          vol: row.getAttribute('data-vol'),
+          packets: row.getAttribute('data-packets'),
+          risk: row.getAttribute('data-risk'),
+          sha: row.getAttribute('data-sha'),
+          source: row.getAttribute('data-source'),
+          suite: row.getAttribute('data-suite')
+        });
+      });
+    });
+
+    // Evidence Policy Modal
+    const policyLink = document.getElementById('evidence-policy-link');
+    const policyModal = document.getElementById('policy-modal');
+    const closePolicyBtn = document.getElementById('close-policy-btn');
+    const ackPolicyBtn = document.getElementById('ack-policy-btn');
+    const policyBackdrop = document.getElementById('policy-backdrop');
+
+    function showPolicy() {
+      if (policyModal) policyModal.classList.remove('hidden');
+    }
+    function hidePolicy() {
+      if (policyModal) policyModal.classList.add('hidden');
+    }
+
+    if (policyLink) policyLink.addEventListener('click', showPolicy);
+    if (closePolicyBtn) closePolicyBtn.addEventListener('click', hidePolicy);
+    if (ackPolicyBtn) ackPolicyBtn.addEventListener('click', hidePolicy);
+    if (policyBackdrop) policyBackdrop.addEventListener('click', hidePolicy);
+  })();
+</script></body></html>
