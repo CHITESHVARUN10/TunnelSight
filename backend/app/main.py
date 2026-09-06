@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import analyze, auth, health, history
+from app.api.routes import analyze, auth, health, history, profile
 from app.core.config import settings
 
 app = FastAPI(title="TunnelSight API", version="0.0.0-phase0")
@@ -17,6 +17,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(history.router, prefix="/api/history", tags=["history"])
+app.include_router(profile.router, prefix="/api/profile", tags=["profile"])
 app.include_router(analyze.router, prefix="/api/analyze", tags=["analyze"])
 
 

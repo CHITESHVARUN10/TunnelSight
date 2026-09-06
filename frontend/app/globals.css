@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/forms";
 
 /* Self-hosted Material Symbols (offline-safe). Text fonts stay on Google Fonts
    with system fallbacks; icons must never fall back to ligature text. */

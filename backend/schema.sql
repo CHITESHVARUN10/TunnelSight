@@ -5,6 +5,7 @@
 --   sessions       <- app/models/session.py
 --   analyses       <- app/models/analysis.py
 --   password_resets<- app/models/password_reset.py
+--   profiles       <- app/models/profile.py
 -- If you change a model, update this file too (and vice versa).
 --
 -- Usage (local Postgres, no Docker):
@@ -63,3 +64,16 @@ CREATE TABLE IF NOT EXISTS password_resets (
 );
 CREATE INDEX IF NOT EXISTS ix_password_resets_user_id ON password_resets (user_id);
 CREATE INDEX IF NOT EXISTS ix_password_resets_token_hash ON password_resets (token_hash);
+
+-- ------------------------------------------------------------ profiles ---
+-- Analyst profile, 1-to-1 with users. Row auto-created on registration.
+CREATE TABLE IF NOT EXISTS profiles (
+    id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id      UUID         NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,
+    display_name VARCHAR(255) NULL,
+    organization VARCHAR(255) NULL,
+    role         VARCHAR(255) NULL,
+    timezone     VARCHAR(64)  NULL,
+    created_at   TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ix_profiles_user_id ON profiles (user_id);

@@ -21,6 +21,11 @@ def main() -> None:
     if missing:
         raise SystemExit(f"missing feature columns: {missing}")
 
+    # Isolation Forest learns the NORMAL baseline: drop labeled anomalies.
+    if "label" in df.columns:
+        df = df[df["label"] == "normal"]
+        print(f"training on {len(df)} normal flows (anomalies excluded)")
+
     X = df[FEATURES].fillna(0)
     model = IsolationForest(n_estimators=200, contamination=args.contamination, random_state=42)
     model.fit(X)
