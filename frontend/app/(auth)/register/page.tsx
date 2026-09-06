@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { mockRegister } from "@/lib/mock/session";
+import { useToast } from "@/lib/mock/toast";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState("");
@@ -15,6 +20,26 @@ export default function RegisterPage() {
     hasSym: true,
     score: 4,
   });
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    if (password !== confirm) {
+      toast({ title: "Passphrases do not match", body: "Confirm passphrase must equal the passphrase.", kind: "warn" });
+      return;
+    }
+    try {
+      const user = mockRegister(
+        String(data.get("email") ?? ""),
+        password,
+        String(data.get("full_name") ?? "")
+      );
+      toast({ title: "Workspace provisioned", body: `Signed in as ${user.email} (prototype).`, kind: "ok" });
+      router.push("/overview");
+    } catch (err) {
+      toast({ title: "Registration failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
+  }
 
   function updatePasswordMetrics(val: string) {
     const hasLength = val.length >= 12;
@@ -127,12 +152,12 @@ export default function RegisterPage() {
 <p className="font-body-md text-body-md text-on-surface-variant">Enter your credentials to provision analyst workspace access.</p>
 </div>
 {/* Registration Form */}
-<form className="flex flex-col gap-space-md" id="provision-form" onSubmit={(e) => e.preventDefault()}>
+<form className="flex flex-col gap-space-md" id="provision-form" onSubmit={onSubmit}>
 {/* Row 1: Full Name & Role */}
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
 <div className="flex flex-col gap-space-2xs">
 <label className="font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider" htmlFor="full_name">Full Name</label>
-<input className="w-full h-8 px-space-sm bg-surface-container-low text-on-surface font-body-md text-body-md rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors" id="full_name" placeholder="Dr. Jonathan Chen" required type="text" />
+<input className="w-full h-8 px-space-sm bg-surface-container-low text-on-surface font-body-md text-body-md rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors" name="full_name" id="full_name" placeholder="Dr. Jonathan Chen" required type="text" />
 </div>
 <div className="flex flex-col gap-space-2xs">
 <label className="font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider" htmlFor="assigned_role">Forensic Role</label>
@@ -152,13 +177,13 @@ export default function RegisterPage() {
 {/* Row 2: Organization */}
 <div className="flex flex-col gap-space-2xs">
 <label className="font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider" htmlFor="organization">Organization / Department</label>
-<input className="w-full h-8 px-space-sm bg-surface-container-low text-on-surface font-body-md text-body-md rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors" id="organization" placeholder="Cyber Defense Command / Tier 3 SOC" required type="text" />
+<input className="w-full h-8 px-space-sm bg-surface-container-low text-on-surface font-body-md text-body-md rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors" name="organization" id="organization" placeholder="Cyber Defense Command / Tier 3 SOC" required type="text" />
 </div>
 {/* Row 3: Work Email */}
 <div className="flex flex-col gap-space-2xs">
 <label className="font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider" htmlFor="email">Enterprise Identity / Work Email</label>
 <div className="relative flex items-center">
-<input className="w-full h-8 px-space-sm bg-surface-container-low text-on-surface font-code-sm text-code-sm rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors" id="email" placeholder="analyst@enterprise.internal" required type="email" />
+<input className="w-full h-8 px-space-sm bg-surface-container-low text-on-surface font-code-sm text-code-sm rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors" name="email" id="email" placeholder="analyst@enterprise.internal" required type="email" />
 <span className="absolute right-space-sm text-outline material-symbols-outlined text-[16px]">alternate_email</span>
 </div>
 </div>
@@ -167,7 +192,7 @@ export default function RegisterPage() {
 <div className="flex flex-col gap-space-2xs">
 <label className="font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider" htmlFor="password">Passphrase</label>
 <div className="relative flex items-center">
-<input className="w-full h-8 px-space-sm pr-8 bg-surface-container-low text-on-surface font-code-sm text-code-sm rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors" id="password" placeholder="••••••••••••••••" required type={showPassword ? "text" : "password"} value={password} onInput={(e) => { const val = e.currentTarget.value; setPassword(val); updatePasswordMetrics(val); }} />
+<input className="w-full h-8 px-space-sm pr-8 bg-surface-container-low text-on-surface font-code-sm text-code-sm rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors" name="password" id="password" placeholder="••••••••••••••••" required type={showPassword ? "text" : "password"} value={password} onInput={(e) => { const val = e.currentTarget.value; setPassword(val); updatePasswordMetrics(val); }} />
 <button aria-label="Toggle password visibility" className="absolute right-space-xs p-space-2xs text-on-surface-variant hover:text-on-surface transition-colors flex items-center" type="button" onClick={() => setShowPassword((v) => !v)}>
 <span className="material-symbols-outlined text-[16px]">{showPassword ? "visibility_off" : "visibility"}</span>
 </button>
@@ -176,7 +201,7 @@ export default function RegisterPage() {
 <div className="flex flex-col gap-space-2xs">
 <label className="font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider" htmlFor="confirm_password">Confirm Passphrase</label>
 <div className="relative flex items-center">
-<input className={`w-full h-8 px-space-sm pr-8 bg-surface-container-low text-on-surface font-code-sm text-code-sm rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors${isMismatch ? " ring-1 ring-error" : ""}`} id="confirm_password" placeholder="••••••••••••••••" required type={showConfirm ? "text" : "password"} value={confirm} onInput={(e) => setConfirm(e.currentTarget.value)} />
+<input className={`w-full h-8 px-space-sm pr-8 bg-surface-container-low text-on-surface font-code-sm text-code-sm rounded focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-outline/60 transition-colors${isMismatch ? " ring-1 ring-error" : ""}`} name="confirm_password" id="confirm_password" placeholder="••••••••••••••••" required type={showConfirm ? "text" : "password"} value={confirm} onInput={(e) => setConfirm(e.currentTarget.value)} />
 <button aria-label="Toggle confirm password visibility" className="absolute right-space-xs p-space-2xs text-on-surface-variant hover:text-on-surface transition-colors flex items-center" type="button" onClick={() => setShowConfirm((v) => !v)}>
 <span className="material-symbols-outlined text-[16px]">{showConfirm ? "visibility_off" : "visibility"}</span>
 </button>

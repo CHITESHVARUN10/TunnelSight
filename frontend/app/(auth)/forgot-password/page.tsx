@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 type RecoveryState = "default" | "invalid" | "notfound" | "sent";
@@ -182,12 +183,12 @@ export default function ForgotPasswordPage() {
 
               {/* Secondary Action */}
               <div className="pt-2 text-center">
-                <a href="#" className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-brand-teal transition-colors">
+                <Link href="/login" className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-brand-teal transition-colors">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"  />
                   </svg>
                   <span>Back to sign in</span>
-                </a>
+                </Link>
               </div>
             </form>
           </div>
@@ -223,12 +224,12 @@ export default function ForgotPasswordPage() {
               </button>
 
               <div className="text-center pt-2">
-                <a href="#" className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-brand-teal transition-colors">
+                <Link href="/login" className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-brand-teal transition-colors">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"  />
                   </svg>
                   <span>Back to sign in</span>
-                </a>
+                </Link>
               </div>
             </div>
           </div>

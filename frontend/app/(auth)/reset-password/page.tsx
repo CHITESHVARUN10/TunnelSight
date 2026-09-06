@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type TokenState = "valid" | "success" | "expired" | "invalid";
 
 export default function ResetPasswordPage() {
-  const [tokenState, setTokenState] = useState<TokenState>("valid");
+  const router = useRouter();  const [tokenState, setTokenState] = useState<TokenState>("valid");
   const [newPassword, setNewPassword] = useState("Kx8!mQ9#vL2p$Zt1");
   const [confirmPassword, setConfirmPassword] = useState("Kx8!mQ9#vL2p$Zt1");
   const [showNew, setShowNew] = useState(false);
@@ -280,7 +281,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="space-y-3 pt-2">
-              <button 
+              <button onClick={() => router.push("/login")} 
                 type="button" 
                 className="w-full bg-brand hover:bg-[#028072] text-black font-semibold text-sm py-2.5 px-4 rounded transition-colors flex items-center justify-center space-x-2"
               >

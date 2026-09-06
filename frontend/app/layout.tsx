@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ToastProvider } from "@/lib/mock/toast";
+import { HeaderBehavior } from "@/components/layout/HeaderBehavior";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export const metadata: Metadata = {
   title: "TunnelSight — IPsec Security Intelligence",
@@ -17,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="bg-[#0c0e11]">{children}</body>
+      <body className="bg-[#0c0e11]"><ToastProvider><HeaderBehavior /><AuthGuard>{children}</AuthGuard></ToastProvider></body>
     </html>
   );
 }

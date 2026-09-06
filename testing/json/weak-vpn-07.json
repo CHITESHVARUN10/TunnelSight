@@ -1,0 +1,14 @@
+{
+  "capture_id": "weak-vpn-07",
+  "ike_version": "IKEv1",
+  "ipsec_protocol": "ESP",
+  "mode": "tunnel",
+  "cipher": "3DES-CBC",
+  "integrity": "HMAC-MD5",
+  "dh_group": 2,
+  "pfs": false,
+  "replay_protection": true,
+  "ip_version": "IPv4",
+  "traffic_type": "video",
+  "packets": 37
+}

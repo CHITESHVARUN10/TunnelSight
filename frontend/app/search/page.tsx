@@ -2,11 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/lib/mock/toast";
 
 export default function SearchOverlayPage() {
   const [query, setQuery] = useState("branch");
   const [paletteOpen, setPaletteOpen] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+  const toast = useToast();
+  const openResult = (e: React.MouseEvent<HTMLDivElement>) => {
+    const t = e.currentTarget.textContent ?? "";
+    if (t.includes("Weak Diffie-Hellman") || t.includes("PFS Disabled")) router.push("/analysis/findings");
+    else if (t.includes(".pdf")) router.push("/analysis/reports");
+    else router.push("/analysis/results");
+  };
+  const scopeToast = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const label = (e.currentTarget.textContent ?? "").replace(/[0-9]/g, "").trim();
+    toast({ title: `Scope: ${label}`, body: "Result scope filter staged (mock).", kind: "info" });
+  };
 
   useEffect(() => {
     const el = inputRef.current;
@@ -41,7 +55,7 @@ export default function SearchOverlayPage() {
   }
   return (
     <div className="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
-<aside className="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none"><div className="flex flex-col"><div className="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span className="material-symbols-outlined text-primary text-[20px]">security</span><div className="flex items-baseline gap-space-2xs"><span className="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span className="font-code-sm text-code-sm text-outline">/</span><span className="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div className="px-space-base py-space-xs bg-surface-container-low"><div className="flex items-center justify-between text-outline"><span className="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span className="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav className="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><Link aria-current="page" className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" href="/overview"><span className="material-symbols-outlined text-[18px]">dashboard</span><span className="font-body-md text-body-md">Overview</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analyze"><span className="material-symbols-outlined text-[18px]">file_open</span><span className="font-body-md text-body-md">Analyze PCAP</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/live"><span className="material-symbols-outlined text-[18px]">pulse_alert</span><span className="font-body-md text-body-md">Live Analysis</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/configuration"><span className="material-symbols-outlined text-[18px]">settings_ethernet</span><span className="font-body-md text-body-md">VPN Configurations</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/traffic"><span className="material-symbols-outlined text-[18px]">insights</span><span className="font-body-md text-body-md">Traffic Intelligence</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/findings"><span className="material-symbols-outlined text-[18px]">policy</span><span className="font-body-md text-body-md">Findings</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/reports"><span className="material-symbols-outlined text-[18px]">assignment</span><span className="font-body-md text-body-md">Reports</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/dataset"><span className="material-symbols-outlined text-[18px]">dataset</span><span className="font-body-md text-body-md">Dataset / Testbed</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/settings"><span className="material-symbols-outlined text-[18px]">tune</span><span className="font-body-md text-body-md">Settings</span></Link></nav></div><div className="p-space-sm bg-surface-container-lowest"><div className="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div className="flex items-center justify-between font-label-sm text-label-sm"><span className="text-outline uppercase">Pipeline</span><span className="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div className="w-full bg-surface-container-highest h-1 rounded"><div className="bg-primary-container h-1 rounded w-3/4"></div></div><div className="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span className="truncate">DPDK Core 0-3</span><span className="text-on-surface">0.02ms</span></div></div></div></aside><div className="pl-sidebar-expanded"><header className="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none"><div className="flex items-center gap-space-md"><div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span className="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span className="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4 ACTIVE</span></div><div className="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span className="font-label-sm text-label-sm text-outline uppercase">Profile</span><span className="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div className="flex items-center gap-space-md"><div className="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span className="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span className="text-outline-variant">|</span><span className="text-outline">Buffer:</span><span className="text-tertiary">98.4% Free</span></div><button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span className="material-symbols-outlined text-[16px]">search</span><span className="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd className="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div className="flex items-center gap-space-xs"><button className="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span className="material-symbols-outlined text-[18px]">download</span></button><button className="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span className="material-symbols-outlined text-[18px]">notifications</span><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div className="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main className="relative pt-header-height w-full bg-background min-h-screen"><div className="flex flex-col w-full relative">
+<aside className="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none"><div className="flex flex-col"><div className="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span className="material-symbols-outlined text-primary text-[20px]">security</span><div className="flex items-baseline gap-space-2xs"><span className="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span className="font-code-sm text-code-sm text-outline">/</span><span className="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div className="px-space-base py-space-xs bg-surface-container-low"><div className="flex items-center justify-between text-outline"><span className="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span className="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav className="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><Link aria-current="page" className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" href="/overview"><span className="material-symbols-outlined text-[18px]">dashboard</span><span className="font-body-md text-body-md">Overview</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analyze"><span className="material-symbols-outlined text-[18px]">file_open</span><span className="font-body-md text-body-md">Analyze PCAP</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/live"><span className="material-symbols-outlined text-[18px]">pulse_alert</span><span className="font-body-md text-body-md">Live Analysis</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/configuration"><span className="material-symbols-outlined text-[18px]">settings_ethernet</span><span className="font-body-md text-body-md">VPN Configurations</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/traffic"><span className="material-symbols-outlined text-[18px]">insights</span><span className="font-body-md text-body-md">Traffic Intelligence</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/findings"><span className="material-symbols-outlined text-[18px]">policy</span><span className="font-body-md text-body-md">Findings</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/reports"><span className="material-symbols-outlined text-[18px]">assignment</span><span className="font-body-md text-body-md">Reports</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/dataset"><span className="material-symbols-outlined text-[18px]">dataset</span><span className="font-body-md text-body-md">Dataset / Testbed</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/settings"><span className="material-symbols-outlined text-[18px]">tune</span><span className="font-body-md text-body-md">Settings</span></Link></nav></div><div className="p-space-sm bg-surface-container-lowest"><div className="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div className="flex items-center justify-between font-label-sm text-label-sm"><span className="text-outline uppercase">Pipeline</span><span className="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div className="w-full bg-surface-container-highest h-1 rounded"><div className="bg-primary-container h-1 rounded w-3/4"></div></div><div className="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span className="truncate">DPDK Core 0-3</span><span className="text-on-surface">0.02ms</span></div></div></div></aside><div className="pl-sidebar-expanded"><header className="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none"><div className="flex items-center gap-space-md"><div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span className="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span className="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4 ACTIVE</span></div><div className="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span className="font-label-sm text-label-sm text-outline uppercase">Profile</span><span className="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div className="flex items-center gap-space-md"><div className="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span className="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span className="text-outline-variant">|</span><span className="text-outline">Buffer:</span><span className="text-tertiary">98.4% Free</span></div><button data-action="search" className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span className="material-symbols-outlined text-[16px]">search</span><span className="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd className="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div className="flex items-center gap-space-xs"><button data-action="export" className="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span className="material-symbols-outlined text-[18px]">download</span></button><button data-action="notifications" className="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span className="material-symbols-outlined text-[18px]">notifications</span><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div className="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div data-action="profile" role="button" tabIndex={0} className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer"><span className="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main className="relative pt-header-height w-full bg-background min-h-screen"><div className="flex flex-col w-full relative">
 {/* Underlay Mockup: Authentic SecOps Background Workbench (Dimmed & Blurred) */}
 <div className="w-full pointer-events-none select-none opacity-40 filter blur-[2px] transition-opacity">
 <div className="p-space-base flex flex-col gap-space-base max-w-7xl mx-auto">
@@ -101,7 +115,7 @@ export default function SearchOverlayPage() {
 <div className="p-space-base pb-space-sm flex flex-col gap-space-sm bg-surface-container-low">
 <div className="flex items-center gap-space-sm bg-surface-container-lowest rounded-lg px-space-md py-2.5">
 <span className="material-symbols-outlined text-primary text-[22px] select-none">search</span>
-<input autoFocus ref={inputRef} className="w-full bg-transparent font-code-md text-code-md text-on-surface placeholder:text-outline focus:outline-none tracking-tight" id="search-input" placeholder="Search captures, tunnels, SPI (0x...), RFC findings, reports…" type="text" value={query} onChange={(e) => setQuery(e.target.value)} />
+<input autoFocus ref={inputRef} className="w-full bg-transparent border-0 p-0 font-code-md text-code-md text-on-surface placeholder:text-outline focus:outline-none tracking-tight" id="search-input" placeholder="Search captures, tunnels, SPI (0x...), RFC findings, reports…" type="text" value={query} onChange={(e) => setQuery(e.target.value)} />
 <div className="flex items-center gap-space-xs select-none">
 <button className="flex items-center justify-center w-5 h-5 rounded bg-surface-container hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors" id="clear-search-btn" title="Clear query" onClick={handleClear}>
 <span className="material-symbols-outlined text-[14px]">close</span>
@@ -113,27 +127,27 @@ export default function SearchOverlayPage() {
 </div>
 {/* Scope & Category Filter Chips */}
 <div className="flex items-center gap-space-xs overflow-x-auto pb-1 select-none">
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-primary-container bg-primary-container font-label-md text-label-md transition-colors">
+<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-primary-container bg-primary-container font-label-md text-label-md transition-colors" onClick={scopeToast}>
 <span>All Results</span>
 <span className="font-code-sm text-code-sm opacity-80">37</span>
 </button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
 <span>Captures</span>
 <span className="font-code-sm text-code-sm text-primary font-medium">14</span>
 </button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
 <span>Findings</span>
 <span className="font-code-sm text-code-sm text-error font-medium">8</span>
 </button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
 <span>VPNs</span>
 <span className="font-code-sm text-code-sm text-outline">4</span>
 </button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
 <span>SPI</span>
 <span className="font-code-sm text-code-sm text-tertiary">6</span>
 </button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors">
+<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
 <span>Reports</span>
 <span className="font-code-sm text-code-sm text-outline">5</span>
 </button>
@@ -148,7 +162,7 @@ export default function SearchOverlayPage() {
 <span className="font-code-sm text-code-sm text-outline">Matches in filename &amp; IP</span>
 </div>
 {/* Item 1: Selected State */}
-<div className="group relative flex items-center justify-between p-space-sm rounded-lg bg-surface-container cursor-pointer transition-all">
+<div className="group relative flex items-center justify-between p-space-sm rounded-lg bg-surface-container cursor-pointer transition-all" onClick={openResult}>
 {/* Left active indicator marker */}
 <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-primary rounded-r"></div>
 <div className="flex items-start gap-space-sm pl-2 min-w-0">
@@ -181,7 +195,7 @@ export default function SearchOverlayPage() {
 </div>
 </div>
 {/* Item 2 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
 <div className="flex items-start gap-space-sm pl-2 min-w-0">
 <div className="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
 <span className="material-symbols-outlined text-[18px]">file_open</span>
@@ -213,7 +227,7 @@ export default function SearchOverlayPage() {
 <span className="font-code-sm text-code-sm text-error">2 RFC Non-Conformances</span>
 </div>
 {/* Finding Item 1 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
 <div className="flex items-start gap-space-sm pl-2 min-w-0">
 <div className="p-1.5 rounded bg-error-container/20 text-error shrink-0 mt-0.5">
 <span className="material-symbols-outlined text-[18px]">security_update_warning</span>
@@ -235,7 +249,7 @@ export default function SearchOverlayPage() {
 </div>
 </div>
 {/* Finding Item 2 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
 <div className="flex items-start gap-space-sm pl-2 min-w-0">
 <div className="p-1.5 rounded bg-surface-container-highest text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
 <span className="material-symbols-outlined text-[18px]">warning</span>
@@ -260,7 +274,7 @@ export default function SearchOverlayPage() {
 <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Configured Gateways &amp; Tunnels</span>
 <span className="font-code-sm text-code-sm text-outline">IPsec Topology</span>
 </div>
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
 <div className="flex items-start gap-space-sm pl-2 min-w-0">
 <div className="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
 <span className="material-symbols-outlined text-[18px]">settings_ethernet</span>
@@ -289,7 +303,7 @@ export default function SearchOverlayPage() {
 <span className="font-code-sm text-code-sm text-primary">In-Memory Hash Matches</span>
 </div>
 {/* SPI Item 1 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
 <div className="flex items-start gap-space-sm pl-2 min-w-0">
 <div className="p-1.5 rounded bg-surface-container text-tertiary shrink-0 mt-0.5">
 <span className="material-symbols-outlined text-[18px]">tag</span>
@@ -314,7 +328,7 @@ export default function SearchOverlayPage() {
 </div>
 </div>
 {/* SPI Item 2 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
 <div className="flex items-start gap-space-sm pl-2 min-w-0">
 <div className="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-tertiary shrink-0 mt-0.5">
 <span className="material-symbols-outlined text-[18px]">tag</span>
@@ -341,7 +355,7 @@ export default function SearchOverlayPage() {
 <span className="font-code-sm text-code-sm text-outline">Signed Forensics</span>
 </div>
 {/* Report Item 1 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
 <div className="flex items-start gap-space-sm pl-2 min-w-0">
 <div className="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
 <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>

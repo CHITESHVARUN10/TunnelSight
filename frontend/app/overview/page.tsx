@@ -1,7 +1,15 @@
+"use client";
 import Link from "next/link";
-export const metadata = { title: "Analyzer Home — Security Operations Overview" };
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function OverviewPage() {
+  const router = useRouter();
+  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [filter, setFilter] = useState("");
+  function closeDrawer() {
+    setDrawerOpen(false);
+  }
   return (
     <div className="type-plex bg-background font-sans text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen overflow-x-hidden">
 
@@ -102,16 +110,16 @@ export default function OverviewPage() {
 <span className="text-outline">Buffer:</span>
 <span className="text-tertiary">98.4% Free</span>
 </div>
-<button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+<button data-action="search" className="flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button">
 <span className="material-symbols-outlined text-[15px]">search</span>
 <span className="font-mono text-[11px]">Search packets/SPI/tunnels</span>
 <kbd className="bg-surface-container-highest px-1.5 rounded font-mono text-[10px] text-outline ml-1">⌘K</kbd>
 </button>
 <div className="flex items-center gap-1">
-<button className="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Export" type="button">
+<button data-action="export" className="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Export" type="button">
 <span className="material-symbols-outlined text-[18px]">download</span>
 </button>
-<button className="relative p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notifications" type="button">
+<button data-action="notifications" className="relative p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notifications" type="button">
 <span className="material-symbols-outlined text-[18px]">notifications</span>
 <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-tertiary"></span>
 </button>
@@ -140,11 +148,11 @@ export default function OverviewPage() {
 </div>
 </div>
 <div className="flex items-center gap-2">
-<button className="h-8 px-3 bg-surface-container hover:bg-surface-container-high text-on-surface text-[12px] font-semibold rounded flex items-center gap-2 border border-surface-container-highest/50 transition-colors" type="button">
+<button className="h-8 px-3 bg-surface-container hover:bg-surface-container-high text-on-surface text-[12px] font-semibold rounded flex items-center gap-2 border border-surface-container-highest/50 transition-colors" type="button" onClick={() => router.push("/analysis/live")}>
 <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
 <span>Start Live Analysis</span>
 </button>
-<button className="h-8 px-3.5 bg-primary-container hover:bg-primary text-on-primary-container text-[12px] font-semibold rounded flex items-center gap-2 shadow-sm transition-colors" id="btn-analyze-pcap" type="button">
+<button className="h-8 px-3.5 bg-primary-container hover:bg-primary text-on-primary-container text-[12px] font-semibold rounded flex items-center gap-2 shadow-sm transition-colors" id="btn-analyze-pcap" type="button" onClick={() => router.push("/analyze")}>
 <span className="material-symbols-outlined text-[16px]">upload_file</span>
 <span>Analyze PCAP</span>
 <kbd className="bg-on-primary-container/20 px-1.5 rounded font-mono text-[10px]">Alt+U</kbd>
@@ -252,7 +260,7 @@ export default function OverviewPage() {
 </div>
 <div className="flex items-center gap-3">
 <div className="relative">
-<input className="h-8 w-60 bg-surface-container-lowest text-on-surface placeholder:text-outline font-mono text-[12px] px-3 rounded border border-surface-container-highest/40 outline-none focus:border-primary" placeholder="Filter capture file or status..." type="text" />
+<input className="h-8 w-60 bg-surface-container-lowest text-on-surface placeholder:text-outline font-mono text-[12px] px-3 rounded border border-surface-container-highest/40 outline-none focus:border-primary" placeholder="Filter capture file or status..." type="text" value={filter} onChange={(e) => setFilter(e.target.value)} />
 </div>
 <span className="font-mono text-[11px] text-outline">Showing 5 of 24</span>
 </div>
@@ -272,7 +280,7 @@ export default function OverviewPage() {
 </thead>
 <tbody className="divide-y divide-surface-container-highest/30 text-on-surface">
 {/* Row 1 */}
-<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="core-dc-chicago-gw1.pcap">
+<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" onClick={() => router.push("/analysis/capture")} data-capture="core-dc-chicago-gw1.pcap">
 <td className="py-4 px-6 font-mono text-[12px]">
 <div className="flex items-center gap-2">
 <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span>
@@ -287,13 +295,13 @@ export default function OverviewPage() {
 <td className="py-4 px-6 font-mono text-[#EF4444] font-semibold">41</td>
 <td className="py-4 px-6 font-mono text-outline text-[12px]">14:18</td>
 <td className="py-4 px-6 text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button" onClick={() => router.push("/analysis/capture")}>
                       Inspect <span className="group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
 </td>
 </tr>
 {/* Row 2 */}
-<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="branch-emea-gw04.pcap">
+<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" onClick={() => router.push("/analysis/capture")} data-capture="branch-emea-gw04.pcap">
 <td className="py-4 px-6 font-mono text-[12px]">
 <div className="flex items-center gap-2">
 <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
@@ -308,13 +316,13 @@ export default function OverviewPage() {
 <td className="py-4 px-6 font-mono text-[#FBBF24] font-semibold">68</td>
 <td className="py-4 px-6 font-mono text-outline text-[12px]">14:02</td>
 <td className="py-4 px-6 text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button" onClick={() => router.push("/analysis/capture")}>
                       Inspect <span className="group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
 </td>
 </tr>
 {/* Row 3 */}
-<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="site2site-failover.pcapng">
+<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" onClick={() => router.push("/analysis/capture")} data-capture="site2site-failover.pcapng">
 <td className="py-4 px-6 font-mono text-[12px]">
 <div className="flex items-center gap-2">
 <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
@@ -329,13 +337,13 @@ export default function OverviewPage() {
 <td className="py-4 px-6 font-mono text-[#34D399] font-semibold">94</td>
 <td className="py-4 px-6 font-mono text-outline text-[12px]">13:45</td>
 <td className="py-4 px-6 text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button" onClick={() => router.push("/analysis/capture")}>
                       Inspect <span className="group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
 </td>
 </tr>
 {/* Row 4 */}
-<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="azure-expressroute-ipsec.pcap">
+<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" onClick={() => router.push("/analysis/capture")} data-capture="azure-expressroute-ipsec.pcap">
 <td className="py-4 px-6 font-mono text-[12px]">
 <div className="flex items-center gap-2">
 <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
@@ -350,13 +358,13 @@ export default function OverviewPage() {
 <td className="py-4 px-6 font-mono text-[#FBBF24] font-semibold">72</td>
 <td className="py-4 px-6 font-mono text-outline text-[12px]">13:12</td>
 <td className="py-4 px-6 text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button" onClick={() => router.push("/analysis/capture")}>
                       Inspect <span className="group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
 </td>
 </tr>
 {/* Row 5 */}
-<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" data-capture="live-tap-frankfurt-ixp.pcapng">
+<tr className="table-row-item hover:bg-surface-container/70 cursor-pointer transition-colors" onClick={() => router.push("/analysis/capture")} data-capture="live-tap-frankfurt-ixp.pcapng">
 <td className="py-4 px-6 font-mono text-[12px]">
 <div className="flex items-center gap-2">
 <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
@@ -371,7 +379,7 @@ export default function OverviewPage() {
 <td className="py-4 px-6 font-mono text-[#34D399] font-semibold">98</td>
 <td className="py-4 px-6 font-mono text-outline text-[12px]">12:15</td>
 <td className="py-4 px-6 text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-mono text-[12px] font-semibold inline-flex items-center gap-1 group" type="button" onClick={() => router.push("/analysis/capture")}>
                       Inspect <span className="group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
 </td>
@@ -395,7 +403,7 @@ export default function OverviewPage() {
 {/* 3 Minimal Finding Rows */}
 <div className="flex flex-col gap-3">
 {/* Finding 1 */}
-<div className="bg-surface-container p-3.5 rounded-md border border-surface-container-highest/30 flex items-center justify-between gap-4">
+<div className="bg-surface-container p-3.5 rounded-md border border-surface-container-highest/30 flex items-center justify-between gap-4" onClick={() => router.push("/analysis/findings")}>
 <div className="flex items-center gap-3 min-w-0">
 <span className="px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#EF4444] font-mono text-[10px] font-bold tracking-wider shrink-0">CRITICAL</span>
 <div className="min-w-0">
@@ -406,7 +414,7 @@ export default function OverviewPage() {
 <span className="text-[11px] font-mono text-outline shrink-0">14:18</span>
 </div>
 {/* Finding 2 */}
-<div className="bg-surface-container p-3.5 rounded-md border border-surface-container-highest/30 flex items-center justify-between gap-4">
+<div className="bg-surface-container p-3.5 rounded-md border border-surface-container-highest/30 flex items-center justify-between gap-4" onClick={() => router.push("/analysis/findings")}>
 <div className="flex items-center gap-3 min-w-0">
 <span className="px-2 py-0.5 rounded bg-[#F59E0B]/20 text-[#FBBF24] font-mono text-[10px] font-bold tracking-wider shrink-0">MEDIUM</span>
 <div className="min-w-0">
@@ -417,7 +425,7 @@ export default function OverviewPage() {
 <span className="text-[11px] font-mono text-outline shrink-0">14:02</span>
 </div>
 {/* Finding 3 */}
-<div className="bg-surface-container p-3.5 rounded-md border border-surface-container-highest/30 flex items-center justify-between gap-4">
+<div className="bg-surface-container p-3.5 rounded-md border border-surface-container-highest/30 flex items-center justify-between gap-4" onClick={() => router.push("/analysis/findings")}>
 <div className="flex items-center gap-3 min-w-0">
 <span className="px-2 py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px] font-bold tracking-wider shrink-0">LOW</span>
 <div className="min-w-0">
@@ -502,9 +510,9 @@ export default function OverviewPage() {
 </div>
 {/* 5. INTERACTIVE DETAIL DRAWER / SLIDE-OVER (PROGRESSIVE DISCLOSURE) */}
 {/* Semi-transparent Backdrop for focused inspection */}
-<div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-50 transition-opacity opacity-100 block" id="drawer-backdrop"></div>
+<div className={drawerOpen ? "fixed inset-0 bg-black/50 backdrop-blur-[1px] z-50 transition-opacity opacity-100 block" : "fixed inset-0 bg-black/50 backdrop-blur-[1px] z-50 transition-opacity opacity-0 pointer-events-none hidden"} id="drawer-backdrop" onClick={closeDrawer}></div>
 {/* Slide-over Drawer Panel */}
-<aside className="fixed top-0 right-0 h-full w-[440px] max-w-full bg-surface-container-low border-l border-surface-container-highest z-50 flex flex-col shadow-2xl transition-transform duration-300 translate-x-0" id="detail-drawer">
+<aside className={drawerOpen ? "fixed top-0 right-0 h-full w-[440px] max-w-full bg-surface-container-low border-l border-surface-container-highest z-50 flex flex-col shadow-2xl transition-transform duration-300 translate-x-0" : "fixed top-0 right-0 h-full w-[440px] max-w-full bg-surface-container-low border-l border-surface-container-highest z-50 flex flex-col shadow-2xl transition-transform duration-300 translate-x-full pointer-events-none"} id="detail-drawer">
 {/* Header */}
 <div className="p-5 bg-surface-container border-b border-surface-container-highest flex items-start justify-between">
 <div className="flex flex-col gap-1">
@@ -515,7 +523,7 @@ export default function OverviewPage() {
 <span className="text-[11px] font-mono text-outline">Frame #412 Dissection</span>
 </div>
 </div>
-<button className="p-1.5 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors" id="close-drawer" title="Close Drawer" type="button">
+<button className="p-1.5 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors" id="close-drawer" title="Close Drawer" type="button" onClick={closeDrawer}>
 <span className="material-symbols-outlined text-[20px]">close</span>
 </button>
 </div>
@@ -587,10 +595,10 @@ export default function OverviewPage() {
 </div>
 {/* Drawer Footer CTA */}
 <div className="p-4 bg-surface-container border-t border-surface-container-highest flex items-center justify-between gap-3">
-<button className="h-9 px-4 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-sans text-[12px] font-semibold transition-colors" id="close-drawer-btn" type="button">
+<button className="h-9 px-4 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-sans text-[12px] font-semibold transition-colors" id="close-drawer-btn" type="button" onClick={closeDrawer}>
             Close
           </button>
-<button className="h-9 px-4 rounded bg-primary-container hover:bg-primary text-on-primary-container font-sans text-[12px] font-semibold inline-flex items-center gap-1.5 transition-colors shadow-sm" type="button">
+<button className="h-9 px-4 rounded bg-primary-container hover:bg-primary text-on-primary-container font-sans text-[12px] font-semibold inline-flex items-center gap-1.5 transition-colors shadow-sm" type="button" onClick={() => router.push("/analysis/results")}>
 <span>View Full Forensic Analysis</span>
 <span>→</span>
 </button>

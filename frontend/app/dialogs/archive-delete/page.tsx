@@ -341,10 +341,10 @@ export default function ArchiveDeleteDialogsPage() {
           </div>
 
           <div className="mt-6 pt-4 border-t border-surface-border flex items-center justify-end gap-3">
-            <button className="px-3.5 py-2 rounded-lg text-xs font-medium text-gray-300 hover:bg-surface-elevated border border-surface-border transition-colors">
+            <button className="px-3.5 py-2 rounded-lg text-xs font-medium text-gray-300 hover:bg-surface-elevated border border-surface-border transition-colors" onClick={() => simulateCancel('Archive cancelled')}>
               Cancel
             </button>
-            <button className="px-4 py-2 rounded-lg text-xs font-semibold bg-brand-teal text-surface-base hover:bg-brand-teal-hover transition-colors">
+            <button className="px-4 py-2 rounded-lg text-xs font-semibold bg-brand-teal text-surface-base hover:bg-brand-teal-hover transition-colors" onClick={() => simulateAction('archive-success')}>
               Archive Capture
             </button>
           </div>
@@ -384,10 +384,10 @@ export default function ArchiveDeleteDialogsPage() {
           </div>
 
           <div className="mt-6 pt-4 border-t border-surface-border flex items-center justify-end gap-3">
-            <button className="px-3.5 py-2 rounded-lg text-xs font-medium text-gray-300 hover:bg-surface-elevated border border-surface-border transition-colors">
+            <button className="px-3.5 py-2 rounded-lg text-xs font-medium text-gray-300 hover:bg-surface-elevated border border-surface-border transition-colors" onClick={() => simulateCancel('Deletion cancelled')}>
               Cancel
             </button>
-            <button className="px-4 py-2 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-500 text-white transition-colors">
+            <button className="px-4 py-2 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-500 text-white transition-colors" onClick={() => simulateAction('delete-success')}>
               Delete Permanently
             </button>
           </div>

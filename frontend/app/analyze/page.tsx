@@ -1,10 +1,61 @@
+"use client";
 import Link from "next/link";
-export const metadata = { title: "Analyze PCAP — Forensic Trace Ingestion" };
+import { useEffect, useState } from "react";
+import { UploadBehavior } from "@/components/upload/UploadBehavior";
+import { useToast } from "@/lib/mock/toast";
+
+type DrawerCapture = { name: string; volume: string; packets: string; risk: string; sha: string; source: string; suite: string };
+
+const DEFAULT_CAPTURE: DrawerCapture = {
+  name: "core-dc-chicago-gw1.pcap",
+  volume: "1.42 GB",
+  packets: "842,109",
+  risk: "HIGH",
+  sha: "4f81a792e091bfa3c6781290bb34e91a784d12c82098b1a3c75d40192e5912a0",
+  source: "Edge TAP (SPAN 04)",
+  suite: "IKEv1 Aggressive / ESP 3DES-CBC",
+};
 
 export default function AnalyzePage() {
+  const toast = useToast();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [policyOpen, setPolicyOpen] = useState(false);
+  const [capture, setCapture] = useState<DrawerCapture>(DEFAULT_CAPTURE);
+  const openPolicy = () => setPolicyOpen(true);
+  const closePolicy = () => setPolicyOpen(false);
+  const closeDrawer = () => setDrawerOpen(false);
+  const openInspectRow = (e: React.MouseEvent) => {
+    const d: DOMStringMap = ((e.currentTarget as HTMLElement).closest("tr") as HTMLElement | null)?.dataset ?? {};
+    setCapture({
+      name: d.name ?? DEFAULT_CAPTURE.name,
+      volume: d.vol ?? DEFAULT_CAPTURE.volume,
+      packets: d.packets ?? DEFAULT_CAPTURE.packets,
+      risk: d.risk ?? DEFAULT_CAPTURE.risk,
+      sha: d.sha ?? DEFAULT_CAPTURE.sha,
+      source: d.source ?? DEFAULT_CAPTURE.source,
+      suite: d.suite ?? DEFAULT_CAPTURE.suite,
+    });
+    setDrawerOpen(true);
+  };
+  const inspectConfig = (e: React.MouseEvent) => {
+    const m = ((e.currentTarget as HTMLElement).closest("div")?.parentElement?.textContent ?? "").match(/MOD_\d{2}/);
+    toast({ title: m?.[0] ?? "Module", body: "Module config is preset-managed (mock).", kind: "info" });
+  };
+  const refreshCaptures = () => toast({ title: "Captures refreshed", body: "5 records synchronized (mock).", kind: "info" });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setDrawerOpen(false);
+        setPolicyOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
   return (
     <div className="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
-<aside className="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none border-r border-surface-container-high/40"><div className="flex flex-col"><div className="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span className="material-symbols-outlined text-primary text-[20px]">security</span><div className="flex items-baseline gap-space-2xs"><span className="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span className="font-code-sm text-code-sm text-outline">/</span><span className="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div className="px-space-base py-space-xs bg-surface-container-low border-b border-surface-container-high/40"><div className="flex items-center justify-between text-outline"><span className="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span className="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav className="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/overview"><span className="material-symbols-outlined text-[18px]">dashboard</span><span className="font-body-md text-body-md">Overview</span></Link><Link aria-current="page" className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" href="/analyze"><span className="material-symbols-outlined text-[18px]">file_open</span><span className="font-body-md text-body-md">Analyze PCAP</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/live"><span className="material-symbols-outlined text-[18px]">pulse_alert</span><span className="font-body-md text-body-md">Live Analysis</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/configuration"><span className="material-symbols-outlined text-[18px]">settings_ethernet</span><span className="font-body-md text-body-md">VPN Configurations</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/traffic"><span className="material-symbols-outlined text-[18px]">insights</span><span className="font-body-md text-body-md">Traffic Intelligence</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/findings"><span className="material-symbols-outlined text-[18px]">policy</span><span className="font-body-md text-body-md">Findings</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/reports"><span className="material-symbols-outlined text-[18px]">assignment</span><span className="font-body-md text-body-md">Reports</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/dataset"><span className="material-symbols-outlined text-[18px]">dataset</span><span className="font-body-md text-body-md">Dataset / Testbed</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/settings"><span className="material-symbols-outlined text-[18px]">tune</span><span className="font-body-md text-body-md">Settings</span></Link></nav></div><div className="p-space-sm bg-surface-container-lowest border-t border-surface-container-high/40"><div className="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div className="flex items-center justify-between font-label-sm text-label-sm"><span className="text-outline uppercase">Pipeline</span><span className="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div className="w-full bg-surface-container-highest h-1 rounded"><div className="bg-primary-container h-1 rounded w-3/4"></div></div><div className="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span className="truncate">DPDK Core 0-3</span><span className="text-on-surface">0.02ms</span></div></div></div></aside><div className="pl-sidebar-expanded"><header className="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none border-b border-surface-container-high/40"><div className="flex items-center gap-space-md"><div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span className="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span className="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4</span></div><div className="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span className="font-label-sm text-label-sm text-outline uppercase">Profile</span><span className="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div className="flex items-center gap-space-md"><div className="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span className="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span className="text-outline-variant">|</span><span className="text-outline">Buffer:</span><span className="text-tertiary">98.4% Free</span></div><button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span className="material-symbols-outlined text-[16px]">search</span><span className="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd className="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div className="flex items-center gap-space-xs"><button className="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span className="material-symbols-outlined text-[18px]">download</span></button><button className="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span className="material-symbols-outlined text-[18px]">notifications</span><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div className="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main className="relative pt-header-height w-full bg-background min-h-screen"><div className="flex flex-col w-full pb-space-2xl">
+      <UploadBehavior />
+<aside className="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none border-r border-surface-container-high/40"><div className="flex flex-col"><div className="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span className="material-symbols-outlined text-primary text-[20px]">security</span><div className="flex items-baseline gap-space-2xs"><span className="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span className="font-code-sm text-code-sm text-outline">/</span><span className="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div className="px-space-base py-space-xs bg-surface-container-low border-b border-surface-container-high/40"><div className="flex items-center justify-between text-outline"><span className="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span className="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav className="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/overview"><span className="material-symbols-outlined text-[18px]">dashboard</span><span className="font-body-md text-body-md">Overview</span></Link><Link aria-current="page" className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" href="/analyze"><span className="material-symbols-outlined text-[18px]">file_open</span><span className="font-body-md text-body-md">Analyze PCAP</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/live"><span className="material-symbols-outlined text-[18px]">pulse_alert</span><span className="font-body-md text-body-md">Live Analysis</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/configuration"><span className="material-symbols-outlined text-[18px]">settings_ethernet</span><span className="font-body-md text-body-md">VPN Configurations</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/traffic"><span className="material-symbols-outlined text-[18px]">insights</span><span className="font-body-md text-body-md">Traffic Intelligence</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/findings"><span className="material-symbols-outlined text-[18px]">policy</span><span className="font-body-md text-body-md">Findings</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/reports"><span className="material-symbols-outlined text-[18px]">assignment</span><span className="font-body-md text-body-md">Reports</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/dataset"><span className="material-symbols-outlined text-[18px]">dataset</span><span className="font-body-md text-body-md">Dataset / Testbed</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/settings"><span className="material-symbols-outlined text-[18px]">tune</span><span className="font-body-md text-body-md">Settings</span></Link></nav></div><div className="p-space-sm bg-surface-container-lowest border-t border-surface-container-high/40"><div className="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div className="flex items-center justify-between font-label-sm text-label-sm"><span className="text-outline uppercase">Pipeline</span><span className="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div className="w-full bg-surface-container-highest h-1 rounded"><div className="bg-primary-container h-1 rounded w-3/4"></div></div><div className="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span className="truncate">DPDK Core 0-3</span><span className="text-on-surface">0.02ms</span></div></div></div></aside><div className="pl-sidebar-expanded"><header className="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none border-b border-surface-container-high/40"><div className="flex items-center gap-space-md"><div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span className="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span className="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4</span></div><div className="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span className="font-label-sm text-label-sm text-outline uppercase">Profile</span><span className="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div className="flex items-center gap-space-md"><div className="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span className="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span className="text-outline-variant">|</span><span className="text-outline">Buffer:</span><span className="text-tertiary">98.4% Free</span></div><button data-action="search" className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span className="material-symbols-outlined text-[16px]">search</span><span className="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd className="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div className="flex items-center gap-space-xs"><button data-action="export" className="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span className="material-symbols-outlined text-[18px]">download</span></button><button data-action="notifications" className="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span className="material-symbols-outlined text-[18px]">notifications</span><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div className="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div data-action="profile" role="button" tabIndex={0} className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer"><span className="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main className="relative pt-header-height w-full bg-background min-h-screen"><div className="flex flex-col w-full pb-space-2xl">
 {/* Top Sub-Nav Telemetry Banner (Lightweight & Clean) */}
 <div className="px-space-base py-space-xs bg-surface-container-low border-b border-surface-container-high/40 flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
 <div className="flex items-center gap-space-xs font-code-sm text-code-sm">
@@ -80,7 +131,7 @@ export default function AnalyzePage() {
 <div className="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
 <span className="material-symbols-outlined text-[16px] text-tertiary">lock</span>
 <span>Decryption keys optional: flow telemetry classifies tunnels without breaking crypto.</span>
-<button className="text-primary hover:underline font-medium inline-flex items-center ml-1" id="evidence-policy-link" type="button">
+<button className="text-primary hover:underline font-medium inline-flex items-center ml-1" id="evidence-policy-link" type="button" onClick={openPolicy}>
             Evidence Policy Details →
           </button>
 </div>
@@ -108,7 +159,7 @@ export default function AnalyzePage() {
 <p className="font-body-sm text-body-sm text-on-surface-variant">IKE &amp; ESP validation</p>
 </div>
 <div className="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
-<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button" onClick={inspectConfig}>
 <span>Inspect config</span>
 <span className="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -125,7 +176,7 @@ export default function AnalyzePage() {
 <p className="font-body-sm text-body-sm text-on-surface-variant">Encrypted flow fingerprinting</p>
 </div>
 <div className="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
-<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button" onClick={inspectConfig}>
 <span>Inspect config</span>
 <span className="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -142,7 +193,7 @@ export default function AnalyzePage() {
 <p className="font-body-sm text-body-sm text-on-surface-variant">Replay &amp; sequence skew</p>
 </div>
 <div className="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
-<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button" onClick={inspectConfig}>
 <span>Inspect config</span>
 <span className="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -159,7 +210,7 @@ export default function AnalyzePage() {
 <p className="font-body-sm text-body-sm text-on-surface-variant">Deterministic verification</p>
 </div>
 <div className="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
-<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button" onClick={inspectConfig}>
 <span>Inspect config</span>
 <span className="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -176,7 +227,7 @@ export default function AnalyzePage() {
 <p className="font-body-sm text-body-sm text-on-surface-variant">RFC audit &amp; STIX 2.1</p>
 </div>
 <div className="mt-space-md pt-space-xs border-t border-surface-container-highest/40">
-<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button">
+<button className="font-code-sm text-code-sm text-primary hover:text-primary-fixed flex items-center gap-1 group" type="button" onClick={inspectConfig}>
 <span>Inspect config</span>
 <span className="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -194,7 +245,7 @@ export default function AnalyzePage() {
 </div>
 <div className="flex items-center gap-space-sm font-code-sm text-code-sm">
 <input className="bg-surface-container-low border border-surface-container-high/50 px-space-sm py-1 rounded text-on-surface placeholder:text-outline text-body-sm focus:outline-none focus:border-primary" placeholder="Filter captures..." type="text" />
-<button className="p-1 rounded bg-surface-container-low border border-surface-container-high/50 text-on-surface-variant hover:text-on-surface" title="Refresh" type="button">
+<button className="p-1 rounded bg-surface-container-low border border-surface-container-high/50 text-on-surface-variant hover:text-on-surface" title="Refresh" type="button" onClick={refreshCaptures}>
 <span className="material-symbols-outlined text-[16px]">refresh</span>
 </button>
 </div>
@@ -228,7 +279,7 @@ export default function AnalyzePage() {
 </td>
 <td className="py-space-sm px-space-md text-outline">18:32 UTC</td>
 <td className="py-space-sm px-space-md text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button" onClick={openInspectRow}>
 <span>Inspect</span>
 <span className="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -249,7 +300,7 @@ export default function AnalyzePage() {
 </td>
 <td className="py-space-sm px-space-md text-outline">17:51 UTC</td>
 <td className="py-space-sm px-space-md text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button" onClick={openInspectRow}>
 <span>Inspect</span>
 <span className="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -270,7 +321,7 @@ export default function AnalyzePage() {
 </td>
 <td className="py-space-sm px-space-md text-outline">15:04 UTC</td>
 <td className="py-space-sm px-space-md text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button" onClick={openInspectRow}>
 <span>Inspect</span>
 <span className="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -291,7 +342,7 @@ export default function AnalyzePage() {
 </td>
 <td className="py-space-sm px-space-md text-outline">13:34 UTC</td>
 <td className="py-space-sm px-space-md text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button" onClick={openInspectRow}>
 <span>Inspect</span>
 <span className="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -312,7 +363,7 @@ export default function AnalyzePage() {
 </td>
 <td className="py-space-sm px-space-md text-outline">09:19 UTC</td>
 <td className="py-space-sm px-space-md text-right">
-<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button">
+<button className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn" type="button" onClick={openInspectRow}>
 <span>Inspect</span>
 <span className="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
 </button>
@@ -328,9 +379,9 @@ export default function AnalyzePage() {
 {/* Slide-Over Forensic Detail Drawer (Progressive Disclosure) */}
 <div className="fixed inset-0 z-50 pointer-events-none transition-all duration-300" id="drawer-backdrop">
 {/* Backdrop Overlay */}
-<div className="absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-300 pointer-events-none" id="drawer-overlay"></div>
+<div className={drawerOpen ? "absolute inset-0 bg-black/60 opacity-100 transition-opacity duration-300 pointer-events-auto" : "absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-300 pointer-events-none"} id="drawer-overlay" onClick={closeDrawer}></div>
 {/* Drawer Surface */}
-<div className="absolute right-0 top-0 bottom-0 w-full max-w-lg bg-surface-container-low border-l border-surface-container-high/60 shadow-2xl flex flex-col justify-between translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto" id="forensic-drawer">
+<div className={drawerOpen ? "absolute right-0 top-0 bottom-0 w-full max-w-lg bg-surface-container-low border-l border-surface-container-high/60 shadow-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out pointer-events-auto" : "absolute right-0 top-0 bottom-0 w-full max-w-lg bg-surface-container-low border-l border-surface-container-high/60 shadow-2xl flex flex-col justify-between translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto"} id="forensic-drawer">
 {/* Drawer Header */}
 <div className="p-space-lg bg-surface-container-lowest border-b border-surface-container-high/60 flex items-center justify-between">
 <div className="flex items-center gap-space-sm">
@@ -340,7 +391,7 @@ export default function AnalyzePage() {
 <div className="font-code-sm text-[11px] text-outline" id="drawer-header-subtitle">SESSION #8820-A • PROVENANCE VERIFIED</div>
 </div>
 </div>
-<button className="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container transition-colors" id="close-drawer-btn" type="button">
+<button className="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container transition-colors" id="close-drawer-btn" type="button" onClick={closeDrawer}>
 <span className="material-symbols-outlined text-[20px]">close</span>
 </button>
 </div>
@@ -349,13 +400,13 @@ export default function AnalyzePage() {
 {/* Primary Target Info */}
 <div className="bg-surface-container-lowest p-space-md rounded border border-surface-container-high/40 flex flex-col gap-space-xs">
 <div className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Capture Archive</div>
-<div className="font-headline-sm text-headline-sm text-on-surface font-semibold break-all" id="drawer-filename">core-dc-chicago-gw1.pcap</div>
+<div className="font-headline-sm text-headline-sm text-on-surface font-semibold break-all" id="drawer-filename">{capture.name}</div>
 <div className="flex items-center gap-space-md mt-1 font-code-sm text-code-sm">
-<span className="text-on-surface-variant">Volume: <strong className="text-on-surface" id="drawer-volume">1.42 GB</strong></span>
+<span className="text-on-surface-variant">Volume: <strong className="text-on-surface" id="drawer-volume">{capture.volume}</strong></span>
 <span className="text-outline-variant">•</span>
-<span className="text-on-surface-variant">Packets: <strong className="text-on-surface" id="drawer-packets">842,109</strong></span>
+<span className="text-on-surface-variant">Packets: <strong className="text-on-surface" id="drawer-packets">{capture.packets}</strong></span>
 <span className="text-outline-variant">•</span>
-<span className="text-on-surface-variant">Risk: <strong className="text-error" id="drawer-risk">HIGH</strong></span>
+<span className="text-on-surface-variant">Risk: <strong className="text-error" id="drawer-risk">{capture.risk}</strong></span>
 </div>
 </div>
 {/* Detailed Parameter Specs */}
@@ -364,15 +415,15 @@ export default function AnalyzePage() {
 <div className="bg-surface-container-lowest rounded border border-surface-container-high/40 divide-y divide-surface-container-high/30 font-code-sm text-code-sm">
 <div className="p-space-sm flex flex-col gap-1">
 <span className="text-outline text-[11px]">Trace SHA-256</span>
-<span className="text-on-surface break-all select-all font-mono text-[11px]" id="drawer-sha">4f81a792e091bfa3c6781290bb34e91a784d12c82098b1a3c75d40192e5912a0</span>
+<span className="text-on-surface break-all select-all font-mono text-[11px]" id="drawer-sha">{capture.sha}</span>
 </div>
 <div className="p-space-sm flex items-center justify-between">
 <span className="text-outline">Capture Interface</span>
-<span className="text-on-surface font-medium" id="drawer-source">Edge TAP (SPAN 04)</span>
+<span className="text-on-surface font-medium" id="drawer-source">{capture.source}</span>
 </div>
 <div className="p-space-sm flex flex-col gap-1">
 <span className="text-outline text-[11px]">IKE / ESP Parameters</span>
-<span className="text-on-surface font-medium" id="drawer-suite">IKEv1 Aggressive / ESP 3DES-CBC</span>
+<span className="text-on-surface font-medium" id="drawer-suite">{capture.suite}</span>
 </div>
 <div className="p-space-sm flex items-center justify-between">
 <span className="text-outline">Diffie-Hellman Group</span>
@@ -407,7 +458,7 @@ export default function AnalyzePage() {
 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
 </button>
 <div className="text-center">
-<button className="font-code-sm text-[11px] text-outline hover:text-on-surface pt-1" id="cancel-drawer-btn" type="button">
+<button className="font-code-sm text-[11px] text-outline hover:text-on-surface pt-1" id="cancel-drawer-btn" type="button" onClick={closeDrawer}>
             Close Panel
           </button>
 </div>
@@ -415,15 +466,15 @@ export default function AnalyzePage() {
 </div>
 </div>
 {/* Minimal Policy Modal (triggered by "Evidence Policy Details →") */}
-<div className="fixed inset-0 z-50 hidden flex items-center justify-center p-space-md" id="policy-modal">
-<div className="absolute inset-0 bg-black/70" id="policy-backdrop"></div>
+<div className={policyOpen ? "fixed inset-0 z-50 flex items-center justify-center p-space-md" : "fixed inset-0 z-50 hidden flex items-center justify-center p-space-md"} id="policy-modal">
+<div className="absolute inset-0 bg-black/70" id="policy-backdrop" onClick={closePolicy}></div>
 <div className="relative bg-surface-container rounded-lg max-w-lg w-full p-space-lg border border-surface-container-high shadow-2xl flex flex-col gap-space-md">
 <div className="flex items-center justify-between pb-space-xs border-b border-surface-container-high">
 <div className="flex items-center gap-space-xs text-primary">
 <span className="material-symbols-outlined text-[20px]">verified_user</span>
 <span className="font-headline-sm text-headline-sm font-semibold">Forensic Evidence &amp; Decryption Policy</span>
 </div>
-<button className="text-outline hover:text-on-surface" id="close-policy-btn" type="button">
+<button className="text-outline hover:text-on-surface" id="close-policy-btn" type="button" onClick={closePolicy}>
 <span className="material-symbols-outlined text-[18px]">close</span>
 </button>
 </div>
@@ -436,7 +487,7 @@ export default function AnalyzePage() {
       </p>
 </div>
 <div className="flex justify-end pt-space-xs">
-<button className="bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-space-md py-space-xs rounded font-code-sm text-code-sm transition-colors" id="ack-policy-btn" type="button">
+<button className="bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-space-md py-space-xs rounded font-code-sm text-code-sm transition-colors" id="ack-policy-btn" type="button" onClick={closePolicy}>
         Acknowledge
       </button>
 </div>

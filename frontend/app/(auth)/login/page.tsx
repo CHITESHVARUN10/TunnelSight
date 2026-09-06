@@ -1,9 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { mockLogin } from "@/lib/mock/session";
+import { DEMO_EMAIL } from "@/lib/mock/flag";
+import { useToast } from "@/lib/mock/toast";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    try {
+      const user = mockLogin(String(data.get("email") ?? ""), String(data.get("password") ?? ""));
+      toast({ title: `Welcome, ${user.displayName}`, body: "Mock session started (prototype).", kind: "ok" });
+      router.push("/overview");
+    } catch (err) {
+      toast({ title: "Sign in failed", body: err instanceof Error ? err.message : "Invalid credentials.", kind: "warn" });
+    }
+  }
   return (
     <div className="bg-surface font-body-md text-on-surface min-h-screen flex flex-col justify-between selection:bg-primary selection:text-on-primary">
 <header className="w-full h-header-height flex items-center justify-between px-space-xl bg-surface-container-low/60 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50"><div className="flex items-center gap-space-sm"><div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div><span className="font-headline-sm text-headline-sm text-on-surface tracking-wider uppercase font-semibold">TunnelSight</span><span className="font-code-sm text-code-sm text-on-surface-variant bg-surface-container px-space-xs py-space-2xs rounded">v2.4.0-SEC</span></div><div className="flex items-center gap-space-base"><span className="font-code-sm text-code-sm text-on-surface-variant flex items-center gap-space-xs"><span className="material-symbols-outlined text-primary text-[14px]">lock</span>FIPS 140-3 COMPLIANT</span></div></header><main className="w-full flex-1 flex flex-col items-center justify-center p-space-base bg-surface relative"><div className="flex flex-col w-full items-center justify-center py-space-xl">
@@ -82,7 +99,7 @@ export default function LoginPage() {
           </p>
 </div>
 {/* Form Elements */}
-<form className="space-y-space-md" onSubmit={(e) => e.preventDefault()}>
+<form className="space-y-space-md" onSubmit={onSubmit}>
 {/* Email Field */}
 <div className="space-y-space-xs">
 <label className="block font-label-md text-label-md text-on-surface uppercase tracking-wider" htmlFor="work-email">
@@ -117,6 +134,9 @@ export default function LoginPage() {
 <span>Sign In to Terminal</span>
 <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
 </button>
+<p className="pt-1 text-center font-code-sm text-code-sm text-outline">
+Prototype demo account — email <span className="text-primary">{DEMO_EMAIL}</span> · password <span className="text-primary">tunnelsight-demo</span>
+</p>
 </form>
 {/* Divider */}
 <div className="relative flex items-center justify-center py-space-xs">
@@ -127,7 +147,7 @@ export default function LoginPage() {
 </div>
 {/* Enterprise SSO Button */}
 <div>
-<button className="w-full h-8 bg-surface-container-low hover:bg-surface-container-highest text-on-surface font-label-md text-label-md font-medium rounded flex items-center justify-center gap-space-sm transition-colors" type="button">
+<button onClick={() => toast({ title: "Enterprise IdP", body: "SSO is out of scope for the prototype — use the demo account.", kind: "info" })} className="w-full h-8 bg-surface-container-low hover:bg-surface-container-highest text-on-surface font-label-md text-label-md font-medium rounded flex items-center justify-center gap-space-sm transition-colors" type="button">
 <span className="material-symbols-outlined text-primary text-[16px]">domain</span>
 <span>Authenticate via Enterprise IdP (SAML 2.0 / OIDC)</span>
 </button>

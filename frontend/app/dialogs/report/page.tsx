@@ -1,6 +1,26 @@
-export const metadata = { title: "Report Generation Dialogs" };
+"use client";
+import { useState } from "react";
+import { downloadFile, useToast } from "@/lib/mock/toast";
+import { executiveReportJSON } from "@/lib/mock/analysis";
 
 export default function ReportDialogsPage() {
+  const [reportOpen, setReportOpen] = useState(true);
+  const [evidenceOpen, setEvidenceOpen] = useState(true);
+  const toast = useToast();
+  const closeReport = () => {
+    setReportOpen(false);
+    toast({ title: "Dialog dismissed", body: "Report generation dialog closed (mock).", kind: "info" });
+  };
+  const generateReport = () => {
+    downloadFile("tunnelsight-executive-report.json", executiveReportJSON(), "application/json");
+    toast({ title: "Report generated", body: "tunnelsight-executive-report.json downloaded.", kind: "ok" });
+    setReportOpen(false);
+  };
+  const closeEvidence = () => {
+    setEvidenceOpen(false);
+    toast({ title: "Dialog dismissed", body: "Evidence dialog closed (mock).", kind: "info" });
+  };
+  const viewEvidence = () => toast({ title: "Related evidence", body: "Evidence trace linked (mock).", kind: "info" });
   return (
     <div className="min-h-screen bg-[#0c0e11] font-sans antialiased text-slate-300 p-6 md:p-10 flex flex-col justify-start items-center">
 
@@ -43,6 +63,21 @@ export default function ReportDialogsPage() {
 
     {/* Modals Display Grid */}
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      {(!reportOpen || !evidenceOpen) && (
+        <div className="lg:col-span-2 flex flex-wrap items-center gap-2.5 px-1">
+          <span className="text-xs font-mono text-slate-500">Dismissed dialogs:</span>
+          {!reportOpen && (
+            <button className="px-3 py-1 text-xs font-medium text-slate-300 hover:text-white hover:bg-[#1e222b] rounded-md border border-[#262a33] transition-colors" type="button" onClick={() => setReportOpen(true)}>
+              Restore Report dialog
+            </button>
+          )}
+          {!evidenceOpen && (
+            <button className="px-3 py-1 text-xs font-medium text-slate-300 hover:text-white hover:bg-[#1e222b] rounded-md border border-[#262a33] transition-colors" type="button" onClick={() => setEvidenceOpen(true)}>
+              Restore Evidence dialog
+            </button>
+          )}
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* MODAL 1: REPORT GENERATION DIALOG */}
@@ -57,7 +92,7 @@ export default function ReportDialogsPage() {
         </div>
 
         {/* The Modal Card */}
-        <div className="w-full bg-[#111317] border border-[#262a33] rounded-xl shadow-2xl shadow-black/80 overflow-hidden transition-all">
+        <div className={reportOpen ? "w-full bg-[#111317] border border-[#262a33] rounded-xl shadow-2xl shadow-black/80 overflow-hidden transition-all" : "hidden w-full bg-[#111317] border border-[#262a33] rounded-xl shadow-2xl shadow-black/80 overflow-hidden transition-all"}>
           
           {/* Header */}
           <div className="px-5 py-4 border-b border-[#1c2027] flex items-center justify-between bg-[#14171d]">
@@ -72,7 +107,7 @@ export default function ReportDialogsPage() {
                 <p className="text-[11px] font-mono text-slate-400">Target trace: <span className="text-slate-300">branch-emea-gw04.pcap</span></p>
               </div>
             </div>
-            <button className="text-slate-400 hover:text-slate-200 p-1.5 rounded-md hover:bg-[#1f242d] transition-colors" title="Close dialog">
+            <button className="text-slate-400 hover:text-slate-200 p-1.5 rounded-md hover:bg-[#1f242d] transition-colors" title="Close dialog" onClick={closeReport}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
@@ -169,10 +204,10 @@ export default function ReportDialogsPage() {
 
           {/* Actions Footer */}
           <div className="px-5 py-3.5 bg-[#14171d] border-t border-[#1c2027] flex items-center justify-end gap-2.5">
-            <button className="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-[#1e222b] rounded-md border border-[#262a33] transition-colors">
+            <button className="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-[#1e222b] rounded-md border border-[#262a33] transition-colors" onClick={closeReport}>
               Cancel
             </button>
-            <button className="px-4 py-1.5 text-xs font-medium text-black bg-[#00a896] hover:bg-[#028e7f] rounded-md font-sans flex items-center gap-1.5 font-semibold transition-colors shadow-sm">
+            <button className="px-4 py-1.5 text-xs font-medium text-black bg-[#00a896] hover:bg-[#028e7f] rounded-md font-sans flex items-center gap-1.5 font-semibold transition-colors shadow-sm" onClick={generateReport}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
               </svg>
@@ -197,7 +232,7 @@ export default function ReportDialogsPage() {
         </div>
 
         {/* The Modal Card */}
-        <div className="w-full bg-[#111317] border border-[#262a33] rounded-xl shadow-2xl shadow-black/80 overflow-hidden transition-all">
+        <div className={evidenceOpen ? "w-full bg-[#111317] border border-[#262a33] rounded-xl shadow-2xl shadow-black/80 overflow-hidden transition-all" : "hidden w-full bg-[#111317] border border-[#262a33] rounded-xl shadow-2xl shadow-black/80 overflow-hidden transition-all"}>
           
           {/* Header */}
           <div className="px-5 py-4 border-b border-[#1c2027] flex items-center justify-between bg-[#14171d]">
@@ -213,7 +248,7 @@ export default function ReportDialogsPage() {
                 <p className="text-[11px] font-mono text-slate-400">Forensic Integrity & Verification Check</p>
               </div>
             </div>
-            <button className="text-slate-400 hover:text-slate-200 p-1.5 rounded-md hover:bg-[#1f242d] transition-colors" title="Close dialog">
+            <button className="text-slate-400 hover:text-slate-200 p-1.5 rounded-md hover:bg-[#1f242d] transition-colors" title="Close dialog" onClick={closeEvidence}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
@@ -283,10 +318,10 @@ export default function ReportDialogsPage() {
               TRACE ID: <span className="text-slate-400">#TR-09241</span>
             </div>
             <div className="flex items-center gap-2">
-              <button className="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-[#1e222b] rounded-md border border-[#262a33] transition-colors">
+              <button className="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-[#1e222b] rounded-md border border-[#262a33] transition-colors" onClick={closeEvidence}>
                 Close
               </button>
-              <button className="px-3.5 py-1.5 text-xs font-medium text-slate-100 bg-[#1e2430] hover:bg-[#252c3b] hover:text-white rounded-md border border-[#2d3647] font-sans flex items-center gap-1.5 transition-colors">
+              <button className="px-3.5 py-1.5 text-xs font-medium text-slate-100 bg-[#1e2430] hover:bg-[#252c3b] hover:text-white rounded-md border border-[#2d3647] font-sans flex items-center gap-1.5 transition-colors" onClick={viewEvidence}>
                 <svg className="w-3.5 h-3.5 text-brand-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z"></path>
                 </svg>

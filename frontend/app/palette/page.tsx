@@ -1,6 +1,28 @@
-export const metadata = { title: "Command Palette" };
+"use client";
+import { useRouter } from "next/navigation";
+import { downloadFile, useToast } from "@/lib/mock/toast";
+import { executiveReportJSON } from "@/lib/mock/analysis";
 
 export default function CommandPalettePage() {
+  const router = useRouter();
+  const toast = useToast();
+  const runCommand = (e: React.MouseEvent<HTMLDivElement>) => {
+    const t = e.currentTarget.textContent ?? "";
+    if (t.includes("Analyze PCAP")) router.push("/analyze");
+    else if (t.includes("Start Live Analysis")) router.push("/analysis/live");
+    else if (t.includes("Generate Report")) {
+      downloadFile("tunnelsight-executive-report.json", executiveReportJSON(), "application/json");
+      toast({ title: "Report generated", body: "tunnelsight-executive-report.json downloaded.", kind: "ok" });
+    }
+    else if (t.includes("Search Captures")) router.push("/search");
+    else if (t.includes("Open History")) router.push("/history");
+    else if (t.includes("Open Findings")) router.push("/analysis/findings");
+    else if (t.includes("Compare VPNs")) router.push("/analysis/compare");
+    else if (t.includes("Open Settings")) router.push("/settings");
+  };
+  const scopeToast = (e: React.MouseEvent<HTMLButtonElement>) => {
+    toast({ title: `Scope: ${e.currentTarget.textContent?.trim()}`, body: "Command scope filter staged (mock).", kind: "info" });
+  };
   return (
     <div className="min-h-screen bg-[#0c0e11] text-zinc-300 antialiased relative overflow-hidden flex flex-col justify-between select-none">
 
@@ -64,7 +86,7 @@ export default function CommandPalettePage() {
           type="text" 
           defaultValue="" 
           placeholder="Type a command or jump to tool..." 
-          className="flex-1 bg-transparent border-0 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none font-sans font-normal"
+          className="flex-1 bg-transparent border-0 p-0 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none font-sans font-normal"
           autoComplete="off" 
           spellCheck="false"
           autoFocus
@@ -81,10 +103,10 @@ export default function CommandPalettePage() {
       {/* Quick Category Filter Bar / Breadcrumb Pills (Optional rapid filtering) */}
       <div className="flex items-center gap-1.5 px-4 py-2 bg-[#0e1014] border-b border-zinc-800/60 text-[11px] font-mono-code text-zinc-400 overflow-x-auto">
         <span className="text-zinc-500 uppercase tracking-wider text-[10px] mr-1">Scope:</span>
-        <button className="px-2 py-0.5 rounded bg-zinc-800 text-teal-bright border border-zinc-700/60 font-medium">All Commands</button>
-        <button className="px-2 py-0.5 rounded bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40">Ingestion</button>
-        <button className="px-2 py-0.5 rounded bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40">Analysis</button>
-        <button className="px-2 py-0.5 rounded bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40">Navigation</button>
+        <button className="px-2 py-0.5 rounded bg-zinc-800 text-teal-bright border border-zinc-700/60 font-medium" onClick={scopeToast}>All Commands</button>
+        <button className="px-2 py-0.5 rounded bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40" onClick={scopeToast}>Ingestion</button>
+        <button className="px-2 py-0.5 rounded bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40" onClick={scopeToast}>Analysis</button>
+        <button className="px-2 py-0.5 rounded bg-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40" onClick={scopeToast}>Navigation</button>
       </div>
 
       {/* Commands List Container */}
@@ -98,7 +120,7 @@ export default function CommandPalettePage() {
           </div>
 
           {/* Command: Analyze PCAP (Active / Focused state) */}
-          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md bg-[#1d222b] border border-teal-brand/30 text-zinc-100 cursor-pointer transition-colors" tabIndex={0}>
+          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md bg-[#1d222b] border border-teal-brand/30 text-zinc-100 cursor-pointer transition-colors" tabIndex={0} onClick={runCommand}>
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 rounded bg-teal-brand/15 border border-teal-brand/30 flex items-center justify-center text-teal-bright flex-shrink-0">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,7 +142,7 @@ export default function CommandPalettePage() {
           </div>
 
           {/* Command: Start Live Analysis */}
-          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0}>
+          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0} onClick={runCommand}>
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 rounded bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400 group-hover:text-teal-bright group-hover:border-teal-brand/40 flex-shrink-0">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -144,7 +166,7 @@ export default function CommandPalettePage() {
           </div>
 
           {/* Command: Generate Report */}
-          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0}>
+          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0} onClick={runCommand}>
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 rounded bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400 group-hover:text-teal-bright group-hover:border-teal-brand/40 flex-shrink-0">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -170,7 +192,7 @@ export default function CommandPalettePage() {
           </div>
 
           {/* Command: Search Captures */}
-          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors" tabIndex={0}>
+          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors" tabIndex={0} onClick={runCommand}>
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 rounded bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400 group-hover:text-teal-bright group-hover:border-teal-brand/40 flex-shrink-0">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -189,7 +211,7 @@ export default function CommandPalettePage() {
           </div>
 
           {/* Command: Open History */}
-          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0}>
+          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0} onClick={runCommand}>
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 rounded bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400 group-hover:text-teal-bright group-hover:border-teal-brand/40 flex-shrink-0">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -208,7 +230,7 @@ export default function CommandPalettePage() {
           </div>
 
           {/* Command: Open Findings */}
-          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0}>
+          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0} onClick={runCommand}>
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 rounded bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400 group-hover:text-teal-bright group-hover:border-teal-brand/40 flex-shrink-0">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -230,7 +252,7 @@ export default function CommandPalettePage() {
           </div>
 
           {/* Command: Compare VPNs */}
-          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0}>
+          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors mt-0.5" tabIndex={0} onClick={runCommand}>
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 rounded bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400 group-hover:text-teal-bright group-hover:border-teal-brand/40 flex-shrink-0">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -256,7 +278,7 @@ export default function CommandPalettePage() {
           </div>
 
           {/* Command: Open Settings */}
-          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors" tabIndex={0}>
+          <div className="group flex items-center justify-between px-2.5 py-2 rounded-md hover:bg-zinc-800/60 text-zinc-300 hover:text-white cursor-pointer transition-colors" tabIndex={0} onClick={runCommand}>
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 rounded bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400 group-hover:text-teal-bright group-hover:border-teal-brand/40 flex-shrink-0">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

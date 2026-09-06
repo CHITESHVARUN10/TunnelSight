@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { downloadFile, useToast } from "@/lib/mock/toast";
 
 export default function DatasetPage() {
   const [activeProfile, setActiveProfile] = useState("modern-strong");
@@ -25,14 +26,58 @@ export default function DatasetPage() {
   const openInspect = (filename: string, sha: string, split: string) =>
     setInspect({ open: true, filename, sha, split });
   const closeInspect = () => setInspect((s) => ({ ...s, open: false }));
+  const toast = useToast();
   const handleApplyStanza = () => {
     setStanzaApplied(true);
+    toast({ title: "Stanza applied", body: "Profile stanza loaded into GW-A & GW-B (mock).", kind: "ok" });
     if (stanzaTimer.current) clearTimeout(stanzaTimer.current);
     stanzaTimer.current = setTimeout(() => setStanzaApplied(false), 2400);
   };
+  const INSPECT_META: Record<string, { sha: string; split: string }> = {
+    "synth-modern-01.pcap": { sha: "3d120a48b59fa876428e3b1c90ae7b12", split: "70% Train / 15% Val / 15% Test" },
+    "weak-vpn-07.pcap": { sha: "7f892a01d9f48209bb31aa49c42b490f", split: "80% Train / 20% Anomaly Test" },
+    "ipv6-transit-03.pcap": { sha: "e82103ba7802fdca981245011cb9304", split: "70% Train / 15% Val / 15% Test" },
+    "bulk-sftp-highburst.parquet": { sha: "1a44c9b2e04319803bf39d019488d1", split: "Columnar Partitioned" },
+    "live-session-capture-active.pcap": { sha: "Computing on stream close...", split: "In-flight Capture Buffer" },
+  };
+  const rowFilename = (el: HTMLElement) => {
+    const m = (el.closest("tr")?.textContent ?? "").match(/[\w\-]+\.(?:pcap|parquet|pcapng)/);
+    return m?.[0] ?? "synth-modern-01.pcap";
+  };
+  const openInspectRow = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const f = rowFilename(e.currentTarget);
+    const meta = INSPECT_META[f] ?? { sha: "", split: "" };
+    openInspect(f, meta.sha, meta.split);
+  };
+  const downloadRow = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const f = rowFilename(e.currentTarget);
+    const meta = INSPECT_META[f] ?? { sha: "", split: "" };
+    downloadFile(`${f}.sha256.json`, JSON.stringify({ file: f, sha256: meta.sha, split: meta.split }, null, 2), "application/json");
+    toast({ title: "Artifact download started", body: `${f} manifest downloaded (mock).`, kind: "ok" });
+  };
+  const haltCapture = () => {
+    setIsCapturing(false);
+    toast({ title: "Live capture halted", body: "Streaming TAP paused (mock).", kind: "warn" });
+  };
+  const syncGateways = () => toast({ title: "Gateway states synced", body: "GW-A & GW-B synchronized (mock).", kind: "ok" });
+  const exportArtifacts = () => {
+    downloadFile("dataset-export-manifest.json", JSON.stringify({ datasets: Object.keys(INSPECT_META), exported: new Date().toISOString() }, null, 2), "application/json");
+    toast({ title: "Export started", body: ".pcap/.parquet manifest downloaded (mock).", kind: "ok" });
+  };
+  const resetHarness = () => toast({ title: "Harness reset", body: "Testbed harness reset to defaults (mock).", kind: "info" });
+  const generateTraffic = () => {
+    setLivePkts((p) => p + 5000);
+    toast({ title: "Traffic generation started", body: "Synthetic flows injected into TAP (mock).", kind: "ok" });
+  };
+  const configureStream = () => toast({ title: "Custom stream", body: "Stream designer opened (mock).", kind: "info" });
+  const exportArchive = () => {
+    downloadFile(`${inspect.filename}.sha256.json`, JSON.stringify({ file: inspect.filename, sha256: inspect.sha, split: inspect.split }, null, 2), "application/json");
+    toast({ title: "Archive exported", body: `${inspect.filename} manifest downloaded (mock).`, kind: "ok" });
+  };
+  const pageToast = () => toast({ title: "Pagination", body: "Additional pages are mocked in this prototype.", kind: "info" });
   return (
     <div className="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
-<aside className="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none"><div className="flex flex-col"><div className="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span className="material-symbols-outlined text-primary text-[20px]">security</span><div className="flex items-baseline gap-space-2xs"><span className="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span className="font-code-sm text-code-sm text-outline">/</span><span className="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div className="px-space-base py-space-xs bg-surface-container-low"><div className="flex items-center justify-between text-outline"><span className="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span className="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav className="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/overview"><span className="material-symbols-outlined text-[18px]">dashboard</span><span className="font-body-md text-body-md">Overview</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analyze"><span className="material-symbols-outlined text-[18px]">file_open</span><span className="font-body-md text-body-md">Analyze PCAP</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/live"><span className="material-symbols-outlined text-[18px]">pulse_alert</span><span className="font-body-md text-body-md">Live Analysis</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/configuration"><span className="material-symbols-outlined text-[18px]">settings_ethernet</span><span className="font-body-md text-body-md">VPN Configurations</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/traffic"><span className="material-symbols-outlined text-[18px]">insights</span><span className="font-body-md text-body-md">Traffic Intelligence</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/findings"><span className="material-symbols-outlined text-[18px]">policy</span><span className="font-body-md text-body-md">Findings</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/reports"><span className="material-symbols-outlined text-[18px]">assignment</span><span className="font-body-md text-body-md">Reports</span></Link><Link aria-current="page" className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" href="/dataset"><span className="material-symbols-outlined text-[18px]">dataset</span><span className="font-body-md text-body-md">Dataset / Testbed</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/settings"><span className="material-symbols-outlined text-[18px]">tune</span><span className="font-body-md text-body-md">Settings</span></Link></nav></div><div className="p-space-sm bg-surface-container-lowest"><div className="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div className="flex items-center justify-between font-label-sm text-label-sm"><span className="text-outline uppercase">Pipeline</span><span className="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div className="w-full bg-surface-container-highest h-1 rounded"><div className="bg-primary-container h-1 rounded w-3/4"></div></div><div className="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span className="truncate">DPDK Core 0-3</span><span className="text-on-surface">0.02ms</span></div></div></div></aside><div className="pl-sidebar-expanded"><header className="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none"><div className="flex items-center gap-space-md"><div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span className="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span className="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4 ACTIVE</span></div><div className="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span className="font-label-sm text-label-sm text-outline uppercase">Profile</span><span className="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div className="flex items-center gap-space-md"><div className="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span className="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span className="text-outline-variant">|</span><span className="text-outline">Buffer:</span><span className="text-tertiary">98.4% Free</span></div><button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span className="material-symbols-outlined text-[16px]">search</span><span className="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd className="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div className="flex items-center gap-space-xs"><button className="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span className="material-symbols-outlined text-[18px]">download</span></button><button className="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span className="material-symbols-outlined text-[18px]">notifications</span><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div className="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span className="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main className="relative pt-header-height w-full bg-background min-h-screen"><div className="flex flex-col w-full">
+<aside className="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none"><div className="flex flex-col"><div className="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest"><span className="material-symbols-outlined text-primary text-[20px]">security</span><div className="flex items-baseline gap-space-2xs"><span className="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span><span className="font-code-sm text-code-sm text-outline">/</span><span className="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span></div></div><div className="px-space-base py-space-xs bg-surface-container-low"><div className="flex items-center justify-between text-outline"><span className="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span><span className="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span></div></div><nav className="flex flex-col gap-space-2xs p-space-sm mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold"><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/overview"><span className="material-symbols-outlined text-[18px]">dashboard</span><span className="font-body-md text-body-md">Overview</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analyze"><span className="material-symbols-outlined text-[18px]">file_open</span><span className="font-body-md text-body-md">Analyze PCAP</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/live"><span className="material-symbols-outlined text-[18px]">pulse_alert</span><span className="font-body-md text-body-md">Live Analysis</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/configuration"><span className="material-symbols-outlined text-[18px]">settings_ethernet</span><span className="font-body-md text-body-md">VPN Configurations</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/traffic"><span className="material-symbols-outlined text-[18px]">insights</span><span className="font-body-md text-body-md">Traffic Intelligence</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/findings"><span className="material-symbols-outlined text-[18px]">policy</span><span className="font-body-md text-body-md">Findings</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/reports"><span className="material-symbols-outlined text-[18px]">assignment</span><span className="font-body-md text-body-md">Reports</span></Link><Link aria-current="page" className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" href="/dataset"><span className="material-symbols-outlined text-[18px]">dataset</span><span className="font-body-md text-body-md">Dataset / Testbed</span></Link><Link className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/settings"><span className="material-symbols-outlined text-[18px]">tune</span><span className="font-body-md text-body-md">Settings</span></Link></nav></div><div className="p-space-sm bg-surface-container-lowest"><div className="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs"><div className="flex items-center justify-between font-label-sm text-label-sm"><span className="text-outline uppercase">Pipeline</span><span className="text-tertiary font-code-sm text-code-sm">ONLINE</span></div><div className="w-full bg-surface-container-highest h-1 rounded"><div className="bg-primary-container h-1 rounded w-3/4"></div></div><div className="flex justify-between font-code-sm text-code-sm text-on-surface-variant"><span className="truncate">DPDK Core 0-3</span><span className="text-on-surface">0.02ms</span></div></div></div></aside><div className="pl-sidebar-expanded"><header className="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none"><div className="flex items-center gap-space-md"><div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span className="inline-block w-2 h-2 rounded-full bg-tertiary"></span><span className="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span><span className="text-outline-variant font-code-sm text-code-sm">|</span><span className="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4 ACTIVE</span></div><div className="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded"><span className="font-label-sm text-label-sm text-outline uppercase">Profile</span><span className="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span></div></div><div className="flex items-center gap-space-md"><div className="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant"><span className="text-outline">UTC</span><span>2025-05-18 14:32:09</span><span className="text-outline-variant">|</span><span className="text-outline">Buffer:</span><span className="text-tertiary">98.4% Free</span></div><button data-action="search" className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button"><span className="material-symbols-outlined text-[16px]">search</span><span className="font-code-sm text-code-sm">Search packets/SPI/tunnels</span><kbd className="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd></button><div className="flex items-center gap-space-xs"><button data-action="export" className="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button"><span className="material-symbols-outlined text-[18px]">download</span></button><button data-action="notifications" className="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button"><span className="material-symbols-outlined text-[18px]">notifications</span><span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span></button></div><div className="h-4 w-px bg-surface-container-highest mx-space-2xs"></div><div data-action="profile" role="button" tabIndex={0} className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer"><span className="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main className="relative pt-header-height w-full bg-background min-h-screen"><div className="flex flex-col w-full">
 
 {/* Section 1: Top Header Bar / Lab Breadcrumb & Primary Command Strip */}
 <header className="px-space-base py-space-sm bg-surface-container-lowest flex flex-col xl:flex-row xl:items-center justify-between gap-space-sm select-none">
@@ -55,23 +100,23 @@ export default function DatasetPage() {
 </div>
 {/* Right Controls / Lab Dispatch Buttons */}
 <div className="flex flex-wrap items-center gap-space-xs xl:justify-end">
-<button className="flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface font-code-sm text-code-sm rounded transition-colors" id="btn-sync-gw" type="button">
+<button className="flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface font-code-sm text-code-sm rounded transition-colors" id="btn-sync-gw" type="button" onClick={syncGateways}>
 <span className="material-symbols-outlined text-[16px] text-outline">sync</span>
 <span>Sync GW States</span>
 </button>
-<button className="flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface font-code-sm text-code-sm rounded transition-colors" id="btn-export-pcap" type="button">
+<button className="flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface font-code-sm text-code-sm rounded transition-colors" id="btn-export-pcap" type="button" onClick={exportArtifacts}>
 <span className="material-symbols-outlined text-[16px] text-outline">file_download</span>
 <span>Export (.pcap/.parquet)</span>
 </button>
-<button className="flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container hover:bg-surface-container-high text-error font-code-sm text-code-sm rounded transition-colors" id="btn-reset-harness" type="button">
+<button className="flex items-center gap-space-xs px-space-sm py-space-xs bg-surface-container hover:bg-surface-container-high text-error font-code-sm text-code-sm rounded transition-colors" id="btn-reset-harness" type="button" onClick={resetHarness}>
 <span className="material-symbols-outlined text-[16px]">restart_alt</span>
 <span>Reset Harness</span>
 </button>
-<button className="flex items-center gap-space-xs px-space-md py-space-xs bg-secondary-container hover:bg-surface-bright text-on-surface font-code-sm text-code-sm font-medium rounded transition-colors" id="btn-traffic-synth" type="button">
+<button className="flex items-center gap-space-xs px-space-md py-space-xs bg-secondary-container hover:bg-surface-bright text-on-surface font-code-sm text-code-sm font-medium rounded transition-colors" id="btn-traffic-synth" type="button" onClick={generateTraffic}>
 <span className="material-symbols-outlined text-[16px] text-primary">bolt</span>
 <span>Generate Traffic</span>
 </button>
-<button className={isCapturing ? "flex items-center gap-space-xs px-space-md py-space-xs bg-primary-container text-on-primary-container font-headline-sm text-headline-sm font-semibold rounded hover:bg-primary transition-colors shadow-sm" : "flex items-center gap-space-xs px-space-md py-space-xs bg-surface-container-highest text-on-surface font-headline-sm text-headline-sm font-semibold rounded hover:bg-primary transition-colors shadow-sm"} id="btn-capture-toggle" type="button" onClick={() => setIsCapturing((v) => !v)}>
+<button className={isCapturing ? "flex items-center gap-space-xs px-space-md py-space-xs bg-primary-container text-on-primary-container font-headline-sm text-headline-sm font-semibold rounded hover:bg-primary transition-colors shadow-sm" : "flex items-center gap-space-xs px-space-md py-space-xs bg-surface-container-highest text-on-surface font-headline-sm text-headline-sm font-semibold rounded hover:bg-primary transition-colors shadow-sm"} id="btn-capture-toggle" type="button" onClick={() => { setIsCapturing((v) => !v); toast({ title: "Capture toggled", body: "Streaming TAP state flipped (mock).", kind: "info" }); }}>
 <span className="relative flex h-2 w-2">
 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-on-primary-container opacity-75"></span>
 <span className="relative inline-flex rounded-full h-2 w-2 bg-on-primary-container"></span>
@@ -295,7 +340,7 @@ export default function DatasetPage() {
 </div>
 <p className="font-body-sm text-body-sm text-outline">Inject raw replay trace or define custom stateful flow script for fuzzing testbed.</p>
 <div className="pt-1">
-<button className="w-full py-1 bg-surface-container-highest hover:bg-surface-container text-on-surface font-code-sm text-code-sm rounded transition-colors" type="button">Configure New Stream</button>
+<button className="w-full py-1 bg-surface-container-highest hover:bg-surface-container text-on-surface font-code-sm text-code-sm rounded transition-colors" type="button" onClick={configureStream}>Configure New Stream</button>
 </div>
 </div>
 </div>
@@ -378,7 +423,7 @@ export default function DatasetPage() {
 <td className="px-space-md py-space-sm text-right">
 <div className="inline-flex items-center gap-space-xs">
 <button className="dataset-inspect-btn px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors font-medium" data-artifact="synth-modern-01.pcap" data-packets="842,914" data-sha="3d120a48b59fa876428e3b1c90ae7b12" data-split="70% Train / 15% Val / 15% Test" type="button" onClick={() => openInspect("synth-modern-01.pcap", "3d120a48b59fa876428e3b1c90ae7b12", "70% Train / 15% Val / 15% Test")}>Inspect</button>
-<button className="px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button">Download</button>
+<button className="px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button" onClick={downloadRow}>Download</button>
 </div>
 </td>
 </tr>
@@ -397,7 +442,7 @@ export default function DatasetPage() {
 <td className="px-space-md py-space-sm text-right">
 <div className="inline-flex items-center gap-space-xs">
 <button className="dataset-inspect-btn px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors font-medium" data-artifact="weak-vpn-07.pcap" data-packets="842,914" data-sha="7f892a01d9f48209bb31aa49c42b490f" data-split="80% Train / 20% Anomaly Test" type="button" onClick={() => openInspect("weak-vpn-07.pcap", "7f892a01d9f48209bb31aa49c42b490f", "80% Train / 20% Anomaly Test")}>Inspect</button>
-<button className="px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button">Download</button>
+<button className="px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button" onClick={downloadRow}>Download</button>
 </div>
 </td>
 </tr>
@@ -416,7 +461,7 @@ export default function DatasetPage() {
 <td className="px-space-md py-space-sm text-right">
 <div className="inline-flex items-center gap-space-xs">
 <button className="dataset-inspect-btn px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors font-medium" data-artifact="ipv6-transit-03.pcap" data-packets="1,420,100" data-sha="e82103ba7802fdca981245011cb9304" data-split="70% Train / 15% Val / 15% Test" type="button" onClick={() => openInspect("ipv6-transit-03.pcap", "e82103ba7802fdca981245011cb9304", "70% Train / 15% Val / 15% Test")}>Inspect</button>
-<button className="px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button">Download</button>
+<button className="px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button" onClick={downloadRow}>Download</button>
 </div>
 </td>
 </tr>
@@ -435,7 +480,7 @@ export default function DatasetPage() {
 <td className="px-space-md py-space-sm text-right">
 <div className="inline-flex items-center gap-space-xs">
 <button className="dataset-inspect-btn px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors font-medium" data-artifact="bulk-sftp-highburst.parquet" data-packets="3,124,500" data-sha="1a44c9b2e04319803bf39d019488d1" data-split="Columnar Partitioned" type="button" onClick={() => openInspect("bulk-sftp-highburst.parquet", "1a44c9b2e04319803bf39d019488d1", "Columnar Partitioned")}>Inspect</button>
-<button className="px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button">Download</button>
+<button className="px-space-sm py-1 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button" onClick={downloadRow}>Download</button>
 </div>
 </td>
 </tr>
@@ -453,7 +498,7 @@ export default function DatasetPage() {
 </td>
 <td className="px-space-md py-space-sm text-right">
 <div className="inline-flex items-center gap-space-xs">
-<button className="px-space-sm py-1 bg-surface-container hover:bg-surface-container-high rounded text-error transition-colors" type="button">Halt</button>
+<button className="px-space-sm py-1 bg-surface-container hover:bg-surface-container-high rounded text-error transition-colors" type="button" onClick={haltCapture}>Halt</button>
 <button className="dataset-inspect-btn px-space-sm py-1 bg-surface-container hover:bg-surface-container-high rounded text-primary transition-colors font-medium" data-artifact="live-session-capture-active.pcap" data-packets="Streaming Live" data-sha="Computing on stream close..." data-split="In-flight Capture Buffer" type="button" onClick={() => openInspect("live-session-capture-active.pcap", "Computing on stream close...", "In-flight Capture Buffer")}>Tail</button>
 </div>
 </td>
@@ -470,9 +515,9 @@ export default function DatasetPage() {
 <span>Checksum Mode: <span className="text-tertiary">SHA-256 Hardware-Accelerated</span></span>
 </div>
 <div className="flex items-center gap-space-xs mt-1 sm:mt-0">
-<button className="hover:text-on-surface transition-colors px-space-xs py-0.5 rounded bg-surface-container" type="button">Prev</button>
+<button className="hover:text-on-surface transition-colors px-space-xs py-0.5 rounded bg-surface-container" type="button" onClick={pageToast}>Prev</button>
 <span className="px-space-xs">Page 1 of 9</span>
-<button className="hover:text-on-surface transition-colors px-space-xs py-0.5 rounded bg-surface-container" type="button">Next</button>
+<button className="hover:text-on-surface transition-colors px-space-xs py-0.5 rounded bg-surface-container" type="button" onClick={pageToast}>Next</button>
 </div>
 </div>
 </div>
@@ -511,7 +556,7 @@ export default function DatasetPage() {
 </div>
 </div>
 <div className="flex items-center gap-space-xs pt-space-md border-t border-surface-container-high">
-<button className="flex-1 py-1.5 bg-primary-container hover:bg-primary text-on-primary-container font-headline-sm text-headline-sm font-semibold rounded text-center transition-colors" type="button">Export Archive</button>
+<button className="flex-1 py-1.5 bg-primary-container hover:bg-primary text-on-primary-container font-headline-sm text-headline-sm font-semibold rounded text-center transition-colors" type="button" onClick={exportArchive}>Export Archive</button>
 <button className="px-space-md py-1.5 bg-surface-container hover:bg-surface-container-high text-on-surface font-code-sm text-code-sm rounded transition-colors" id="close-inspect-btn" type="button" onClick={closeInspect}>Done</button>
 </div>
 </div>
@@ -629,8 +674,8 @@ export default function DatasetPage() {
 <td className="px-space-md py-space-xs text-outline font-mono">3d120a48...90ae7b12</td>
 <td className="px-space-md py-space-xs text-right">
 <div className="inline-flex items-center gap-space-xs">
-<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors" type="button">Inspect</button>
-<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button">Download</button>
+<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors" type="button" onClick={openInspectRow}>Inspect</button>
+<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button" onClick={downloadRow}>Download</button>
 </div>
 </td>
 </tr>
@@ -651,8 +696,8 @@ export default function DatasetPage() {
 <td className="px-space-md py-space-xs text-outline font-mono">7f892a01...c42b490f</td>
 <td className="px-space-md py-space-xs text-right">
 <div className="inline-flex items-center gap-space-xs">
-<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors" type="button">Inspect</button>
-<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button">Download</button>
+<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors" type="button" onClick={openInspectRow}>Inspect</button>
+<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button" onClick={downloadRow}>Download</button>
 </div>
 </td>
 </tr>
@@ -673,8 +718,8 @@ export default function DatasetPage() {
 <td className="px-space-md py-space-xs text-outline font-mono">e82103ba...11cb9304</td>
 <td className="px-space-md py-space-xs text-right">
 <div className="inline-flex items-center gap-space-xs">
-<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors" type="button">Inspect</button>
-<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button">Download</button>
+<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors" type="button" onClick={openInspectRow}>Inspect</button>
+<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button" onClick={downloadRow}>Download</button>
 </div>
 </td>
 </tr>
@@ -695,8 +740,8 @@ export default function DatasetPage() {
 <td className="px-space-md py-space-xs text-outline font-mono">1a44c9b2...019488d1</td>
 <td className="px-space-md py-space-xs text-right">
 <div className="inline-flex items-center gap-space-xs">
-<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors" type="button">Inspect</button>
-<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button">Download</button>
+<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-primary transition-colors" type="button" onClick={openInspectRow}>Inspect</button>
+<button className="px-space-xs py-0.5 bg-surface-container-lowest hover:bg-surface-container-high rounded text-on-surface transition-colors" type="button" onClick={downloadRow}>Download</button>
 </div>
 </td>
 </tr>
@@ -717,8 +762,8 @@ export default function DatasetPage() {
 <td className="px-space-md py-space-xs text-outline font-mono">calculating...</td>
 <td className="px-space-md py-space-xs text-right">
 <div className="inline-flex items-center gap-space-xs">
-<button className="px-space-xs py-0.5 bg-surface-container hover:bg-surface-container-high rounded text-error transition-colors" type="button">Halt</button>
-<button className="px-space-xs py-0.5 bg-surface-container hover:bg-surface-container-high rounded text-primary transition-colors" type="button">Tail</button>
+<button className="px-space-xs py-0.5 bg-surface-container hover:bg-surface-container-high rounded text-error transition-colors" type="button" onClick={haltCapture}>Halt</button>
+<button className="px-space-xs py-0.5 bg-surface-container hover:bg-surface-container-high rounded text-primary transition-colors" type="button" onClick={() => openInspect("live-session-capture-active.pcap", "Computing on stream close...", "In-flight Capture Buffer")}>Tail</button>
 </div>
 </td>
 </tr>
@@ -735,9 +780,9 @@ export default function DatasetPage() {
 <span>Checksum Mode: <span className="text-tertiary">SHA256 Hardware-Accelerated</span></span>
 </div>
 <div className="flex items-center gap-space-xs mt-1 sm:mt-0">
-<button className="hover:text-on-surface transition-colors" type="button">First</button>
+<button className="hover:text-on-surface transition-colors" type="button" onClick={pageToast}>First</button>
 <span>Page 1 of 9</span>
-<button className="hover:text-on-surface transition-colors" type="button">Next</button>
+<button className="hover:text-on-surface transition-colors" type="button" onClick={pageToast}>Next</button>
 </div>
 </div>
 </div>
