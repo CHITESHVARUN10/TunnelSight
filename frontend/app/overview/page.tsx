@@ -1,11 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState } from "react"; import Stat from "@/components/motion/Stat";
 
 export default function OverviewPage() {
   const router = useRouter();
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [filter, setFilter] = useState("");
   function closeDrawer() {
     setDrawerOpen(false);
@@ -174,17 +174,17 @@ export default function OverviewPage() {
 <div className="flex items-center gap-4 font-mono text-[12px]">
 <div className="flex items-center gap-1.5">
 <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
-<span className="text-on-surface font-semibold">41</span>
+<span className="text-on-surface font-semibold"><Stat to={41} /></span>
 <span className="text-outline">Hardened</span>
 </div>
 <div className="flex items-center gap-1.5">
 <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
-<span className="text-on-surface font-semibold">23</span>
+<span className="text-on-surface font-semibold"><Stat to={23} /></span>
 <span className="text-outline">Sub-optimal</span>
 </div>
 <div className="flex items-center gap-1.5">
 <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span>
-<span className="text-on-surface font-semibold text-[#EF4444]">8</span>
+<span className="text-on-surface font-semibold text-[#EF4444]"><Stat to={8} /></span>
 <span className="text-[#EF4444]">Critical</span>
 </div>
 </div>

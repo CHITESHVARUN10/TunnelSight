@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { downloadFile, useToast } from "@/lib/mock/toast";
-import { executiveReportJSON, findingsCSV } from "@/lib/mock/analysis";
+import { executiveReportJSON, findingsCSV } from "@/lib/mock/analysis"; import Stat from "@/components/motion/Stat";
 
 export default function FindingsPage() {
   const toast = useToast();
@@ -10,7 +10,7 @@ export default function FindingsPage() {
   const [severity, setSeverity] = useState("all");
   const [evidence, setEvidence] = useState("all");
   const [query, setQuery] = useState("");
-  const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
   function pickSeverity(s: string, label: string) {
     setSeverity(s);
     toast({ title: `Severity filter: ${label}`, body: "Finding queue filtered (mock).", kind: "info" });
@@ -39,7 +39,7 @@ export default function FindingsPage() {
 <div className="flex items-center flex-wrap gap-x-space-md gap-y-space-2xs font-body-sm text-body-sm text-on-surface-variant">
 <span className="flex items-center gap-space-xs text-on-surface font-medium">
 <span className="w-2 h-2 rounded-full bg-error inline-block"></span>
-          7 Security Findings Identified
+          <Stat to={7} /> Security Findings Identified
         </span>
 <span className="text-outline-variant">|</span>
 <span className="text-error font-code-sm text-code-sm">2 Critical</span>

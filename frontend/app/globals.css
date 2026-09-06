@@ -110,6 +110,7 @@
   --spacing-gutter-table: 0.5rem;
   --spacing-sidebar-collapsed: 3.5rem;
   --spacing-space-2xl: 2rem;
+  --spacing-space-3xl: 3rem;
   --spacing-space-xl: 1.5rem;
   --spacing-space-sm: 0.5rem;
   --spacing-space-lg: 1.25rem;
@@ -222,6 +223,97 @@
   ::-webkit-scrollbar {
     display: none;
   }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@keyframes ts-page-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+main {
+  animation: ts-page-in 0.32s ease-out both;
+}
+
+@keyframes ts-modal-in {
+  from { opacity: 0; transform: scale(0.94) translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.modal-backdrop > * {
+  animation: ts-modal-in 0.32s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+
+/* ---- Premium polish utilities (motion-system era) ---- */
+.glass {
+  background: rgba(26, 28, 31, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.glow-teal {
+  box-shadow:
+    0 0 0 1px rgba(94, 234, 212, 0.12),
+    0 8px 32px -8px rgba(0, 168, 150, 0.35);
+}
+.glow-teal-soft {
+  box-shadow: 0 4px 24px -6px rgba(0, 168, 150, 0.25);
+}
+.text-glow-teal {
+  text-shadow: 0 0 24px rgba(94, 234, 212, 0.45);
+}
+.ring-conic-score {
+  background: conic-gradient(var(--score-color, #5eead4) calc(var(--score, 0) * 1%), #282a2d 0);
+}
+@keyframes ts-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: ts-marquee 32s linear infinite;
+}
+@keyframes ts-flow-pulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+.animate-flow-pulse {
+  animation: ts-flow-pulse 1.8s ease-in-out infinite;
+}
+@keyframes ts-stream-shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(220%); }
+}
+.animate-stream-shimmer {
+  animation: ts-stream-shimmer 2.6s ease-in-out infinite;
+}
+@keyframes ts-spin-slow {
+  to { transform: rotate(360deg); }
+}
+@keyframes ts-cursor-blink {
+  0%, 45% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.cursor-blink {
+  animation: ts-cursor-blink 1.06s steps(1) infinite;
+}
+@keyframes star-movement-bottom {
+  0% { transform: translate(0%, 0%); opacity: 1; }
+  100% { transform: translate(-100%, 0%); opacity: 0; }
+}
+@keyframes star-movement-top {
+  0% { transform: translate(0%, 0%); opacity: 1; }
+  100% { transform: translate(100%, 0%); opacity: 0; }
+}
+.animate-star-movement-bottom {
+  animation: star-movement-bottom linear infinite alternate;
+}
+.animate-star-movement-top {
+  animation: star-movement-top linear infinite alternate;
 }
 
 /* Per-screen helper classes (from stitch <style> blocks) */

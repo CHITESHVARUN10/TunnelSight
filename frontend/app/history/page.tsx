@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast, downloadFile } from "@/lib/mock/toast";
-import { executiveReportJSON } from "@/lib/mock/analysis";
+import { executiveReportJSON } from "@/lib/mock/analysis"; import Stat from "@/components/motion/Stat";
 
 const ROW_RISK: Record<string, string> = {
   "branch-emea-gw04.pcap": "HIGH",
@@ -38,7 +38,7 @@ const ROW_SEARCH_TEXT: Record<string, string> = {
 export default function HistoryPage() {
   const [filter, setFilter] = useState("");
   const [selectedCapture, setSelectedCapture] = useState("weak-vpn-07.pcap");
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [risk, setRisk] = useState("All");
   const [density, setDensity] = useState("spacious");
   const router = useRouter();
@@ -120,14 +120,14 @@ export default function HistoryPage() {
 <span className="material-symbols-outlined text-[16px] text-primary">analytics</span>
 <div className="flex flex-col">
 <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider leading-none">Total Runs</span>
-<span className="font-code-md text-code-md text-on-surface font-semibold leading-tight">1,428</span>
+<span className="font-code-md text-code-md text-on-surface font-semibold leading-tight"><Stat to={1428} /></span>
 </div>
 </div>
 <div className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded shadow-sm">
 <span className="material-symbols-outlined text-[16px] text-tertiary">hub</span>
 <div className="flex flex-col">
 <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider leading-none">Assessed Tunnels</span>
-<span className="font-code-md text-code-md text-on-surface font-semibold leading-tight">24 Active</span>
+<span className="font-code-md text-code-md text-on-surface font-semibold leading-tight"><Stat to={24} suffix=" Active" /></span>
 </div>
 </div>
 <div className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded shadow-sm">

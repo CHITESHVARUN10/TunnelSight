@@ -110,7 +110,7 @@ export default function ReportsPage() {
 {/* ======================================================== */}
 {/* VIEW 1: EXECUTIVE REPORT BRIEFING CANVAS                */}
 {/* ======================================================== */}
-<div className={reportTab === "exec" ? "p-space-xl flex flex-col gap-space-xl" : "hidden p-space-xl flex flex-col gap-space-xl"} id="report-view-exec">{/* Document Meta Ribbon & Quick Action Header */}
+<div className={reportTab === "exec" ? "p-space-xl flex flex-col gap-space-xl border-l-2 border-tertiary/50" : "hidden p-space-xl flex flex-col gap-space-xl"} id="report-view-exec">{/* Document Meta Ribbon & Quick Action Header */}
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md bg-surface-container-low p-space-base rounded">
 <div className="flex flex-col gap-space-2xs">
 <div className="flex items-center gap-space-sm">
@@ -295,7 +295,7 @@ export default function ReportsPage() {
 {/* ======================================================== */}
 {/* VIEW 2: DEEP TECHNICAL AUDIT CANVAS (FORENSIC DETAIL)    */}
 {/* ======================================================== */}
-<div className={reportTab === "tech" ? "p-space-xl flex flex-col gap-space-xl" : "hidden p-space-xl flex flex-col gap-space-xl"} id="report-view-tech">
+<div className={reportTab === "tech" ? "p-space-xl flex flex-col gap-space-xl border-l-2 border-primary/50" : "hidden p-space-xl flex flex-col gap-space-xl"} id="report-view-tech">
 {/* Technical Document Metadata Banner */}
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pb-space-lg bg-surface-container-low p-space-base rounded">
 <div className="flex flex-col gap-space-2xs">

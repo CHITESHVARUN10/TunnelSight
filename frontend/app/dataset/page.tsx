@@ -126,7 +126,7 @@ export default function DatasetPage() {
 </div>
 </header>
 {/* Section 2: Analytical Status Row — Testbed Status & Gateway Rig Split Panel */}
-<section className="p-space-xl bg-surface flex flex-col gap-space-md">
+<section className="p-space-xl md:p-space-3xl bg-surface flex flex-col gap-space-lg">
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
 <div className="flex items-center gap-space-sm">
 <div className="p-1.5 rounded bg-surface-container-highest flex items-center justify-center"><span className="material-symbols-outlined text-primary text-[20px]">tune</span></div>
@@ -208,7 +208,7 @@ export default function DatasetPage() {
 </div>
 </section>
 {/* Section 3: Configuration Profiles Switcher & RFC Vulnerability Presets */}
-<section className="p-space-xl bg-surface-container-low flex flex-col gap-space-md">
+<section className="p-space-xl md:p-space-3xl bg-surface-container-low flex flex-col gap-space-lg border-y border-outline-variant/20">
 <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-xs">
 <div className="flex items-center gap-space-sm">
 <div className="p-1.5 rounded bg-surface-container-highest flex items-center justify-center"><span className="material-symbols-outlined text-primary text-[20px]">speed</span></div>
@@ -346,7 +346,7 @@ export default function DatasetPage() {
 </div>
 </section>
 {/* Section 4: Traffic Generator Engine (TRex / Scapy Micro-Injector) */}
-<section className="p-space-xl bg-surface flex flex-col gap-space-md relative">
+<section className="p-space-xl md:p-space-3xl bg-surface flex flex-col gap-space-lg relative">
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-xs">
 <div className="flex items-center gap-space-sm">
 <div className="p-1.5 rounded bg-surface-container-highest flex items-center justify-center"><span className="material-symbols-outlined text-primary text-[20px]">biotech</span></div>
