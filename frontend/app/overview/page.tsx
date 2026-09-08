@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react"; import Stat from "@/components/motion/Stat";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default function OverviewPage() {
   const router = useRouter();
@@ -14,125 +15,8 @@ export default function OverviewPage() {
     <div className="type-plex bg-background font-sans text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen overflow-x-hidden">
 
 {/* LEFT SIDEBAR */}
-<aside className="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none border-r border-surface-container-highest/40">
-<div className="flex flex-col">
-<div className="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest border-b border-surface-container-highest/30">
-<span className="material-symbols-outlined text-primary text-[20px]">security</span>
-<div className="flex items-baseline gap-space-2xs">
-<span className="font-semibold text-[14px] text-on-surface tracking-tight">TunnelSight</span>
-<span className="font-mono text-[12px] text-outline">/</span>
-<span className="font-mono text-[11px] text-on-surface-variant font-medium">IPsecXray</span>
-</div>
-</div>
-<div className="px-space-base py-space-xs bg-surface-container-low border-b border-surface-container-highest/20">
-<div className="flex items-center justify-between text-outline text-[10px] uppercase font-mono tracking-wider">
-<span>Operational Posture</span>
-<span className="text-primary font-semibold">v2.4.1-rc3</span>
-</div>
-</div>
-<nav className="flex flex-col gap-1 p-space-sm mt-space-xs">
-<Link aria-current="page" className="flex items-center gap-space-md px-space-md py-2 rounded text-[13px] transition-colors bg-primary-container text-on-primary-container font-semibold" href="/overview">
-<span className="material-symbols-outlined text-[18px]">dashboard</span>
-<span>Overview</span>
-</Link>
-<Link className="flex items-center gap-space-md px-space-md py-2 rounded text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analyze">
-<span className="material-symbols-outlined text-[18px]">file_open</span>
-<span>Analyze PCAP</span>
-</Link>
-<Link className="flex items-center gap-space-md px-space-md py-2 rounded text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/live">
-<span className="material-symbols-outlined text-[18px]">pulse_alert</span>
-<span>Live Analysis</span>
-</Link>
-<Link className="flex items-center gap-space-md px-space-md py-2 rounded text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/configuration">
-<span className="material-symbols-outlined text-[18px]">settings_ethernet</span>
-<span>VPN Configurations</span>
-</Link>
-<Link className="flex items-center gap-space-md px-space-md py-2 rounded text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/traffic">
-<span className="material-symbols-outlined text-[18px]">insights</span>
-<span>Traffic Intelligence</span>
-</Link>
-<Link className="flex items-center gap-space-md px-space-md py-2 rounded text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/findings">
-<span className="material-symbols-outlined text-[18px]">policy</span>
-<span>Findings</span>
-</Link>
-<Link className="flex items-center gap-space-md px-space-md py-2 rounded text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/analysis/reports">
-<span className="material-symbols-outlined text-[18px]">assignment</span>
-<span>Reports</span>
-</Link>
-<Link className="flex items-center gap-space-md px-space-md py-2 rounded text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/dataset">
-<span className="material-symbols-outlined text-[18px]">dataset</span>
-<span>Dataset / Testbed</span>
-</Link>
-<Link className="flex items-center gap-space-md px-space-md py-2 rounded text-[13px] transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href="/settings">
-<span className="material-symbols-outlined text-[18px]">tune</span>
-<span>Settings</span>
-</Link>
-</nav>
-</div>
-<div className="p-space-sm bg-surface-container-lowest border-t border-surface-container-highest/30">
-<div className="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs">
-<div className="flex items-center justify-between text-[10px] tracking-wider uppercase font-mono">
-<span className="text-outline">Pipeline</span>
-<span className="text-tertiary font-semibold">ONLINE</span>
-</div>
-<div className="w-full bg-surface-container-highest h-1 rounded overflow-hidden">
-<div className="bg-primary-container h-1 rounded w-3/4"></div>
-</div>
-<div className="flex justify-between font-mono text-[11px] text-on-surface-variant">
-<span className="truncate">DPDK Core 0-3</span>
-<span className="text-on-surface">0.02ms</span>
-</div>
-</div>
-</div>
-</aside>
-{/* MAIN VIEWPORT WRAPPER */}
-<div className="pl-sidebar-expanded">
-{/* TOP STATUS & ENGINE HEADER */}
-<header className="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base border-b border-surface-container-highest/40 select-none">
-<div className="flex items-center gap-space-md">
-<div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded border border-surface-container-highest/40">
-<span className="inline-block w-2 h-2 rounded-full bg-tertiary"></span>
-<span className="font-mono text-[11px] text-on-surface font-semibold">ENGINE ONLINE</span>
-<span className="text-outline-variant font-mono text-[11px]">|</span>
-<span className="font-mono text-[11px] text-on-surface-variant">DPDK RX: READY</span>
-<span className="text-outline-variant font-mono text-[11px]">|</span>
-<span className="font-mono text-[11px] text-tertiary">ML WORKERS: 4/4 ACTIVE</span>
-</div>
-<div className="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded">
-<span className="text-[10px] text-outline uppercase font-mono tracking-wide">Profile</span>
-<span className="font-mono text-[11px] text-primary font-medium">Enterprise-Edge-Audit</span>
-</div>
-</div>
-<div className="flex items-center gap-space-md">
-<div className="hidden 2xl:flex items-center gap-space-xs font-mono text-[11px] text-on-surface-variant">
-<span className="text-outline">UTC</span><span>2025-05-18 14:32:09</span>
-<span className="text-outline-variant">|</span>
-<span className="text-outline">Buffer:</span>
-<span className="text-tertiary">98.4% Free</span>
-</div>
-<button data-action="search" className="flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button">
-<span className="material-symbols-outlined text-[15px]">search</span>
-<span className="font-mono text-[11px]">Search packets/SPI/tunnels</span>
-<kbd className="bg-surface-container-highest px-1.5 rounded font-mono text-[10px] text-outline ml-1">⌘K</kbd>
-</button>
-<div className="flex items-center gap-1">
-<button data-action="export" className="p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Export" type="button">
-<span className="material-symbols-outlined text-[18px]">download</span>
-</button>
-<button data-action="notifications" className="relative p-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notifications" type="button">
-<span className="material-symbols-outlined text-[18px]">notifications</span>
-<span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-</button>
-</div>
-<div className="h-4 w-px bg-surface-container-highest mx-1"></div>
-<div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-<span className="material-symbols-outlined text-on-primary text-[16px]">person</span>
-</div>
-</div>
-</header>
-{/* CONTENT BODY */}
-<main className="relative pt-header-height w-full bg-background min-h-screen">
-<div className="max-w-[1580px] mx-auto px-6 py-8 flex flex-col gap-8">
+<AppShell active="/overview" innerClassName="max-w-[1580px] mx-auto px-6 py-8 flex flex-col gap-8">
+
 {/* CONTEXT BAR: SCOPE & QUICK ACTIONS */}
 <section className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-surface-container-highest/30">
 <div className="flex items-center gap-3">
@@ -602,10 +486,7 @@ export default function OverviewPage() {
 <span>View Full Forensic Analysis</span>
 <span>→</span>
 </button>
-</div>
-</aside>
-</main>
-</div>
+</AppShell>
 {/* VANILLA INTERACTION SCRIPT FOR PROGRESSIVE DISCLOSURE */}
 
 
