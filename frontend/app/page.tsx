@@ -121,7 +121,7 @@ export default function LandingPage() {
               <Link className="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" href="#" onClick={(e) => scrollTo(e, "capabilities")}>Capabilities</Link>
               <Link className="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" href="#" onClick={(e) => scrollTo(e, "evidence-model")}>Evidence Model</Link>
               <Link className="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" href="#" onClick={(e) => scrollTo(e, "workbench-preview")}>Preview</Link>
-              <Link className="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" href="#">Documentation</Link>
+              <Link className="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" href="/docs">Documentation</Link>
             </nav>
           </div>
           <div className="flex items-center gap-space-md">

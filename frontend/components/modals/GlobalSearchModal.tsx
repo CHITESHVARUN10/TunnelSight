@@ -123,9 +123,10 @@ export function GlobalSearchModal() {
           {/* Scope Filter Chips */}
           <div className="flex items-center gap-1.5 overflow-x-auto select-none font-mono text-xs scrollbar-none">
             {[
-              { id: "all", label: "All Results", count: 37 },
+              { id: "all", label: "All Results", count: 45 },
               { id: "captures", label: "Captures", count: 14, badgeColor: "text-teal-400" },
               { id: "findings", label: "Findings", count: 8, badgeColor: "text-rose-400" },
+              { id: "docs", label: "Docs", count: 8, badgeColor: "text-emerald-400" },
               { id: "vpns", label: "VPNs", count: 4 },
               { id: "spi", label: "SPI", count: 6, badgeColor: "text-cyan-400" },
               { id: "reports", label: "Reports", count: 5 },
@@ -366,6 +367,128 @@ export function GlobalSearchModal() {
                 </div>
                 <span className="text-[11px] text-zinc-500 group-hover:text-teal-400 shrink-0 pl-3">
                   Download
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 5: DOCUMENTATION & SPECIFICATIONS */}
+          {(activeScope === "all" || activeScope === "docs") && (
+            <div className="space-y-2 pt-3">
+              <div className="flex items-center justify-between px-1 text-[10px] text-zinc-500 uppercase tracking-wider">
+                <span>Documentation &amp; RFC Standards</span>
+                <span className="text-emerald-400 font-medium">Knowledge Hub</span>
+              </div>
+
+              {/* Doc 1: Workflow */}
+              <div
+                className="group flex items-center justify-between p-3 rounded-sm bg-[#0c0e11] border border-zinc-800 hover:border-teal-500/50 hover:bg-[#14171c] cursor-pointer transition-colors"
+                onClick={() => navigateTo("/docs#workflow", "Opening End-to-End Workflow guide")}
+              >
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="p-1.5 rounded-sm bg-teal-500/10 text-teal-400 shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-base">alt_route</span>
+                  </div>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-zinc-100 truncate">
+                        End-to-End Operational Workflow
+                      </span>
+                      <span className="px-1.5 py-0.2 rounded-sm text-[10px] bg-teal-500/15 text-teal-300 border border-teal-500/30">
+                        GUIDE
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                      <span>PCAP Ingestion → Pre-flight → SA Extraction → Remediation</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[11px] text-zinc-500 group-hover:text-teal-400 shrink-0 pl-3">
+                  ↵ Read
+                </span>
+              </div>
+
+              {/* Doc 2: RFC Standards */}
+              <div
+                className="group flex items-center justify-between p-3 rounded-sm bg-[#0c0e11] border border-zinc-800 hover:border-teal-500/50 hover:bg-[#14171c] cursor-pointer transition-colors"
+                onClick={() => navigateTo("/docs#standards", "Opening RFC Standards Matrix")}
+              >
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="p-1.5 rounded-sm bg-emerald-500/10 text-emerald-400 shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-base">gavel</span>
+                  </div>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-zinc-100 truncate">
+                        RFC Compliance &amp; Regulatory Standards Matrix
+                      </span>
+                      <span className="px-1.5 py-0.2 rounded-sm text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                        RFC 7296 / 8247
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                      <span>NIST SP 800-77 Rev. 1 · CNSA 1.0 · FIPS 140-3 Cryptographic Mandates</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[11px] text-zinc-500 group-hover:text-teal-400 shrink-0 pl-3">
+                  ↵ Read
+                </span>
+              </div>
+
+              {/* Doc 3: Page Guides */}
+              <div
+                className="group flex items-center justify-between p-3 rounded-sm bg-[#0c0e11] border border-zinc-800 hover:border-teal-500/50 hover:bg-[#14171c] cursor-pointer transition-colors"
+                onClick={() => navigateTo("/docs#pages", "Opening Page Architecture & Telemetry Guide")}
+              >
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="p-1.5 rounded-sm bg-zinc-800 text-zinc-400 group-hover:text-teal-400 shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-base">auto_stories</span>
+                  </div>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-zinc-200 truncate">
+                        Operational Page Catalog &amp; Metric Telemetry
+                      </span>
+                      <span className="px-1.5 py-0.2 rounded-sm text-[10px] bg-zinc-800 text-zinc-400">
+                        12 PAGES
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                      <span>Detailed breakdown of every indicator across all 12 operational views</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[11px] text-zinc-500 group-hover:text-teal-400 shrink-0 pl-3">
+                  ↵ Read
+                </span>
+              </div>
+
+              {/* Doc 4: Cryptographic Concepts */}
+              <div
+                className="group flex items-center justify-between p-3 rounded-sm bg-[#0c0e11] border border-zinc-800 hover:border-teal-500/50 hover:bg-[#14171c] cursor-pointer transition-colors"
+                onClick={() => navigateTo("/docs#concepts", "Opening Cryptographic Deep-Dive")}
+              >
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="p-1.5 rounded-sm bg-cyan-500/10 text-cyan-400 shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-base">vpn_key</span>
+                  </div>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-zinc-200 truncate">
+                        Cryptographic Foundations &amp; Protocol Theory
+                      </span>
+                      <span className="px-1.5 py-0.2 rounded-sm text-[10px] bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                        THEORY
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                      <span>IKEv1 vs IKEv2 · DH Group Deprecation · Anti-Replay Bitmaps · Sweet32</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[11px] text-zinc-500 group-hover:text-teal-400 shrink-0 pl-3">
+                  ↵ Read
                 </span>
               </div>
             </div>

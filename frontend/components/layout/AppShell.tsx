@@ -1,23 +1,51 @@
 "use client";
-// Shared application shell: sidebar + header + main. Extracted from the
-// Stitch screens so polish applies once, everywhere. Active nav styling is
-// derived from the `active` prop (a route href, or "" for none).
-// Header buttons keep data-action hooks consumed by HeaderBehavior.
+// Shared application shell: sidebar + header + main.
+// Includes persistent collapsible toggle (stored in localStorage & hotkey ⌘B),
+// modernized grouped navigation, and elevated hardware telemetry widget.
 
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
-const NAV: { href: string; icon: string; label: string }[] = [
-  { href: "/overview", icon: "dashboard", label: "Overview" },
-  { href: "/analyze", icon: "file_open", label: "Analyze PCAP" },
-  { href: "/analysis/live", icon: "pulse_alert", label: "Live Analysis" },
-  { href: "/analysis/configuration", icon: "settings_ethernet", label: "VPN Configurations" },
-  { href: "/analysis/traffic", icon: "insights", label: "Traffic Intelligence" },
-  { href: "/analysis/findings", icon: "policy", label: "Findings" },
-  { href: "/analysis/reports", icon: "assignment", label: "Reports" },
-  { href: "/dataset", icon: "dataset", label: "Dataset / Testbed" },
-  { href: "/settings", icon: "tune", label: "Settings" },
+interface NavItem {
+  href: string;
+  icon: string;
+  label: string;
+  badge?: string;
+  badgeType?: "live" | "docs" | "counter";
+}
+
+interface NavSection {
+  group: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    group: "Core Observability",
+    items: [
+      { href: "/overview", icon: "dashboard", label: "Overview" },
+      { href: "/analyze", icon: "file_open", label: "Analyze PCAP" },
+      { href: "/analysis/live", icon: "pulse_alert", label: "Live Analysis", badge: "LIVE", badgeType: "live" },
+    ],
+  },
+  {
+    group: "Cryptographic Audit",
+    items: [
+      { href: "/analysis/configuration", icon: "settings_ethernet", label: "VPN Configurations" },
+      { href: "/analysis/traffic", icon: "insights", label: "Traffic Intelligence" },
+      { href: "/analysis/findings", icon: "policy", label: "Findings" },
+      { href: "/analysis/reports", icon: "assignment", label: "Reports" },
+    ],
+  },
+  {
+    group: "Platform & Docs",
+    items: [
+      { href: "/dataset", icon: "dataset", label: "Dataset / Testbed" },
+      { href: "/docs", icon: "menu_book", label: "Documentation", badge: "HUB", badgeType: "docs" },
+      { href: "/settings", icon: "tune", label: "Settings" },
+    ],
+  },
 ];
 
 export function AppShell({
@@ -31,102 +59,272 @@ export function AppShell({
   innerClassName?: string;
   innerStyle?: CSSProperties;
 }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Sync state with localStorage and keyboard shortcut (⌘B or Ctrl+B)
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem("tunnelsight:sidebar_collapsed");
+    if (saved === "true") {
+      setIsCollapsed(true);
+    }
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setIsCollapsed((prev) => {
+          const next = !prev;
+          localStorage.setItem("tunnelsight:sidebar_collapsed", String(next));
+          return next;
+        });
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("tunnelsight:sidebar_collapsed", String(next));
+      return next;
+    });
+  };
+
   return (
     <>
-      <aside className="fixed left-0 top-0 h-full w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between select-none">
+      {/* ============ REVAMPED COLLAPSIBLE SIDEBAR ============ */}
+      <aside
+        className={`fixed left-0 top-0 h-full w-64 bg-[#0a0c10]/95 backdrop-blur-xl border-r border-zinc-800/80 z-50 flex flex-col justify-between select-none transition-transform duration-300 ease-in-out ${
+          isCollapsed ? "-translate-x-full pointer-events-none" : "translate-x-0"
+        }`}
+        aria-hidden={isCollapsed}
+        id="app-sidebar"
+      >
         <div className="flex flex-col">
-          <div className="h-header-height px-space-base flex items-center gap-space-sm bg-surface-container-lowest">
-            <span className="material-symbols-outlined text-primary text-[20px]">security</span>
-            <div className="flex items-baseline gap-space-2xs">
-              <span className="font-headline-sm text-headline-sm text-on-surface tracking-tight font-semibold">TunnelSight</span>
-              <span className="font-code-sm text-code-sm text-outline">/</span>
-              <span className="font-code-sm text-code-sm text-on-surface-variant font-medium">IPsecXray</span>
-            </div>
+          {/* Top Brand Header */}
+          <div className="h-header-height px-4 flex items-center justify-between border-b border-zinc-800/60 bg-[#0d0f14]/60">
+            <Link href="/overview" className="flex items-center gap-2.5 group">
+              <span className="w-7 h-7 rounded-sm bg-teal-500/15 border border-teal-500/40 flex items-center justify-center text-teal-400 group-hover:border-teal-400 transition-colors shadow-[0_0_12px_rgba(20,184,166,0.2)]">
+                <span className="material-symbols-outlined text-[17px]">security</span>
+              </span>
+              <div className="flex flex-col">
+                <div className="flex items-baseline gap-1">
+                  <span className="font-sans text-sm font-semibold text-zinc-100 tracking-tight">TunnelSight</span>
+                  <span className="font-mono text-[11px] text-zinc-500">/ Xray</span>
+                </div>
+                <span className="font-mono text-[9px] text-teal-400/90 tracking-widest uppercase -mt-0.5">SEC-OPS v2.4</span>
+              </div>
+            </Link>
+
+            {/* Collapse button on sidebar header */}
+            <button
+              onClick={toggleSidebar}
+              className="p-1.5 rounded-sm text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors"
+              title="Collapse Sidebar (⌘B)"
+              type="button"
+              aria-label="Collapse sidebar"
+            >
+              <span className="material-symbols-outlined text-[18px]">dock_to_left</span>
+            </button>
           </div>
-          <div className="px-space-base py-space-xs bg-surface-container-low border-b border-hairline">
-            <div className="flex items-center justify-between text-outline">
-              <span className="font-label-sm text-label-sm uppercase tracking-wider">Operational Posture</span>
-              <span className="font-code-sm text-code-sm text-primary">v2.4.1-rc3</span>
-            </div>
+
+          {/* Subheader Status Pill */}
+          <div className="px-4 py-2 bg-[#0c0e12] border-b border-zinc-800/40 flex items-center justify-between font-mono text-[11px]">
+            <span className="text-zinc-500 uppercase tracking-wider text-[10px]">Active Profile</span>
+            <span className="text-teal-300 font-medium">Enterprise-Edge</span>
           </div>
-          <nav className="flex flex-col gap-space-2xs p-space-sm mt-space-xs">
-            {NAV.map((item) =>
-              item.href === active ? (
-                <Link key={item.href} aria-current="page" className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors bg-primary-container text-on-primary-container font-semibold" href={item.href}>
-                  <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
-                  <span className="font-body-md text-body-md">{
-item.label}</span>
-                </Link>
-              ) : (
-                <Link key={item.href} className="flex items-center gap-space-md px-space-md py-space-xs rounded transition-colors text-on-surface-variant hover:bg-surface-container hover:text-on-surface" href={item.href}>
-                  <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
-                  <span className="font-body-md text-body-md">{item.label}</span>
-                </Link>
-              )
-            )}
+
+          {/* Navigation Groups */}
+          <nav className="flex flex-col gap-4 p-3 overflow-y-auto max-h-[calc(100vh-220px)] scrollbar-none">
+            {NAV_SECTIONS.map((section) => (
+              <div key={section.group} className="flex flex-col gap-1">
+                <span className="px-2.5 text-[10px] font-mono text-zinc-500 uppercase tracking-wider font-semibold">
+                  {section.group}
+                </span>
+
+                <div className="flex flex-col gap-0.5 mt-0.5">
+                  {section.items.map((item) => {
+                    const isActive = item.href === active;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        aria-current={isActive ? "page" : undefined}
+                        className={`group relative flex items-center justify-between px-3 py-2 rounded-sm text-xs transition-all font-sans ${
+                          isActive
+                            ? "bg-teal-500/10 text-teal-300 border border-teal-500/30 font-semibold shadow-[0_0_15px_rgba(20,184,166,0.1)]"
+                            : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent"
+                        }`}
+                      >
+                        {/* Active left indicator accent bar */}
+                        {isActive && (
+                          <span className="absolute left-0 inset-y-1.5 w-0.5 bg-teal-400 rounded-r-full shadow-[0_0_8px_#14b8a6]" />
+                        )}
+
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span
+                            className={`material-symbols-outlined text-[18px] shrink-0 transition-colors ${
+                              isActive ? "text-teal-400" : "text-zinc-500 group-hover:text-zinc-300"
+                            }`}
+                          >
+                            {item.icon}
+                          </span>
+                          <span className="truncate">{item.label}</span>
+                        </div>
+
+                        {/* Optional Badges */}
+                        {item.badge && (
+                          <span
+                            className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-sm tracking-wider uppercase shrink-0 ${
+                              item.badgeType === "live"
+                                ? "bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse"
+                                : item.badgeType === "docs"
+                                ? "bg-teal-500/20 text-teal-300 border border-teal-500/40"
+                                : "bg-zinc-800 text-zinc-400"
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
         </div>
-        <div className="p-space-sm bg-surface-container-lowest border-t border-hairline">
-          <div className="p-space-sm rounded bg-surface-container-low flex flex-col gap-space-xs">
-            <div className="flex items-center justify-between font-label-sm text-label-sm">
-              <span className="text-outline uppercase">Pipeline</span>
-              <span className="text-tertiary font-code-sm text-code-sm">ONLINE</span>
+
+        {/* Elevated Telemetry Hardware Mini-Card */}
+        <div className="p-3 bg-[#0c0e12] border-t border-zinc-800/80">
+          <div className="p-2.5 rounded-sm bg-[#101318] border border-zinc-800/90 flex flex-col gap-2">
+            <div className="flex items-center justify-between font-mono text-[10px]">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+                <span className="text-zinc-300 font-semibold tracking-wider uppercase">DPDK RX ENGINE</span>
+              </div>
+              <span className="text-teal-400 font-bold">ONLINE</span>
             </div>
-            <div className="w-full bg-surface-container-highest h-1 rounded">
-              <div className="bg-primary-container h-1 rounded w-3/4"></div>
+
+            {/* Hardware Ring Buffer Gauge */}
+            <div className="space-y-1">
+              <div className="flex justify-between font-mono text-[10px] text-zinc-500">
+                <span>Ring Buffer (0-3)</span>
+                <span className="text-zinc-300">0.02ms</span>
+              </div>
+              <div className="w-full bg-zinc-800/80 h-1 rounded-full overflow-hidden">
+                <div className="bg-gradient-to-r from-teal-500 to-emerald-400 h-1 rounded-full w-3/4 shadow-[0_0_8px_rgba(20,184,166,0.4)]" />
+              </div>
             </div>
-            <div className="flex justify-between font-code-sm text-code-sm text-on-surface-variant">
-              <span className="truncate">DPDK Core 0-3</span>
-              <span className="text-on-surface">0.02ms</span>
+
+            <div className="flex items-center justify-between font-mono text-[9px] text-zinc-500 pt-0.5 border-t border-zinc-800/50">
+              <span>ML Workers: 4/4</span>
+              <span className="text-emerald-400">98.4% Free</span>
             </div>
           </div>
         </div>
       </aside>
-      <div className="pl-sidebar-expanded">
-        <header className="fixed top-0 left-sidebar-expanded right-0 h-header-height bg-surface-container-lowest z-40 flex items-center justify-between px-space-base select-none border-b border-hairline">
-          <div className="flex items-center gap-space-md">
-            <div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded">
-              <span className="inline-block w-2 h-2 rounded-full bg-tertiary"></span>
-              <span className="font-code-sm text-code-sm text-on-surface font-medium">ENGINE ONLINE</span>
-              <span className="text-outline-variant font-code-sm text-code-sm">|</span>
-              <span className="font-code-sm text-code-sm text-on-surface-variant">DPDK RX: READY</span>
-              <span className="text-outline-variant font-code-sm text-code-sm">|</span>
-              <span className="font-code-sm text-code-sm text-tertiary">ML WORKERS: 4/4 ACTIVE</span>
+
+      {/* ============ MAIN CONTENT WRAPPER ============ */}
+      <div className={`transition-[padding] duration-300 ease-in-out ${isCollapsed ? "pl-0" : "pl-64"}`}>
+        {/* Fixed Header Bar */}
+        <header
+          className={`fixed top-0 right-0 h-header-height bg-[#0a0c10]/90 backdrop-blur-md z-40 flex items-center justify-between px-4 select-none border-b border-zinc-800/80 transition-[left] duration-300 ease-in-out ${
+            isCollapsed ? "left-0" : "left-64"
+          }`}
+        >
+          {/* Left section: Persistent toggle button + status badges */}
+          <div className="flex items-center gap-3">
+            {/* PERSISTENT SIDEBAR TOGGLE BUTTON */}
+            <button
+              onClick={toggleSidebar}
+              className="flex items-center justify-center w-8 h-8 rounded-sm bg-[#14171c] hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 border border-zinc-800 hover:border-zinc-700 transition-all shadow-sm group"
+              title={isCollapsed ? "Expand Sidebar (⌘B)" : "Collapse Sidebar (⌘B)"}
+              type="button"
+              aria-label="Toggle Sidebar Navigation"
+              id="sidebar-persistent-toggle"
+            >
+              <span className="material-symbols-outlined text-[19px] group-hover:text-teal-400 transition-colors">
+                {isCollapsed ? "menu_open" : "dock_to_left"}
+              </span>
+            </button>
+
+            {/* If collapsed, show small brand lockup */}
+            {isCollapsed && (
+              <Link href="/overview" className="flex items-center gap-2 pr-2 border-r border-zinc-800">
+                <span className="w-5 h-5 rounded-sm bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-teal-400 text-xs">
+                  <span className="material-symbols-outlined text-[14px]">security</span>
+                </span>
+                <span className="font-sans text-xs font-semibold text-zinc-200">TunnelSight</span>
+              </Link>
+            )}
+
+            {/* Engine status indicator */}
+            <div className="hidden sm:flex items-center gap-2 bg-[#12141a] px-3 py-1.5 rounded-sm border border-zinc-800/70 font-mono text-xs">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="text-zinc-200 font-medium">ENGINE ONLINE</span>
+              <span className="text-zinc-700">|</span>
+              <span className="text-zinc-400">DPDK: READY</span>
+              <span className="text-zinc-700">|</span>
+              <span className="text-teal-400">ML: ACTIVE</span>
             </div>
-            <div className="hidden xl:flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded">
-              <span className="font-label-sm text-label-sm text-outline uppercase">Profile</span>
-              <span className="font-code-sm text-code-sm text-primary font-medium">Enterprise-Edge-Audit</span>
+
+            <div className="hidden xl:flex items-center gap-1.5 bg-[#12141a] px-3 py-1.5 rounded-sm border border-zinc-800/70 font-mono text-xs text-zinc-400">
+              <span className="text-zinc-500 uppercase text-[10px]">Profile:</span>
+              <span className="text-teal-300 font-medium">Enterprise-Edge-Audit</span>
             </div>
           </div>
-          <div className="flex items-center gap-space-md">
-            <div className="hidden 2xl:flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant">
-              <span className="text-outline">UTC</span>
-              <span className="">2025-05-18 14:32:09</span>
-              <span className="text-outline-variant">|</span>
-              <span className="text-outline">Buffer:</span>
-              <span className="text-tertiary">98.4% Free</span>
-            </div>
-            <button data-action="search" className="flex items-center gap-2 bg-[#14171c] hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 px-3 py-1.5 rounded-sm transition-colors text-xs font-mono" type="button">
+
+          {/* Right section: Search button, shortcuts, theme toggle, profile */}
+          <div className="flex items-center gap-3">
+            <button
+              data-action="search"
+              className="flex items-center gap-2 bg-[#12141a] hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 px-3 py-1.5 rounded-sm transition-colors text-xs font-mono"
+              type="button"
+            >
               <span className="material-symbols-outlined text-[16px] text-teal-400">search</span>
-              <span>Search packets/SPI/tunnels</span>
-              <kbd className="bg-zinc-800 border border-zinc-700/60 px-1.5 py-0.5 rounded-sm text-[10px] text-zinc-400">⌘K</kbd>
+              <span className="hidden md:inline">Search packets/SPI/tunnels</span>
+              <kbd className="bg-zinc-800/80 border border-zinc-700/60 px-1.5 py-0.5 rounded-sm text-[10px] text-zinc-400">⌘K</kbd>
             </button>
-            <div className="flex items-center gap-space-xs">
-              <button data-action="export" className="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button">
+
+            <div className="flex items-center gap-1">
+              <button
+                data-action="export"
+                className="p-1.5 rounded-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+                title="Quick Export"
+                type="button"
+              >
                 <span className="material-symbols-outlined text-[18px]">download</span>
               </button>
-              <button data-action="notifications" className="relative p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notification Feed" type="button">
+              <button
+                data-action="notifications"
+                className="relative p-1.5 rounded-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+                title="Notification Feed"
+                type="button"
+              >
                 <span className="material-symbols-outlined text-[18px]">notifications</span>
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span>
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-teal-400" />
               </button>
               <ThemeToggle variant="inline" />
             </div>
-            <div className="h-4 w-px bg-surface-container-highest mx-space-2xs"></div>
-            <div data-action="profile" role="button" tabIndex={0} className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer">
-              <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>
+
+            <div className="h-4 w-px bg-zinc-800 mx-1" />
+            <div
+              data-action="profile"
+              role="button"
+              tabIndex={0}
+              className="w-7 h-7 rounded-full bg-teal-500/20 border border-teal-500/40 text-teal-300 flex items-center justify-center cursor-pointer hover:border-teal-400 transition-colors"
+              title="Analyst Profile"
+            >
+              <span className="material-symbols-outlined text-[16px]">person</span>
             </div>
           </div>
         </header>
+
+        {/* Page Main Content Area */}
         <main className="relative pt-header-height w-full bg-background min-h-screen">
           <div className={`flex flex-col w-full text-on-surface ${innerClassName}`} style={innerStyle}>
             {children}
