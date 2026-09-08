@@ -8,19 +8,29 @@ import { AppShell } from "@/components/layout/AppShell";
 
 export default function SearchOverlayPage() {
   const [query, setQuery] = useState("branch");
-  const [paletteOpen, setPaletteOpen] = useState(true);
+  const [activeScope, setActiveScope] = useState("all");
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const toast = useToast();
+
+  const dismiss = () => {
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push("/overview");
+    }
+  };
+
   const openResult = (e: React.MouseEvent<HTMLDivElement>) => {
     const t = e.currentTarget.textContent ?? "";
     if (t.includes("Weak Diffie-Hellman") || t.includes("PFS Disabled")) router.push("/analysis/findings");
     else if (t.includes(".pdf")) router.push("/analysis/reports");
     else router.push("/analysis/results");
   };
-  const scopeToast = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const label = (e.currentTarget.textContent ?? "").replace(/[0-9]/g, "").trim();
-    toast({ title: `Scope: ${label}`, body: "Result scope filter staged (mock).", kind: "info" });
+
+  const setScope = (scope: string, label: string) => {
+    setActiveScope(scope);
+    toast({ title: `Scope: ${label}`, body: `Filtered to ${label} results.`, kind: "info" });
   };
 
   useEffect(() => {
@@ -30,7 +40,7 @@ export default function SearchOverlayPage() {
       try {
         el.setSelectionRange(el.value.length, el.value.length);
       } catch {
-        // non-text input types may throw; ignore
+        // ignore
       }
     }
   }, []);
@@ -38,382 +48,439 @@ export default function SearchOverlayPage() {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        setPaletteOpen(false);
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setPaletteOpen(true);
-        inputRef.current?.focus();
+        dismiss();
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [router]);
 
   function handleClear() {
     setQuery("");
     inputRef.current?.focus();
   }
-  return (
-    <div className="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
-<AppShell active="" innerClassName="flex flex-col w-full relative">
 
-{/* Underlay Mockup: Authentic SecOps Background Workbench (Dimmed & Blurred) */}
-<div className="w-full pointer-events-none select-none opacity-40 filter blur-[2px] transition-opacity">
-<div className="p-space-base flex flex-col gap-space-base max-w-7xl mx-auto">
-{/* Background Stats Row */}
-<div className="grid grid-cols-4 gap-space-md">
-<div className="bg-surface-container-low p-space-md rounded flex flex-col gap-space-xs">
-<div className="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase">
-<span>Active IKEv2 SAs</span>
-<span className="material-symbols-outlined text-primary text-[16px]">key</span>
-</div>
-<div className="font-headline-lg text-headline-lg text-on-surface">148 <span className="font-code-sm text-code-sm text-tertiary font-normal">↑ 4%</span></div>
-<span className="font-code-sm text-code-sm text-outline">Negotiation latency: 24.1ms</span>
-</div>
-<div className="bg-surface-container-low p-space-md rounded flex flex-col gap-space-xs">
-<div className="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase">
-<span>ESP Throughput</span>
-<span className="material-symbols-outlined text-primary text-[16px]">speed</span>
-</div>
-<div className="font-headline-lg text-headline-lg text-on-surface">4.82 <span className="font-code-sm text-code-sm text-on-surface-variant font-normal">Gbps</span></div>
-<span className="font-code-sm text-code-sm text-outline">Drop/Corrupt rate: 0.000%</span>
-</div>
-<div className="bg-surface-container-low p-space-md rounded flex flex-col gap-space-xs">
-<div className="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase">
-<span>Compliance Violations</span>
-<span className="material-symbols-outlined text-error text-[16px]">gpp_maybe</span>
-</div>
-<div className="font-headline-lg text-headline-lg text-error">12 <span className="font-code-sm text-code-sm text-error font-normal">P0 / P1</span></div>
-<span className="font-code-sm text-code-sm text-outline">RFC 8247 Non-conformant</span>
-</div>
-<div className="bg-surface-container-low p-space-md rounded flex flex-col gap-space-xs">
-<div className="flex items-center justify-between text-outline font-label-sm text-label-sm uppercase">
-<span>Capture Replay Buffer</span>
-<span className="material-symbols-outlined text-primary text-[16px]">memory</span>
-</div>
-<div className="font-headline-lg text-headline-lg text-on-surface">38.4 <span className="font-code-sm text-code-sm text-on-surface-variant font-normal">GiB</span></div>
-<span className="font-code-sm text-code-sm text-tertiary">RingBuffer Ready (Core 0)</span>
-</div>
-</div>
-{/* Background Capture Table Skeleton */}
-<div className="bg-surface-container-low rounded p-space-md flex flex-col gap-space-sm">
-<div className="flex items-center justify-between py-space-2xs">
-<div className="font-headline-sm text-headline-sm text-on-surface">Operational Capture Stream</div>
-<div className="font-code-sm text-code-sm text-outline">Ingest: Interface eth1.400</div>
-</div>
-<div className="bg-surface-container-highest h-6 rounded w-full opacity-60"></div>
-<div className="bg-surface-container h-8 rounded w-full"></div>
-<div className="bg-surface-container h-8 rounded w-full"></div>
-<div className="bg-surface-container h-8 rounded w-full"></div>
-</div>
-</div>
-</div>
-{/* Global Modal Layer Overlay */}
-<div className={`fixed inset-0 top-header-height left-sidebar-expanded z-50 flex items-start justify-center pt-8 px-space-base bg-surface-container-lowest/85${paletteOpen ? "" : " opacity-0 pointer-events-none"}`} id="palette-backdrop" onClick={(e) => { if (!(e.target as HTMLElement).closest("#command-modal")) setPaletteOpen(false); }}>
-{/* Command Palette Container (Centered & Elevated) */}
-<div className="w-full max-w-[760px] bg-surface-container-low rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all" id="command-modal">
-{/* Top Primary Search Bar */}
-<div className="p-space-base pb-space-sm flex flex-col gap-space-sm bg-surface-container-low">
-<div className="flex items-center gap-space-sm bg-surface-container-lowest rounded-lg px-space-md py-2.5">
-<span className="material-symbols-outlined text-primary text-[22px] select-none">search</span>
-<input autoFocus ref={inputRef} className="w-full bg-transparent border-0 p-0 font-code-md text-code-md text-on-surface placeholder:text-outline focus:outline-none tracking-tight" id="search-input" placeholder="Search captures, tunnels, SPI (0x...), RFC findings, reports…" type="text" value={query} onChange={(e) => setQuery(e.target.value)} />
-<div className="flex items-center gap-space-xs select-none">
-<button className="flex items-center justify-center w-5 h-5 rounded bg-surface-container hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors" id="clear-search-btn" title="Clear query" onClick={handleClear}>
-<span className="material-symbols-outlined text-[14px]">close</span>
-</button>
-<div className="flex items-center gap-1 bg-surface-container-high px-space-xs py-space-2xs rounded">
-<span className="font-code-sm text-code-sm text-outline uppercase font-semibold">ESC</span>
-</div>
-</div>
-</div>
-{/* Scope & Category Filter Chips */}
-<div className="flex items-center gap-space-xs overflow-x-auto pb-1 select-none">
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-primary-container bg-primary-container font-label-md text-label-md transition-colors" onClick={scopeToast}>
-<span>All Results</span>
-<span className="font-code-sm text-code-sm opacity-80">37</span>
-</button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
-<span>Captures</span>
-<span className="font-code-sm text-code-sm text-primary font-medium">14</span>
-</button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
-<span>Findings</span>
-<span className="font-code-sm text-code-sm text-error font-medium">8</span>
-</button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
-<span>VPNs</span>
-<span className="font-code-sm text-code-sm text-outline">4</span>
-</button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
-<span>SPI</span>
-<span className="font-code-sm text-code-sm text-tertiary">6</span>
-</button>
-<button className="flex items-center gap-1.5 px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface bg-surface-container hover:bg-surface-container-high font-label-md text-label-md transition-colors" onClick={scopeToast}>
-<span>Reports</span>
-<span className="font-code-sm text-code-sm text-outline">5</span>
-</button>
-</div>
-</div>
-{/* Results Ledger Body */}
-<div className="max-h-[593px] overflow-y-auto px-space-base py-space-xs flex flex-col gap-space-md" id="results-container">
-{/* SECTION 1: CAPTURES */}
-<div className="flex flex-col gap-1">
-<div className="flex items-center justify-between px-space-xs py-1">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Captures (PCAP / PCAPNG)</span>
-<span className="font-code-sm text-code-sm text-outline">Matches in filename &amp; IP</span>
-</div>
-{/* Item 1: Selected State */}
-<div className="group relative flex items-center justify-between p-space-sm rounded-lg bg-surface-container cursor-pointer transition-all" onClick={openResult}>
-{/* Left active indicator marker */}
-<div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-primary rounded-r"></div>
-<div className="flex items-start gap-space-sm pl-2 min-w-0">
-<div className="p-1.5 rounded bg-surface-container-highest text-primary shrink-0 mt-0.5">
-<span className="material-symbols-outlined text-[18px]">receipt_long</span>
-</div>
-<div className="flex flex-col gap-0.5 min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-code-md text-code-md text-on-surface font-semibold truncate"><mark className="bg-primary/20 text-primary font-semibold">branch</mark>-emea-gw04.pcap</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant">PCAP</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-error-container/30 text-error font-semibold">SCORE 61 · HIGH RISK</span>
-</div>
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
-<span className="text-on-surface">IKEv2/Tunnel</span>
-<span className="text-outline">·</span>
-<span>192.0.2.14 ↔ 198.51.100.8</span>
-<span className="text-outline">·</span>
-<span className="text-outline">18m ago by j.chen</span>
-</div>
-</div>
-</div>
-{/* Action Keys Preview on Hover/Selection */}
-<div className="flex items-center gap-space-xs shrink-0 pl-space-sm">
-<div className="flex items-center gap-1 bg-surface-container-highest px-space-xs py-0.5 rounded text-outline font-code-sm text-code-sm">
-<span>↵ Open</span>
-</div>
-<div className="flex items-center gap-1 bg-surface-container-highest px-space-xs py-0.5 rounded text-outline font-code-sm text-code-sm">
-<span>Tab Inspect</span>
-</div>
-</div>
-</div>
-{/* Item 2 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
-<div className="flex items-start gap-space-sm pl-2 min-w-0">
-<div className="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
-<span className="material-symbols-outlined text-[18px]">file_open</span>
-</div>
-<div className="flex flex-col gap-0.5 min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-code-md text-code-md text-on-surface truncate">edge-<mark className="bg-primary/20 text-primary font-semibold">branch</mark>-tokyo-02.pcapng</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant">PCAPNG</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/30 text-tertiary font-semibold">SCORE 88 · PASS</span>
-</div>
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
-<span>IKEv2/Transport</span>
-<span className="text-outline">·</span>
-<span>203.0.113.50 ↔ 198.51.100.1</span>
-<span className="text-outline">·</span>
-<span className="text-outline">Analyzed 2h ago</span>
-</div>
-</div>
-</div>
-<div className="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
-<span>↵ Open</span>
-</div>
-</div>
-</div>
-{/* SECTION 2: FINDINGS */}
-<div className="flex flex-col gap-1">
-<div className="flex items-center justify-between px-space-xs py-1">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Findings &amp; Cryptographic Posture</span>
-<span className="font-code-sm text-code-sm text-error">2 RFC Non-Conformances</span>
-</div>
-{/* Finding Item 1 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
-<div className="flex items-start gap-space-sm pl-2 min-w-0">
-<div className="p-1.5 rounded bg-error-container/20 text-error shrink-0 mt-0.5">
-<span className="material-symbols-outlined text-[18px]">security_update_warning</span>
-</div>
-<div className="flex flex-col gap-0.5 min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-headline-sm text-headline-sm text-on-surface truncate">Weak Diffie-Hellman Group 2 (MODP-1024)</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-error-container text-error font-semibold uppercase">P0 CRITICAL</span>
-</div>
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
-<span className="text-error">RFC 8247 § 2.4 Violation</span>
-<span className="text-outline">·</span>
-<span>Affected: <span className="text-on-surface font-medium"><mark className="bg-primary/20 text-primary font-semibold">branch</mark>-emea-gw04</span>, legacy-radius, dc-west-vpn</span>
-</div>
-</div>
-</div>
-<div className="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
-<span>Inspect finding</span>
-</div>
-</div>
-{/* Finding Item 2 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
-<div className="flex items-start gap-space-sm pl-2 min-w-0">
-<div className="p-1.5 rounded bg-surface-container-highest text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
-<span className="material-symbols-outlined text-[18px]">warning</span>
-</div>
-<div className="flex flex-col gap-0.5 min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-headline-sm text-headline-sm text-on-surface truncate">PFS Disabled on CHILD_SA (Phase 2 Rekey)</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface font-semibold uppercase">P1 HIGH</span>
-</div>
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
-<span>5 captures affected</span>
-<span className="text-outline">·</span>
-<span>No ephemeral key exchange in <mark className="bg-primary/20 text-primary font-semibold">branch</mark> profile</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-{/* SECTION 3: VPNs & TUNNELS */}
-<div className="flex flex-col gap-1">
-<div className="flex items-center justify-between px-space-xs py-1">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Configured Gateways &amp; Tunnels</span>
-<span className="font-code-sm text-code-sm text-outline">IPsec Topology</span>
-</div>
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
-<div className="flex items-start gap-space-sm pl-2 min-w-0">
-<div className="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
-<span className="material-symbols-outlined text-[18px]">settings_ethernet</span>
-</div>
-<div className="flex flex-col gap-0.5 min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-code-md text-code-md text-on-surface font-semibold">tun-emea-gw04-core</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/20 text-tertiary font-semibold uppercase">ESTABLISHED</span>
-</div>
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
-<span>192.0.2.14 (<mark className="bg-primary/20 text-primary font-semibold">Branch</mark>-Frankfurt) ↔ 198.51.100.8 (HQ-Primary)</span>
-<span className="text-outline">·</span>
-<span className="text-outline">AES-CBC-128 / SHA256</span>
-</div>
-</div>
-</div>
-<div className="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
-<span>View Tunnel</span>
-</div>
-</div>
-</div>
-{/* SECTION 4: SPI (SECURITY PARAMETER INDEX) */}
-<div className="flex flex-col gap-1">
-<div className="flex items-center justify-between px-space-xs py-1">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">SPI (Security Parameter Indexes)</span>
-<span className="font-code-sm text-code-sm text-primary">In-Memory Hash Matches</span>
-</div>
-{/* SPI Item 1 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
-<div className="flex items-start gap-space-sm pl-2 min-w-0">
-<div className="p-1.5 rounded bg-surface-container text-tertiary shrink-0 mt-0.5">
-<span className="material-symbols-outlined text-[18px]">tag</span>
-</div>
-<div className="flex flex-col gap-0.5 min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-code-md text-code-md text-tertiary font-bold tracking-wider">0x7a89f31c</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant uppercase">Inbound SA</span>
-<span className="font-code-sm text-code-sm text-outline">In: <mark className="bg-primary/20 text-primary font-semibold">branch</mark>-emea-gw04.pcap</span>
-</div>
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
-<span>ESP_AES_GCM_16_256</span>
-<span className="text-outline">·</span>
-<span>Sequence Window: 64</span>
-<span className="text-outline">·</span>
-<span>Pkt Count: 148,209</span>
-</div>
-</div>
-</div>
-<div className="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
-<span>Jump to Hex</span>
-</div>
-</div>
-{/* SPI Item 2 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
-<div className="flex items-start gap-space-sm pl-2 min-w-0">
-<div className="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-tertiary shrink-0 mt-0.5">
-<span className="material-symbols-outlined text-[18px]">tag</span>
-</div>
-<div className="flex flex-col gap-0.5 min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-code-md text-code-md text-on-surface font-bold tracking-wider">0xd411e89b</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant uppercase">Outbound SA</span>
-<span className="font-code-sm text-code-sm text-outline">In: <mark className="bg-primary/20 text-primary font-semibold">branch</mark>-emea-gw04.pcap</span>
-</div>
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
-<span>ESP_AES_GCM_16_256</span>
-<span className="text-outline">·</span>
-<span>Associated Peer: 198.51.100.8</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-{/* SECTION 5: REPORTS & AUDIT EVIDENCE */}
-<div className="flex flex-col gap-1 pb-space-sm">
-<div className="flex items-center justify-between px-space-xs py-1">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Reports &amp; Exported Audits</span>
-<span className="font-code-sm text-code-sm text-outline">Signed Forensics</span>
-</div>
-{/* Report Item 1 */}
-<div className="group flex items-center justify-between p-space-sm rounded-lg hover:bg-surface-container cursor-pointer transition-colors" onClick={openResult}>
-<div className="flex items-start gap-space-sm pl-2 min-w-0">
-<div className="p-1.5 rounded bg-surface-container text-on-surface-variant group-hover:text-primary shrink-0 mt-0.5">
-<span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-</div>
-<div className="flex flex-col gap-0.5 min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-code-md text-code-md text-on-surface font-semibold truncate"><mark className="bg-primary/20 text-primary font-semibold">branch</mark>-emea-security-assessment.pdf</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant">PDF</span>
-<span className="px-1.5 py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/20 text-tertiary">ED25519 SIGNED</span>
-</div>
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-on-surface-variant truncate">
-<span>Executive Cryptographic Posture</span>
-<span className="text-outline">·</span>
-<span>2.4 MB</span>
-<span className="text-outline">·</span>
-<span className="text-outline">Oct 22, 2025</span>
-</div>
-</div>
-</div>
-<div className="hidden group-hover:flex items-center gap-space-xs shrink-0 pl-space-sm font-code-sm text-code-sm text-outline">
-<span>Download</span>
-</div>
-</div>
-</div>
-</div>
-{/* Command Palette Terminal Footer */}
-<div className="bg-surface-container-lowest px-space-base py-space-sm flex items-center justify-between select-none">
-{/* Keyboard shortcuts */}
-<div className="flex items-center gap-space-md font-code-sm text-code-sm text-outline">
-<div className="flex items-center gap-1">
-<kbd className="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">↑</kbd>
-<kbd className="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">↓</kbd>
-<span>Navigate</span>
-</div>
-<div className="flex items-center gap-1">
-<kbd className="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">↵</kbd>
-<span>Select</span>
-</div>
-<div className="flex items-center gap-1">
-<kbd className="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">Esc</kbd>
-<span>Dismiss</span>
-</div>
-<div className="hidden sm:flex items-center gap-1">
-<kbd className="bg-surface-container-highest text-on-surface px-1.5 py-0.5 rounded">⌘P</kbd>
-<span>Direct PCAP</span>
-</div>
-</div>
-{/* Telemetry sync indicator */}
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm">
-<span className="inline-block w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
-<span className="text-on-surface-variant">Index Synced: <span className="text-on-surface font-medium">1,428 traces</span> · <span className="text-primary font-medium">4,891 SPIs</span></span>
-</div>
-</div>
-</div>
-</div>
-</AppShell>
+  return (
+    <div className="min-h-screen bg-[#0c0e11] text-zinc-100 antialiased selection:bg-teal-500/20 selection:text-teal-200">
+      <AppShell active="/search">
+        <div className="relative w-full min-h-[calc(100vh-4rem)] flex flex-col justify-center items-center">
+          {/* Underlay Mockup: Dimmed SecOps Workbench */}
+          <div className="w-full max-w-7xl px-6 py-8 pointer-events-none select-none opacity-25 filter blur-[2px] space-y-6">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="bg-[#111317] border border-zinc-800 p-4 rounded space-y-1">
+                <div className="flex items-center justify-between text-zinc-500 font-mono text-xs uppercase">
+                  <span>Active IKEv2 SAs</span>
+                  <span className="material-symbols-outlined text-teal-400 text-sm">key</span>
+                </div>
+                <div className="font-display-serif text-2xl text-zinc-100">
+                  148 <span className="font-mono text-xs text-teal-400 font-normal">↑ 4%</span>
+                </div>
+                <span className="font-mono text-xs text-zinc-500 block">Latency: 24.1ms</span>
+              </div>
+              <div className="bg-[#111317] border border-zinc-800 p-4 rounded space-y-1">
+                <div className="flex items-center justify-between text-zinc-500 font-mono text-xs uppercase">
+                  <span>ESP Throughput</span>
+                  <span className="material-symbols-outlined text-teal-400 text-sm">speed</span>
+                </div>
+                <div className="font-display-serif text-2xl text-zinc-100">
+                  4.82 <span className="font-mono text-xs text-zinc-400 font-normal">Gbps</span>
+                </div>
+                <span className="font-mono text-xs text-zinc-500 block">Drop rate: 0.000%</span>
+              </div>
+              <div className="bg-[#111317] border border-zinc-800 p-4 rounded space-y-1">
+                <div className="flex items-center justify-between text-zinc-500 font-mono text-xs uppercase">
+                  <span>Compliance Violations</span>
+                  <span className="material-symbols-outlined text-rose-400 text-sm">gpp_maybe</span>
+                </div>
+                <div className="font-display-serif text-2xl text-rose-400">
+                  12 <span className="font-mono text-xs text-rose-400/80 font-normal">P0 / P1</span>
+                </div>
+                <span className="font-mono text-xs text-zinc-500 block">RFC 8247 Non-conformant</span>
+              </div>
+              <div className="bg-[#111317] border border-zinc-800 p-4 rounded space-y-1">
+                <div className="flex items-center justify-between text-zinc-500 font-mono text-xs uppercase">
+                  <span>Capture Buffer</span>
+                  <span className="material-symbols-outlined text-teal-400 text-sm">memory</span>
+                </div>
+                <div className="font-display-serif text-2xl text-zinc-100">
+                  38.4 <span className="font-mono text-xs text-zinc-400 font-normal">GiB</span>
+                </div>
+                <span className="font-mono text-xs text-teal-400 block">RingBuffer Ready</span>
+              </div>
+            </div>
+
+            <div className="bg-[#111317] border border-zinc-800 rounded p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs text-zinc-300">Operational Capture Stream</span>
+                <span className="font-mono text-xs text-zinc-600">eth1.400 DPDK</span>
+              </div>
+              <div className="h-6 bg-zinc-900 rounded w-full"></div>
+              <div className="h-8 bg-zinc-900/60 rounded w-full"></div>
+              <div className="h-8 bg-zinc-900/60 rounded w-full"></div>
+            </div>
+          </div>
+
+          {/* Global Modal Layer Overlay */}
+          <div
+            className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 bg-black/80 backdrop-blur-md"
+            id="palette-backdrop"
+            onClick={(e) => {
+              if (!(e.target as HTMLElement).closest("#command-modal")) dismiss();
+            }}
+          >
+              {/* Command Palette Container */}
+              <div
+                className="w-full max-w-3xl bg-[#111317] border border-zinc-800 rounded-lg shadow-2xl flex flex-col overflow-hidden transition-all"
+                id="command-modal"
+              >
+                {/* Top Search Input */}
+                <div className="p-4 bg-[#14171c] border-b border-zinc-800/80 space-y-3">
+                  <div className="flex items-center gap-3 bg-[#0c0e11] border border-zinc-800/80 rounded px-3.5 py-2.5">
+                    <span className="material-symbols-outlined text-teal-400 text-xl select-none">search</span>
+                    <input
+                      autoFocus
+                      ref={inputRef}
+                      className="w-full bg-transparent border-0 p-0 font-mono text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none tracking-tight"
+                      id="search-input"
+                      placeholder="Search captures, tunnels, SPI (0x...), RFC findings, reports…"
+                      type="text"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                    />
+                    <div className="flex items-center gap-1.5 select-none font-mono">
+                      {query && (
+                        <button
+                          className="flex items-center justify-center w-5 h-5 rounded hover:bg-zinc-800 text-zinc-500 hover:text-zinc-200 transition-colors"
+                          id="clear-search-btn"
+                          title="Clear query"
+                          onClick={handleClear}
+                          type="button"
+                        >
+                          <span className="material-symbols-outlined text-sm">close</span>
+                        </button>
+                      )}
+                      <span className="text-[10px] text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded uppercase font-semibold">
+                        ESC
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Scope Filter Chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto select-none font-mono text-xs">
+                    <button
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
+                        activeScope === "all"
+                          ? "bg-teal-500/15 text-teal-300 border border-teal-500/30 font-medium"
+                          : "bg-[#0c0e11] text-zinc-400 border border-zinc-800 hover:border-zinc-700"
+                      }`}
+                      onClick={() => setScope("all", "All Results")}
+                      type="button"
+                    >
+                      <span>All Results</span>
+                      <span className="text-[10px] text-zinc-500">37</span>
+                    </button>
+                    <button
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
+                        activeScope === "captures"
+                          ? "bg-teal-500/15 text-teal-300 border border-teal-500/30 font-medium"
+                          : "bg-[#0c0e11] text-zinc-400 border border-zinc-800 hover:border-zinc-700"
+                      }`}
+                      onClick={() => setScope("captures", "Captures")}
+                      type="button"
+                    >
+                      <span>Captures</span>
+                      <span className="text-[10px] text-teal-400">14</span>
+                    </button>
+                    <button
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
+                        activeScope === "findings"
+                          ? "bg-teal-500/15 text-teal-300 border border-teal-500/30 font-medium"
+                          : "bg-[#0c0e11] text-zinc-400 border border-zinc-800 hover:border-zinc-700"
+                      }`}
+                      onClick={() => setScope("findings", "Findings")}
+                      type="button"
+                    >
+                      <span>Findings</span>
+                      <span className="text-[10px] text-rose-400">8</span>
+                    </button>
+                    <button
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
+                        activeScope === "vpns"
+                          ? "bg-teal-500/15 text-teal-300 border border-teal-500/30 font-medium"
+                          : "bg-[#0c0e11] text-zinc-400 border border-zinc-800 hover:border-zinc-700"
+                      }`}
+                      onClick={() => setScope("vpns", "VPNs")}
+                      type="button"
+                    >
+                      <span>VPNs</span>
+                      <span className="text-[10px] text-zinc-500">4</span>
+                    </button>
+                    <button
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
+                        activeScope === "spi"
+                          ? "bg-teal-500/15 text-teal-300 border border-teal-500/30 font-medium"
+                          : "bg-[#0c0e11] text-zinc-400 border border-zinc-800 hover:border-zinc-700"
+                      }`}
+                      onClick={() => setScope("spi", "SPI")}
+                      type="button"
+                    >
+                      <span>SPI</span>
+                      <span className="text-[10px] text-cyan-400">6</span>
+                    </button>
+                    <button
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
+                        activeScope === "reports"
+                          ? "bg-teal-500/15 text-teal-300 border border-teal-500/30 font-medium"
+                          : "bg-[#0c0e11] text-zinc-400 border border-zinc-800 hover:border-zinc-700"
+                      }`}
+                      onClick={() => setScope("reports", "Reports")}
+                      type="button"
+                    >
+                      <span>Reports</span>
+                      <span className="text-[10px] text-zinc-500">5</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Results Ledger Body */}
+                <div className="max-h-[520px] overflow-y-auto p-4 space-y-4 font-mono text-xs" id="results-container">
+                  {/* SECTION 1: CAPTURES */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between px-1 text-[10px] text-zinc-500 uppercase tracking-wider">
+                      <span>Captures (PCAP / PCAPNG)</span>
+                      <span>Matches in filename &amp; IP</span>
+                    </div>
+
+                    {/* Item 1 */}
+                    <div
+                      className="group relative flex items-center justify-between p-3 rounded bg-[#0c0e11] border border-teal-500/40 hover:border-teal-500/70 cursor-pointer transition-all"
+                      onClick={openResult}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="p-1.5 rounded bg-teal-500/10 text-teal-400 shrink-0 mt-0.5">
+                          <span className="material-symbols-outlined text-base">receipt_long</span>
+                        </div>
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-zinc-100 truncate">
+                              <span className="text-teal-400 font-bold">branch</span>-emea-gw04.pcap
+                            </span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-zinc-800 text-zinc-400">PCAP</span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-rose-500/15 text-rose-300 border border-rose-500/30 font-semibold">
+                              SCORE 61 · HIGH RISK
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                            <span className="text-zinc-300">IKEv2/Tunnel</span>
+                            <span>·</span>
+                            <span>192.0.2.14 ↔ 198.51.100.8</span>
+                            <span>·</span>
+                            <span>18m ago by j.chen</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-[11px] text-zinc-500 shrink-0 pl-3">
+                        <span className="group-hover:text-teal-400">↵ Open</span>
+                      </div>
+                    </div>
+
+                    {/* Item 2 */}
+                    <div
+                      className="group flex items-center justify-between p-3 rounded bg-[#0c0e11] border border-zinc-800 hover:border-zinc-700 cursor-pointer transition-colors"
+                      onClick={openResult}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="p-1.5 rounded bg-zinc-800 text-zinc-400 group-hover:text-teal-400 shrink-0 mt-0.5">
+                          <span className="material-symbols-outlined text-base">file_open</span>
+                        </div>
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-zinc-200 truncate">
+                              edge-<span className="text-teal-400 font-bold">branch</span>-tokyo-02.pcapng
+                            </span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-zinc-800 text-zinc-400">PCAPNG</span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-teal-500/15 text-teal-300 border border-teal-500/30 font-semibold">
+                              SCORE 88 · PASS
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                            <span>IKEv2/Transport</span>
+                            <span>·</span>
+                            <span>203.0.113.50 ↔ 198.51.100.1</span>
+                            <span>·</span>
+                            <span>Analyzed 2h ago</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="hidden group-hover:flex items-center gap-1 text-[11px] text-teal-400 shrink-0 pl-3">
+                        <span>↵ Open</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 2: FINDINGS */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between px-1 text-[10px] text-zinc-500 uppercase tracking-wider">
+                      <span>Findings &amp; Cryptographic Posture</span>
+                      <span className="text-rose-400 font-medium">2 RFC Non-Conformances</span>
+                    </div>
+
+                    <div
+                      className="group flex items-center justify-between p-3 rounded bg-[#0c0e11] border border-rose-500/30 hover:border-rose-500/60 cursor-pointer transition-colors"
+                      onClick={openResult}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="p-1.5 rounded bg-rose-500/15 text-rose-400 shrink-0 mt-0.5">
+                          <span className="material-symbols-outlined text-base">security_update_warning</span>
+                        </div>
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-zinc-100 truncate">Weak Diffie-Hellman Group 2 (MODP-1024)</span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold uppercase">
+                              P0 CRITICAL
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                            <span className="text-rose-400">RFC 8247 § 2.4 Violation</span>
+                            <span>·</span>
+                            <span>Affected: <span className="text-teal-400 font-medium">branch</span>-emea-gw04</span>
+                          </div>
+                        </div>
+                      </div>
+                      <span className="hidden group-hover:inline-block text-[11px] text-teal-400 shrink-0 pl-3">
+                        Inspect
+                      </span>
+                    </div>
+
+                    <div
+                      className="group flex items-center justify-between p-3 rounded bg-[#0c0e11] border border-zinc-800 hover:border-zinc-700 cursor-pointer transition-colors"
+                      onClick={openResult}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="p-1.5 rounded bg-amber-500/15 text-amber-400 shrink-0 mt-0.5">
+                          <span className="material-symbols-outlined text-base">warning</span>
+                        </div>
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-zinc-100 truncate">PFS Disabled on CHILD_SA (Phase 2)</span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold uppercase">
+                              P1 HIGH
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                            <span>5 captures affected</span>
+                            <span>·</span>
+                            <span>No ephemeral key exchange in <span className="text-teal-400 font-medium">branch</span> profile</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 3: SPI */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between px-1 text-[10px] text-zinc-500 uppercase tracking-wider">
+                      <span>SPI (Security Parameter Indexes)</span>
+                      <span className="text-cyan-400">Hash Matches</span>
+                    </div>
+
+                    <div
+                      className="group flex items-center justify-between p-3 rounded bg-[#0c0e11] border border-zinc-800 hover:border-zinc-700 cursor-pointer transition-colors"
+                      onClick={openResult}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="p-1.5 rounded bg-zinc-800 text-teal-400 shrink-0 mt-0.5">
+                          <span className="material-symbols-outlined text-base">tag</span>
+                        </div>
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-teal-400 tracking-wider">0x7a89f31c</span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-zinc-800 text-zinc-400 uppercase">Inbound SA</span>
+                            <span className="text-zinc-500 text-[11px]">In: <span className="text-teal-400">branch</span>-emea-gw04.pcap</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                            <span>ESP_AES_GCM_16_256</span>
+                            <span>·</span>
+                            <span>Seq Window: 64</span>
+                            <span>·</span>
+                            <span>Pkt Count: 148,209</span>
+                          </div>
+                        </div>
+                      </div>
+                      <span className="hidden group-hover:inline-block text-[11px] text-teal-400 shrink-0 pl-3">
+                        Jump to Hex
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* SECTION 4: REPORTS */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between px-1 text-[10px] text-zinc-500 uppercase tracking-wider">
+                      <span>Reports &amp; Exported Audits</span>
+                      <span className="text-zinc-500">Signed Forensics</span>
+                    </div>
+
+                    <div
+                      className="group flex items-center justify-between p-3 rounded bg-[#0c0e11] border border-zinc-800 hover:border-zinc-700 cursor-pointer transition-colors"
+                      onClick={openResult}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="p-1.5 rounded bg-zinc-800 text-zinc-400 group-hover:text-teal-400 shrink-0 mt-0.5">
+                          <span className="material-symbols-outlined text-base">picture_as_pdf</span>
+                        </div>
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-zinc-200 truncate">
+                              <span className="text-teal-400">branch</span>-emea-security-assessment.pdf
+                            </span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-zinc-800 text-zinc-400">PDF</span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                              ED25519 SIGNED
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-zinc-500 text-[11px] truncate">
+                            <span>Executive Cryptographic Posture</span>
+                            <span>·</span>
+                            <span>2.4 MB</span>
+                            <span>·</span>
+                            <span>Oct 22, 2025</span>
+                          </div>
+                        </div>
+                      </div>
+                      <span className="hidden group-hover:inline-block text-[11px] text-teal-400 shrink-0 pl-3">
+                        Download
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Bar */}
+                <div className="bg-[#0f1115] border-t border-zinc-800/80 px-4 py-2.5 flex items-center justify-between select-none font-mono text-xs text-zinc-500">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1">
+                      <kbd className="bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded text-[10px]">↑</kbd>
+                      <kbd className="bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded text-[10px]">↓</kbd>
+                      <span>Navigate</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <kbd className="bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded text-[10px]">↵</kbd>
+                      <span>Select</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <kbd className="bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded text-[10px]">ESC</kbd>
+                      <span>Dismiss</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-zinc-400 text-[11px]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+                    <span>1,428 traces · 4,891 SPIs indexed</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+      </AppShell>
     </div>
   );
 }

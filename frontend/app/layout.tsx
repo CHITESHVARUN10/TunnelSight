@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="bg-background text-on-surface"><ToastProvider><HeaderBehavior /><AuthGuard>{children}</AuthGuard><ThemeToggle /></ToastProvider></body>
+      <body className="bg-background text-on-surface"><ToastProvider><HeaderBehavior /><AuthGuard>{children}</AuthGuard></ToastProvider></body>
     </html>
   );
 }

@@ -76,8 +76,8 @@ export default function AnalysisResultsPage() {
 <circle className="text-error fill-none transition-all duration-700 ease-out" cx="36" cy="36" r="30" stroke="currentColor" strokeDasharray="188.5" strokeDashoffset="99.9" strokeLinecap="round" strokeWidth="5"></circle>
 </svg>
 <div className="absolute flex flex-col items-center justify-center">
-<span className="font-display text-display text-on-surface font-semibold tracking-tight">47</span>
-<span className="font-label-sm text-label-sm text-outline -mt-1">/ 100</span>
+<span className="font-display-serif text-3xl text-on-surface font-semibold tracking-tight">47</span>
+<span className="font-mono text-[10px] text-outline -mt-1">/ 100</span>
 </div>
 </div>
 <div className="flex flex-col gap-space-2xs min-w-0">
@@ -428,9 +428,21 @@ export default function AnalysisResultsPage() {
 <p className="font-body-sm text-body-sm text-on-surface">
           Reconfigure strongSwan / Cisco ASA / FortiOS proposal policy to mandate minimum DH Group 14 (MODP-2048) or prefer Curve25519 / DH Group 19 (ECDH-256). Disable legacy transform fallbacks in responder policy.
         </p>
-<div className="bg-surface-container-lowest p-space-xs rounded font-code-sm text-code-sm text-on-surface-variant select-all">
-<span className="text-outline"># strongswan.conf / swanctl.conf:</span><br />
-<span className="text-tertiary">proposals = aes256gcm16-prfsha384-ecp256, aes256-sha256-modp2048</span>
+<div className="bg-surface-container-lowest p-space-xs rounded font-code-sm text-code-sm text-on-surface-variant flex items-center justify-between gap-2">
+  <div className="select-all overflow-x-auto">
+    <span className="text-outline"># swanctl.conf / ipsec.conf:</span><br />
+    <span className="text-tertiary">proposals = aes256gcm16-prfsha384-ecp256, aes256-sha256-modp2048</span>
+  </div>
+  <button
+    type="button"
+    className="px-2 py-1 rounded bg-surface-container hover:bg-surface-container-high text-primary hover:text-on-surface text-[10px] font-mono shrink-0 transition-colors"
+    onClick={() => {
+      navigator.clipboard?.writeText("proposals = aes256gcm16-prfsha384-ecp256, aes256-sha256-modp2048");
+      toast({ title: "Copied to Clipboard", body: "swanctl.conf proposal string copied.", kind: "ok" });
+    }}
+  >
+    Copy Patch
+  </button>
 </div>
 </div>
 </div>

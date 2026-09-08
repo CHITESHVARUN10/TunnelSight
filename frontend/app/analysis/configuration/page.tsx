@@ -11,400 +11,787 @@ export default function VpnConfigurationPage() {
   const [inspectedPkt, setInspectedPkt] = useState("Packet #142");
   const [inspectedExchange, setInspectedExchange] = useState("CREATE_CHILD_SA (Req)");
   const [inspectedSpi, setInspectedSpi] = useState("0x8a91f3c401340b12");
+
   const selectEvidencePacket = (pktNum: number, exchangeName: string, spi: string) => {
     setInspectedPkt(`Packet #${pktNum}`);
     setInspectedExchange(exchangeName);
     setInspectedSpi(spi);
+    toast({
+      title: `Selected Frame #${pktNum}`,
+      body: `Loaded ${exchangeName} into Protocol Frame Inspector.`,
+      kind: "info",
+    });
   };
+
   return (
-    <div className="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
-<AppShell active="/analysis/configuration">
+    <div className="min-h-screen bg-[#0c0e11] text-zinc-100 font-sans antialiased">
+      <AppShell active="/analysis/configuration">
+        {/* Top Operational Breadcrumb & Context Header */}
+        <div className="border-b border-zinc-800/80 bg-[#111317]/90 backdrop-blur px-6 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+              <Link href="/history" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+                Captures
+              </Link>
+              <span className="text-zinc-700">/</span>
+              <span className="text-teal-400 font-medium">weak-vpn-07.pcap</span>
+              <span className="text-zinc-700">/</span>
+              <span className="text-zinc-300">VPN Configuration &amp; Protocol Inspection</span>
+            </div>
 
-{/* Top Operational Breadcrumb & Context Header */}
-<div className="px-space-base py-space-sm bg-surface-container-lowest flex flex-wrap items-center justify-between gap-space-sm">
-<div className="flex flex-wrap items-center gap-space-sm">
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm">
-<span className="text-outline hover:text-on-surface cursor-pointer">Captures</span>
-<span className="text-outline-variant">/</span>
-<span className="text-primary font-medium">weak-vpn-07.pcap</span>
-<span className="text-outline-variant">/</span>
-<span className="text-on-surface">VPN Configuration &amp; Protocol Inspection</span>
-</div>
-<div className="h-3 w-px bg-surface-container-highest"></div>
-{/* Provenance and Session Pills */}
-<div className="flex items-center gap-space-2xs">
-<span className="h-5 px-1.5 rounded bg-surface-container-high text-on-surface font-code-sm text-code-sm flex items-center">IKEv2</span>
-<span className="h-5 px-1.5 rounded bg-surface-container-high text-on-surface-variant font-code-sm text-code-sm flex items-center">ESP Tunnel Mode</span>
-<span className="h-5 px-1.5 rounded bg-surface-container-high text-on-surface-variant font-code-sm text-code-sm flex items-center">IPv4</span>
-<span className="h-5 px-1.5 rounded bg-secondary-container/40 text-secondary font-code-sm text-code-sm flex items-center gap-1">
-<span className="w-1.5 h-1.5 rounded-full bg-primary"></span>NAT-T Active
-        </span>
-<span className="h-5 px-2 rounded bg-tertiary/10 text-tertiary font-code-sm text-code-sm flex items-center gap-1">
-<span className="material-symbols-outlined text-[12px]">verified</span> Evidence: 100% Confirmed
-        </span>
-</div>
-</div>
-{/* Right Controls: View Filter & Actions */}
-<div className="flex items-center gap-space-xs">
-<div className="inline-flex rounded bg-surface-container-low p-0.5">
-<button className={activeFilter === "all" ? "tab-filter-btn px-space-sm py-0.5 rounded text-on-surface bg-surface-container font-code-sm text-code-sm" : "tab-filter-btn px-space-sm py-0.5 rounded text-outline hover:text-on-surface font-code-sm text-code-sm"} data-target="all" type="button" onClick={() => setActiveFilter("all")}>All Layers</button>
-<button className={activeFilter === "ike" ? "tab-filter-btn px-space-sm py-0.5 rounded text-on-surface bg-surface-container font-code-sm text-code-sm" : "tab-filter-btn px-space-sm py-0.5 rounded text-outline hover:text-on-surface font-code-sm text-code-sm"} data-target="ike" type="button" onClick={() => setActiveFilter("ike")}>IKE Control</button>
-<button className={activeFilter === "esp" ? "tab-filter-btn px-space-sm py-0.5 rounded text-on-surface bg-surface-container font-code-sm text-code-sm" : "tab-filter-btn px-space-sm py-0.5 rounded text-outline hover:text-on-surface font-code-sm text-code-sm"} data-target="esp" type="button" onClick={() => setActiveFilter("esp")}>ESP Data</button>
-<button className={activeFilter === "sa" ? "tab-filter-btn px-space-sm py-0.5 rounded text-on-surface bg-surface-container font-code-sm text-code-sm" : "tab-filter-btn px-space-sm py-0.5 rounded text-outline hover:text-on-surface font-code-sm text-code-sm"} data-target="sa" type="button" onClick={() => setActiveFilter("sa")}>SA Tables</button>
-</div>
-<div className="h-4 w-px bg-surface-container-highest mx-space-2xs"></div>
-<button className="h-7 px-space-sm bg-surface-container hover:bg-surface-container-high rounded text-on-surface font-code-sm text-code-sm flex items-center gap-1 transition-colors" type="button" onClick={() => { downloadFile("vpn-configuration-proof.json", executiveReportJSON()); toast({ title: "Proof exported", body: "vpn-configuration-proof.json downloaded.", kind: "ok" }); }}>
-<span className="material-symbols-outlined text-[14px]">terminal</span> Export Proof (.json)
-      </button>
-</div>
-</div>
-{/* Main Multi-Pane Analytical Workbench */}
-<div className="flex-1 grid grid-cols-1 2xl:grid-cols-12 bg-surface-container-lowest gap-px">
-{/* Primary Content Area (Left 8 Cols on 2xl) */}
-<div className="2xl:col-span-8 flex flex-col gap-px bg-surface-container-lowest">
-{/* SECTION 1: Identity & Security Endpoints Key-Value Matrix */}
-<section className={(activeFilter === "all" || activeFilter === "ike" || activeFilter === "esp") ? "bg-surface-container-low p-space-md" : "bg-surface-container-low p-space-md hidden"} data-section="all,ike,esp">
-<div className="flex items-center justify-between pb-space-xs mb-space-sm border-b border-surface-container-highest/40">
-<div className="flex items-center gap-space-xs">
-<span className="material-symbols-outlined text-primary text-[18px]">hub</span>
-<span className="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wider">Tunnel Endpoints &amp; Peer Identity</span>
-<span className="font-code-sm text-code-sm text-outline">[RFC 7296 §3.8 / §3.5]</span>
-</div>
-<span className="font-code-sm text-code-sm text-outline">Session Hash: <code className="text-on-surface">d98f7e21a0c44b91</code></span>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-2 gap-space-md font-code-sm text-code-sm">
-{/* Initiator Entity */}
-<div className="bg-surface-container p-space-sm rounded flex flex-col gap-space-xs">
-<div className="flex items-center justify-between pb-space-2xs">
-<span className="font-label-sm text-label-sm text-outline uppercase">Initiator (Local Peer)</span>
-<span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-primary text-[10px]">SRC_PORT: 500 → 4500</span>
-</div>
-<div className="grid grid-cols-3 gap-1 pt-1">
-<span className="text-outline">Outer IP:</span>
-<span className="col-span-2 text-on-surface font-medium">198.51.100.1 : 500</span>
-<span className="text-outline">Post-NAT:</span>
-<span className="col-span-2 text-primary font-medium">198.51.100.1 : 4500 (UDP Encapsulated)</span>
-<span className="text-outline">Host ID:</span>
-<span className="col-span-2 text-on-surface-variant">branch-edge-gw01.internal</span>
-<span className="text-outline">ID Type:</span>
-<span className="col-span-2 text-on-surface">ID_IPV4_ADDR <span className="text-outline">(0x01)</span></span>
-</div>
-</div>
-{/* Responder Entity */}
-<div className="bg-surface-container p-space-sm rounded flex flex-col gap-space-xs">
-<div className="flex items-center justify-between pb-space-2xs">
-<span className="font-label-sm text-label-sm text-outline uppercase">Responder (Remote Gateway)</span>
-<span className="px-1.5 py-0.5 rounded bg-surface-container-highest text-secondary text-[10px]">DST_PORT: 500 → 4500</span>
-</div>
-<div className="grid grid-cols-3 gap-1 pt-1">
-<span className="text-outline">Outer IP:</span>
-<span className="col-span-2 text-on-surface font-medium">203.0.113.44 : 500</span>
-<span className="text-outline">Post-NAT:</span>
-<span className="col-span-2 text-on-surface font-medium">203.0.113.44 : 4500 (UDP Floating)</span>
-<span className="text-outline">FQDN:</span>
-<span className="col-span-2 text-on-surface-variant">vpn.chicago-dc.net</span>
-<span className="text-outline">ID Type:</span>
-<span className="col-span-2 text-on-surface">ID_FQDN <span className="text-outline">(0x02)</span></span>
-</div>
-</div>
-</div>
-{/* Encapsulation & Operational Parameters Strip */}
-<div className="mt-space-sm grid grid-cols-1 md:grid-cols-3 gap-space-xs font-code-sm text-code-sm">
-<div className="bg-surface-container-low px-space-sm py-1.5 rounded flex items-center justify-between">
-<span className="text-outline">Network Mode:</span>
-<span className="text-on-surface font-medium">IPsec Tunnel (IPv4 in ESP)</span>
-</div>
-<div className="bg-surface-container-low px-space-sm py-1.5 rounded flex items-center justify-between">
-<span className="text-outline">NAT-T Status:</span>
-<span className="text-primary font-medium flex items-center gap-1">
-<span className="w-1.5 h-1.5 rounded-full bg-primary"></span> DETECTED (RFC 3947)
-            </span>
-</div>
-<div className="bg-surface-container-low px-space-sm py-1.5 rounded flex items-center justify-between">
-<span className="text-outline">Authentication:</span>
-<span className="text-on-surface font-medium">AUTH_PSK <span className="text-outline">(Type 0x02)</span></span>
-</div>
-</div>
-</section>
-{/* SECTION 2: IKEv2 Protocol Handshake & Exchange Table */}
-<section className={(activeFilter === "all" || activeFilter === "ike") ? "bg-surface-container-low p-space-md" : "bg-surface-container-low p-space-md hidden"} data-section="all,ike">
-<div className="flex items-center justify-between pb-space-xs mb-space-sm border-b border-surface-container-highest/40">
-<div className="flex items-center gap-space-xs">
-<span className="material-symbols-outlined text-primary text-[18px]">sync_alt</span>
-<span className="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wider">IKEv2 Exchange Evidence Log</span>
-<span className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container text-outline">5 Messages Captured</span>
-</div>
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-outline">
-<span className="inline-block w-2 h-2 rounded-full bg-tertiary"></span> Complete Handshake Confirmed
+            {/* Right Controls: View Filter & Actions */}
+            <div className="flex items-center gap-2.5">
+              <div className="inline-flex rounded-lg border border-zinc-800 bg-[#0c0e11] p-0.5 text-xs font-mono">
+                {(["all", "ike", "esp", "sa"] as const).map((filterKey) => {
+                  const labels: Record<string, string> = {
+                    all: "All Layers",
+                    ike: "IKE Control",
+                    esp: "ESP Data",
+                    sa: "SA Tables",
+                  };
+                  return (
+                    <button
+                      key={filterKey}
+                      className={`px-3 py-1 rounded transition-colors ${
+                        activeFilter === filterKey
+                          ? "bg-zinc-800 text-white font-medium"
+                          : "text-zinc-400 hover:text-zinc-200"
+                      }`}
+                      type="button"
+                      onClick={() => setActiveFilter(filterKey)}
+                    >
+                      {labels[filterKey]}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                className="h-7 px-3 bg-teal-500 hover:bg-teal-400 text-zinc-950 rounded text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors"
+                type="button"
+                onClick={() => {
+                  downloadFile("vpn-configuration-proof.json", executiveReportJSON());
+                  toast({ title: "Proof Exported", body: "vpn-configuration-proof.json downloaded.", kind: "ok" });
+                }}
+              >
+                <span className="material-symbols-outlined text-[14px]">terminal</span>
+                <span>Export Proof (.json)</span>
+              </button>
+            </div>
           </div>
-</div>
-<div className="overflow-x-auto">
-<table className="w-full text-left font-code-sm text-code-sm">
-<thead className="bg-surface-container text-outline font-label-sm text-label-sm uppercase tracking-wider"><tr><th className="py-2 px-space-sm">Msg #</th><th className="py-2 px-space-sm">Exchange Type</th><th className="py-2 px-space-sm">Timestamp</th><th className="py-2 px-space-sm">SPI / Key Payloads</th><th className="py-2 px-space-sm text-right">Audit Status</th></tr></thead>
-<tbody className="divide-y divide-surface-container-highest/30"><tr className="hover:bg-surface-container cursor-pointer transition-colors" onClick={() => selectEvidencePacket(42, 'IKE_SA_INIT (Req)', '0x8a91f3c401340b12')}><td className="py-2.5 px-space-sm text-outline font-medium">01</td><td className="py-2.5 px-space-sm font-medium flex items-center gap-1 text-on-surface"><span className="material-symbols-outlined text-[14px] text-primary">arrow_forward</span> IKE_SA_INIT (Req) <span className="text-[11px] text-primary ml-1">#42</span></td><td className="py-2.5 px-space-sm text-on-surface-variant font-mono">00:00:00.114</td><td className="py-2.5 px-space-sm"><div className="flex items-center gap-2"><span className="font-mono text-on-surface text-[12px]">8a91f3c4...</span><span className="text-outline-variant">|</span><span className="text-on-surface-variant text-[12px] truncate max-w-xs">SA, KE (DH Grp 2), Ni, NAT-D</span></div></td><td className="py-2.5 px-space-sm text-right"><span className="px-2 py-0.5 rounded bg-tertiary/10 text-tertiary text-[11px] font-medium">OK</span></td></tr><tr className="hover:bg-surface-container cursor-pointer transition-colors" onClick={() => selectEvidencePacket(45, 'IKE_SA_INIT (Resp)', '0x7c2901a8ef11b402')}><td className="py-2.5 px-space-sm text-outline font-medium">02</td><td className="py-2.5 px-space-sm font-medium flex items-center gap-1 text-on-surface"><span className="material-symbols-outlined text-[14px] text-secondary">arrow_back</span> IKE_SA_INIT (Resp) <span className="text-[11px] text-primary ml-1">#45</span></td><td className="py-2.5 px-space-sm text-on-surface-variant font-mono">00:00:00.189</td><td className="py-2.5 px-space-sm"><div className="flex items-center gap-2"><span className="font-mono text-on-surface text-[12px]">7c2901a8...</span><span className="text-outline-variant">|</span><span className="text-on-surface-variant text-[12px] truncate max-w-xs">SA (Transform 1), KE, Nr, NAT-D Mismatch</span></div></td><td className="py-2.5 px-space-sm text-right"><span className="px-2 py-0.5 rounded bg-tertiary/10 text-tertiary text-[11px] font-medium">NAT_DETECT</span></td></tr><tr className="hover:bg-surface-container cursor-pointer transition-colors" onClick={() => selectEvidencePacket(58, 'IKE_AUTH (Req)', '0x8a91f3c401340b12')}><td className="py-2.5 px-space-sm text-outline font-medium">03</td><td className="py-2.5 px-space-sm font-medium flex items-center gap-1 text-on-surface"><span className="material-symbols-outlined text-[14px] text-primary">arrow_forward</span> IKE_AUTH (Req) <span className="text-[11px] text-primary ml-1">#58</span></td><td className="py-2.5 px-space-sm text-on-surface-variant font-mono">00:00:00.412</td><td className="py-2.5 px-space-sm"><div className="flex items-center gap-2"><span className="font-mono text-on-surface text-[12px]">8a91f3c4...</span><span className="text-outline-variant">|</span><span className="text-on-surface-variant text-[12px] truncate max-w-xs">Encrypted: SK {"{"} IDi, AUTH(PSK), SA(Child) {"}"}</span></div></td><td className="py-2.5 px-space-sm text-right"><span className="px-2 py-0.5 rounded bg-tertiary/10 text-tertiary text-[11px] font-medium">AUTH_OK</span></td></tr><tr className="hover:bg-surface-container cursor-pointer transition-colors" onClick={() => selectEvidencePacket(61, 'IKE_AUTH (Resp)', '0x7c2901a8ef11b402')}><td className="py-2.5 px-space-sm text-outline font-medium">04</td><td className="py-2.5 px-space-sm font-medium flex items-center gap-1 text-on-surface"><span className="material-symbols-outlined text-[14px] text-secondary">arrow_back</span> IKE_AUTH (Resp) <span className="text-[11px] text-primary ml-1">#61</span></td><td className="py-2.5 px-space-sm text-on-surface-variant font-mono">00:00:00.490</td><td className="py-2.5 px-space-sm"><div className="flex items-center gap-2"><span className="font-mono text-on-surface text-[12px]">7c2901a8...</span><span className="text-outline-variant">|</span><span className="text-on-surface-variant text-[12px] truncate max-w-xs">Encrypted: SK {"{"} IDr, AUTH(PSK), SA(Child) {"}"}</span></div></td><td className="py-2.5 px-space-sm text-right"><span className="px-2 py-0.5 rounded bg-tertiary/10 text-tertiary text-[11px] font-medium">ESTABLISHED</span></td></tr><tr className="bg-surface-container-high/60 cursor-pointer transition-colors border-l-2 border-primary" onClick={() => selectEvidencePacket(142, 'CREATE_CHILD_SA (Req)', '0x8a91f3c401340b12')}><td className="py-2.5 px-space-sm text-primary font-bold">05</td><td className="py-2.5 px-space-sm font-semibold flex items-center gap-1 text-on-surface"><span className="material-symbols-outlined text-[14px] text-error">warning</span> CREATE_CHILD_SA <span className="text-[11px] text-primary font-bold ml-1">#142</span></td><td className="py-2.5 px-space-sm text-on-surface font-mono">00:00:02.381</td><td className="py-2.5 px-space-sm"><div className="flex items-center gap-2"><span className="font-mono text-on-surface text-[12px]">8a91f3c4...</span><span className="text-outline-variant">|</span><span className="text-error text-[12px] truncate max-w-xs">Rekey Child SA — Missing KEi (NO PFS)</span></div></td><td className="py-2.5 px-space-sm text-right"><span className="px-2 py-0.5 rounded bg-error-container text-on-error-container text-[11px] font-semibold">RISK_DETECTED</span></td></tr></tbody>
-</table>
-</div>
-</section>
-{/* SECTION 3: Negotiated Cryptographic Proposals & Transforms Matrix */}
-<section className={(activeFilter === "all" || activeFilter === "ike" || activeFilter === "esp") ? "bg-surface-container-low p-space-md" : "bg-surface-container-low p-space-md hidden"} data-section="all,ike,esp">
-<div className="flex items-center justify-between pb-space-xs mb-space-sm border-b border-surface-container-highest/40">
-<div className="flex items-center gap-space-xs">
-<span className="material-symbols-outlined text-primary text-[18px]">security_update_good</span>
-<span className="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wider">Cryptographic Proposals &amp; Transforms Matrix</span>
-</div>
-<span className="font-code-sm text-code-sm text-error font-medium flex items-center gap-1">
-<span className="material-symbols-outlined text-[14px]">report</span> Security Posture: Sub-Optimal
-          </span>
-</div>
-<div className="overflow-x-auto">
-<table className="w-full text-left font-code-sm text-code-sm">
-<thead className="bg-surface-container text-outline font-label-sm text-label-sm uppercase tracking-wider">
-<tr>
-<th className="py-1 px-space-sm">Transform Type</th>
-<th className="py-1 px-space-sm">IKE_SA (Control Plane)</th>
-<th className="py-1 px-space-sm">Child SA / ESP (Data Plane)</th>
-<th className="py-1 px-space-sm">Evidence Source</th>
-<th className="py-1 px-space-sm text-right">Cryptographic Evaluation</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-surface-container-highest/30">
-{/* Encryption */}
-<tr className="hover:bg-surface-container transition-colors">
-<td className="py-1.5 px-space-sm text-on-surface font-medium">Encryption (ENCR)</td>
-<td className="py-1.5 px-space-sm text-on-surface">AES-CBC-128 <span className="text-outline">(128-bit key)</span></td>
-<td className="py-1.5 px-space-sm text-on-surface">AES-CBC-128 <span className="text-outline">(IV: 16B)</span></td>
-<td className="py-1.5 px-space-sm"><span className="text-primary hover:underline cursor-pointer" onClick={() => selectEvidencePacket(42, 'IKE_SA_INIT (Req)', '0x8a91f3c401340b12')}>#42, #58</span></td>
-<td className="py-1.5 px-space-sm text-right">
-<span className="h-5 px-1.5 rounded bg-surface-container-highest text-secondary text-[11px] inline-flex items-center">Sub-optimal (NIST SP 800-77r1)</span>
-</td>
-</tr>
-{/* Integrity */}
-<tr className="hover:bg-surface-container transition-colors">
-<td className="py-1.5 px-space-sm text-on-surface font-medium">Integrity (INTEG)</td>
-<td className="py-1.5 px-space-sm text-on-surface">AUTH_HMAC_SHA1_96</td>
-<td className="py-1.5 px-space-sm text-on-surface">AUTH_HMAC_SHA1_96 <span className="text-outline">(ICV: 12B)</span></td>
-<td className="py-1.5 px-space-sm"><span className="text-primary hover:underline cursor-pointer" onClick={() => selectEvidencePacket(42, 'IKE_SA_INIT (Req)', '0x8a91f3c401340b12')}>#42, #58</span></td>
-<td className="py-1.5 px-space-sm text-right">
-<span className="h-5 px-1.5 rounded bg-error/15 text-error text-[11px] inline-flex items-center font-medium">Legacy SHA1 (Collision Vector)</span>
-</td>
-</tr>
-{/* PRF */}
-<tr className="hover:bg-surface-container transition-colors">
-<td className="py-1.5 px-space-sm text-on-surface font-medium">Pseudo-Random (PRF)</td>
-<td className="py-1.5 px-space-sm text-on-surface">PRF_HMAC_SHA1</td>
-<td className="py-1.5 px-space-sm text-outline">N/A (Data Plane)</td>
-<td className="py-1.5 px-space-sm"><span className="text-primary hover:underline cursor-pointer" onClick={() => selectEvidencePacket(45, 'IKE_SA_INIT (Resp)', '0x7c2901a8ef11b402')}>#45</span></td>
-<td className="py-1.5 px-space-sm text-right">
-<span className="h-5 px-1.5 rounded bg-surface-container-highest text-on-surface-variant text-[11px] inline-flex items-center">RFC 7296 Compliant</span>
-</td>
-</tr>
-{/* Diffie-Hellman */}
-<tr className="bg-error/5 hover:bg-error/10 transition-colors"><td className="py-2 px-space-sm text-error font-medium">Diffie-Hellman (D-H)</td><td className="py-2 px-space-sm"><div className="flex items-center gap-1.5"><span className="text-on-surface font-medium">Group 2</span><span className="h-5 px-1.5 rounded bg-error-container text-on-error-container text-[10px] font-semibold inline-flex items-center">CRITICAL: 1024b MODP</span></div></td><td className="py-2 px-space-sm"><div className="flex items-center gap-1.5"><span className="text-outline">Child SA:</span><span className="h-5 px-1.5 rounded bg-error-container text-on-error-container text-[10px] font-semibold inline-flex items-center">PFS DISABLED</span></div></td><td className="py-2 px-space-sm"><span className="text-primary hover:underline cursor-pointer" onClick={() => selectEvidencePacket(142, 'CREATE_CHILD_SA (Req)', '0x8a91f3c401340b12')}>#42 &amp; #142</span></td><td className="py-2 px-space-sm text-right"><span className="h-5 px-1.5 rounded bg-error/15 text-error text-[11px] inline-flex items-center font-semibold">Vulnerable to Compromise</span></td></tr>
-{/* Nonce Exchange */}
-<tr className="hover:bg-surface-container transition-colors">
-<td className="py-1.5 px-space-sm text-on-surface font-medium">Nonce Entropy</td>
-<td className="py-1.5 px-space-sm text-on-surface">Ni (32B), Nr (32B)</td>
-<td className="py-1.5 px-space-sm text-on-surface">Derived via SKEYSEED</td>
-<td className="py-1.5 px-space-sm"><span className="text-primary hover:underline cursor-pointer" onClick={() => selectEvidencePacket(42, 'IKE_SA_INIT (Req)', '0x8a91f3c401340b12')}>#42, #45</span></td>
-<td className="py-1.5 px-space-sm text-right">
-<span className="h-5 px-1.5 rounded bg-tertiary/15 text-tertiary text-[11px] inline-flex items-center">7.994 b/B (Nominal)</span>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-{/* SECTION 4: ESP Security Associations (SA) & Data Plane Telemetry */}
-<section className={(activeFilter === "all" || activeFilter === "esp" || activeFilter === "sa") ? "bg-surface-container-low p-space-md" : "bg-surface-container-low p-space-md hidden"} data-section="all,esp,sa">
-<div className="flex items-center justify-between pb-space-xs mb-space-sm border-b border-surface-container-highest/40">
-<div className="flex items-center gap-space-xs">
-<span className="material-symbols-outlined text-primary text-[18px]">dns</span>
-<span className="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wider">ESP Active Security Associations (SA) &amp; Sequence State</span>
-</div>
-<span className="font-code-sm text-code-sm text-outline">UDP Port 4500 Encap</span>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
-{/* Ingress SA Card/Table Unit */}
-<div className="bg-surface-container p-space-sm rounded flex flex-col justify-between">
-<div>
-<div className="flex items-center justify-between pb-space-xs border-b border-surface-container-highest/40">
-<div className="flex items-center gap-1 font-code-sm text-code-sm">
-<span className="text-primary font-bold">INGRESS SA</span>
-<span className="text-outline">(Responder → Initiator)</span>
-</div>
-<span className="font-code-sm text-code-sm text-primary font-mono bg-surface-container-highest px-1.5 rounded">SPI: 0x41f89c02</span>
-</div>
-<div className="mt-space-sm grid grid-cols-2 gap-y-1.5 font-code-sm text-code-sm">
-<span className="text-outline">Lifetime Remaining:</span>
-<span className="text-on-surface text-right">28,800s Hard / 25,920s Soft</span>
-<span className="text-outline">Volume Transferred:</span>
-<span className="text-on-surface text-right font-medium">421,050 pkts (712.4 MB)</span>
-<span className="text-outline">Monotonic Sequence:</span>
-<span className="text-tertiary text-right font-bold">421,050 (0 drops)</span>
-<span className="text-outline">Anti-Replay Window:</span>
-<span className="text-on-surface text-right">64 pkts (Strict Bitmap)</span>
-<span className="text-outline">Frame Evidence:</span>
-<span className="text-on-surface-variant text-right">#68 → #842,109</span>
-</div>
-</div>
-{/* Sequence Integrity Sparkline Graphic */}
-<div className="mt-space-md pt-space-xs border-t border-surface-container-highest/30">
-<div className="flex justify-between font-label-sm text-label-sm text-outline mb-1">
-<span className="">SEQUENCE CONTINUITY</span>
-<span className="text-tertiary">100% HEALTH</span>
-</div>
-<svg className="w-full h-5 text-tertiary" preserveAspectRatio="none" viewBox="0 0 200 20">
-<path d="M0,18 L30,16 L60,13 L90,10 L120,8 L150,5 L180,3 L200,1" fill="none" stroke="currentColor" strokeWidth="1.5"></path>
-</svg>
-</div>
-</div>
-{/* Egress SA Card/Table Unit */}
-<div className="bg-surface-container p-space-sm rounded flex flex-col justify-between">
-<div>
-<div className="flex items-center justify-between pb-space-xs border-b border-surface-container-highest/40">
-<div className="flex items-center gap-1 font-code-sm text-code-sm">
-<span className="text-secondary font-bold">EGRESS SA</span>
-<span className="text-outline">(Initiator → Responder)</span>
-</div>
-<span className="font-code-sm text-code-sm text-secondary font-mono bg-surface-container-highest px-1.5 rounded">SPI: 0x9a021da3</span>
-</div>
-<div className="mt-space-sm grid grid-cols-2 gap-y-1.5 font-code-sm text-code-sm">
-<span className="text-outline">Lifetime Remaining:</span>
-<span className="text-on-surface text-right">28,800s / 4.00 GB Cap</span>
-<span className="text-outline">Volume Transferred:</span>
-<span className="text-on-surface text-right font-medium">421,059 pkts (707.6 MB)</span>
-<span className="text-outline">Monotonic Sequence:</span>
-<span className="text-tertiary text-right font-bold">421,059 (0 drops)</span>
-<span className="text-outline">Anti-Replay Window:</span>
-<span className="text-on-surface text-right">64 pkts (Strict Bitmap)</span>
-<span className="text-outline">Frame Evidence:</span>
-<span className="text-on-surface-variant text-right">#69 → #842,108</span>
-</div>
-</div>
-{/* Sequence Integrity Sparkline Graphic */}
-<div className="mt-space-md pt-space-xs border-t border-surface-container-highest/30">
-<div className="flex justify-between font-label-sm text-label-sm text-outline mb-1">
-<span className="">SEQUENCE CONTINUITY</span>
-<span className="text-tertiary">100% HEALTH</span>
-</div>
-<svg className="w-full h-5 text-primary" preserveAspectRatio="none" viewBox="0 0 200 20">
-<path d="M0,18 L25,16 L55,14 L95,11 L130,7 L165,4 L200,1" fill="none" stroke="currentColor" strokeWidth="1.5"></path>
-</svg>
-</div>
-</div>
-</div>
-</section>
-</div>
-{/* SECTION 5: Inline Expandable Packet Dissection Inspector Drawer (Right 4 Cols on 2xl) */}
-<div className="2xl:col-span-4 bg-surface-container flex flex-col p-space-md gap-space-md border-t 2xl:border-t-0 2xl:border-l border-surface-container-highest/40">
-<div className="flex items-center justify-between pb-space-xs border-b border-surface-container-highest/50">
-<div className="flex items-center gap-space-xs">
-<span className="material-symbols-outlined text-primary text-[18px]">find_in_page</span>
-<span className="font-headline-sm text-headline-sm text-on-surface uppercase tracking-wider">Protocol Frame Inspector</span>
-</div>
-<span className="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-primary font-mono" id="inspectedPktBadge">{inspectedPkt}</span>
-</div>
-{/* Active Frame Overview Strip */}
-<div className="bg-surface-container-lowest p-space-sm rounded font-code-sm text-code-sm flex flex-col gap-1">
-<div className="flex justify-between">
-<span className="text-outline">Exchange Type:</span>
-<span className="text-on-surface font-semibold" id="inspectedExchange">{inspectedExchange}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-outline">Timestamp:</span>
-<span className="text-on-surface">00:00:02.381 (T+2.267s)</span>
-</div>
-<div className="flex justify-between">
-<span className="text-outline">Initiator SPI:</span>
-<span className="text-primary" id="inspectedSpi">{inspectedSpi}</span>
-</div>
-<div className="flex justify-between">
-<span className="text-outline">Encapsulation:</span>
-<span className="text-on-surface">UDP:4500 (Non-ESP Marker 0x00000000)</span>
-</div>
-</div>
-{/* Deterministic Protocol Assertion / Proof Box */}
-<div className="bg-error-container/20 border-l-2 border-error p-space-sm rounded-r flex flex-col gap-1">
-<div className="flex items-center gap-1 text-error font-code-sm text-code-sm font-semibold">
-<span className="material-symbols-outlined text-[16px]">gpp_maybe</span> Deterministic Cryptographic Proof
+
+          {/* Title & Provenance Strip */}
+          <div className="flex flex-wrap items-end justify-between gap-4 pt-1">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="font-display-serif text-2xl font-bold tracking-tight text-white">
+                  VPN Configuration &amp; Protocol Inspection
+                </h1>
+                <span className="px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900/90 text-zinc-400 font-mono text-[11px]">
+                  RFC 7296 / RFC 4303
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400 mt-1">
+                Deterministic forensic extraction of IKEv2 state machines, cryptographic proposals, and active ESP Child SAs.
+              </p>
+            </div>
+
+            {/* Session Badges */}
+            <div className="flex items-center gap-2 font-mono text-xs">
+              <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-300 flex items-center">
+                IKEv2
+              </span>
+              <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 flex items-center">
+                ESP Tunnel Mode
+              </span>
+              <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 flex items-center">
+                IPv4
+              </span>
+              <span className="h-6 px-2.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+                NAT-T Active (UDP 4500)
+              </span>
+              <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900/80 text-zinc-400 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[14px] text-teal-400">verified</span>
+                Evidence Confirmed
+              </span>
+            </div>
+          </div>
         </div>
-<p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-          Child SA Rekey initiated without <code className="text-primary font-code-sm">KEi</code> payload at offset <code className="text-primary font-code-sm">0x0028</code>. The absence of an ephemeral Diffie-Hellman public key proves <strong className="text-error">PFS (Perfect Forward Secrecy) is Disabled</strong>. Past sessions are vulnerable to retrospective decryption if private keys are compromised.
-        </p>
-</div>
-{/* Raw Hex & ASCII Dissection Panel */}
-<div className="flex flex-col gap-1">
-<div className="flex items-center justify-between font-label-sm text-label-sm text-outline">
-<span className="uppercase">Frame Hex Payload (Byte Dissection)</span>
-<span className="">16-Byte Chunked</span>
-</div>
-<div className="bg-surface-container-lowest p-space-sm rounded font-code-sm text-code-sm overflow-x-auto leading-5 select-text">
-{/* Hex Dissection Grid */}
-<div className="grid grid-cols-12 gap-x-2 text-outline">
-<span className="col-span-2 text-outline">0000</span>
-<span className="col-span-6 text-on-surface font-mono">00 00 00 00 8a 91 f3 c4</span>
-<span className="col-span-4 text-on-surface-variant font-mono">....4..|</span>
-<span className="col-span-2 text-outline">0008</span>
-<span className="col-span-6 text-on-surface font-mono">01 34 0b 12 7c 29 01 a8</span>
-<span className="col-span-4 text-on-surface-variant font-mono">)..ef11.</span>
-<span className="col-span-2 text-outline">0010</span>
-<span className="col-span-6 text-on-surface font-mono">ef 11 b4 02 2e 20 23 20</span>
-<span className="col-span-4 text-on-surface-variant font-mono">.... # .</span>
-<span className="col-span-2 text-outline">0018</span>
-<span className="col-span-6 text-on-surface font-mono">00 00 00 02 00 00 00 9c</span>
-<span className="col-span-4 text-on-surface-variant font-mono">....\x9c</span>
-<span className="col-span-2 text-primary font-bold">0020</span>
-<span className="col-span-6 text-primary font-bold font-mono">29 00 00 80 00 00 00 24</span>
-<span className="col-span-4 text-primary font-mono">).....$</span>
-<span className="col-span-2 text-outline">0028</span>
-<span className="col-span-6 text-error font-mono">01 03 04 03 00 00 00 0c</span>
-<span className="col-span-4 text-error font-mono">........</span>
-<span className="col-span-2 text-outline">0030</span>
-<span className="col-span-6 text-on-surface font-mono">80 0c 00 80 00 00 00 08</span>
-<span className="col-span-4 text-on-surface-variant font-mono">........</span>
-<span className="col-span-2 text-outline">0038</span>
-<span className="col-span-6 text-on-surface font-mono">03 00 00 02 00 00 00 08</span>
-<span className="col-span-4 text-on-surface-variant font-mono">........</span>
-</div>
-</div>
-</div>
-{/* Payload Structural Breakdown Tree */}
-<div className="flex flex-col gap-1 mt-space-xs">
-<span className="font-label-sm text-label-sm text-outline uppercase">Decoded Payload Hierarchy</span>
-<div className="bg-surface-container-lowest p-space-sm rounded font-code-sm text-code-sm flex flex-col gap-1 divide-y divide-surface-container-highest/20">
-<div className="pt-1 flex items-center justify-between text-on-surface">
-<span className="">Non-ESP Marker (4 Bytes)</span>
-<span className="text-tertiary">0x00000000 [OK]</span>
-</div>
-<div className="pt-1 flex items-center justify-between text-on-surface">
-<span className="">IKE Header [HDR] (28 Bytes)</span>
-<span className="text-on-surface-variant">Type: CREATE_CHILD_SA (36)</span>
-</div>
-<div className="pt-1 flex items-center justify-between text-on-surface">
-<span className="">Security Association [SA]</span>
-<span className="text-on-surface-variant">SPI: 0x9a021da3</span>
-</div>
-<div className="pt-1 flex items-center justify-between text-error font-medium">
-<span className="">Key Exchange [KEi]</span>
-<span className="">ABSENT (PFS Disabled)</span>
-</div>
-<div className="pt-1 flex items-center justify-between text-on-surface">
-<span className="">Traffic Selectors [TSi, TSr]</span>
-<span className="text-on-surface-variant">0.0.0.0/0 ↔ 0.0.0.0/0</span>
-</div>
-</div>
-</div>
-{/* Action Button */}
-<div className="mt-auto pt-space-sm flex gap-space-xs">
-<button className="w-full h-8 bg-primary hover:bg-primary/90 text-on-primary font-semibold rounded font-code-sm text-code-sm flex items-center justify-center gap-1 transition-colors" type="button" onClick={() => { downloadFile("frame-dissection.json", JSON.stringify({ frame: inspectedPkt, exchange: inspectedExchange, spi: inspectedSpi, source: "TunnelSight prototype mock" }, null, 2)); toast({ title: "Frame exported", body: `${inspectedPkt} dissection downloaded.`, kind: "ok" }); }}>
-<span className="material-symbols-outlined text-[16px]">download</span> Export Frame #142 Dissection
-        </button>
-</div>
-</div>
-</div>
-</AppShell>
 
+        {/* Main Multi-Pane Analytical Workbench */}
+        <div className="grid grid-cols-1 2xl:grid-cols-12 min-h-[calc(100vh-140px)] divide-y 2xl:divide-y-0 2xl:divide-x divide-zinc-800/80">
+          {/* Primary Content Area (Left 8 Cols on 2xl) */}
+          <div className="2xl:col-span-8 p-6 space-y-6">
+            {/* SECTION 1: Identity & Security Endpoints Key-Value Matrix */}
+            {(activeFilter === "all" || activeFilter === "ike" || activeFilter === "esp") && (
+              <section className="bg-[#111317] border border-zinc-800/80 rounded-lg p-5">
+                <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800/80">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-teal-400 text-[18px]">hub</span>
+                    <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-white">
+                      Tunnel Endpoints &amp; Peer Identity
+                    </h2>
+                    <span className="font-mono text-xs text-zinc-500">[RFC 7296 §3.8 / §3.5]</span>
+                  </div>
+                  <span className="font-mono text-xs text-zinc-500">
+                    Session Hash: <code className="text-zinc-300">d98f7e21a0c44b91</code>
+                  </span>
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
+                  {/* Initiator Entity */}
+                  <div className="bg-[#14171c] border border-zinc-800/60 p-4 rounded-lg flex flex-col gap-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-zinc-800/60">
+                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider">
+                        Initiator (Local Peer)
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px]">
+                        SRC_PORT: 500 → 4500
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1 text-xs">
+                      <span className="text-zinc-500">Outer IP:</span>
+                      <span className="col-span-2 text-zinc-200 font-medium">198.51.100.1 : 500</span>
+                      <span className="text-zinc-500">Post-NAT:</span>
+                      <span className="col-span-2 text-teal-400 font-medium">
+                        198.51.100.1 : 4500 (UDP Encapsulated)
+                      </span>
+                      <span className="text-zinc-500">Host ID:</span>
+                      <span className="col-span-2 text-zinc-300">branch-edge-gw01.internal</span>
+                      <span className="text-zinc-500">ID Type:</span>
+                      <span className="col-span-2 text-zinc-300">
+                        ID_IPV4_ADDR <span className="text-zinc-500">(0x01)</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Responder Entity */}
+                  <div className="bg-[#14171c] border border-zinc-800/60 p-4 rounded-lg flex flex-col gap-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-zinc-800/60">
+                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider">
+                        Responder (Remote Gateway)
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 text-[10px]">
+                        DST_PORT: 500 → 4500
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1 text-xs">
+                      <span className="text-zinc-500">Outer IP:</span>
+                      <span className="col-span-2 text-zinc-200 font-medium">203.0.113.44 : 500</span>
+                      <span className="text-zinc-500">Post-NAT:</span>
+                      <span className="col-span-2 text-zinc-200 font-medium">203.0.113.44 : 4500 (UDP Floating)</span>
+                      <span className="text-zinc-500">FQDN:</span>
+                      <span className="col-span-2 text-zinc-300">vpn.chicago-dc.net</span>
+                      <span className="text-zinc-500">ID Type:</span>
+                      <span className="col-span-2 text-zinc-300">
+                        ID_FQDN <span className="text-zinc-500">(0x02)</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Encapsulation & Operational Parameters Strip */}
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-xs">
+                  <div className="bg-[#0c0e11] border border-zinc-800/60 px-3 py-2 rounded flex items-center justify-between">
+                    <span className="text-zinc-500">Network Mode:</span>
+                    <span className="text-zinc-200 font-medium">IPsec Tunnel (IPv4 in ESP)</span>
+                  </div>
+                  <div className="bg-[#0c0e11] border border-zinc-800/60 px-3 py-2 rounded flex items-center justify-between">
+                    <span className="text-zinc-500">NAT-T Status:</span>
+                    <span className="text-teal-400 font-medium flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-teal-400" /> DETECTED (RFC 3947)
+                    </span>
+                  </div>
+                  <div className="bg-[#0c0e11] border border-zinc-800/60 px-3 py-2 rounded flex items-center justify-between">
+                    <span className="text-zinc-500">Authentication:</span>
+                    <span className="text-zinc-200 font-medium">
+                      AUTH_PSK <span className="text-zinc-500">(Type 0x02)</span>
+                    </span>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* SECTION 2: IKEv2 Protocol Handshake & Exchange Table */}
+            {(activeFilter === "all" || activeFilter === "ike") && (
+              <section className="bg-[#111317] border border-zinc-800/80 rounded-lg overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-zinc-800/80 bg-[#14171c] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-teal-400 text-[18px]">sync_alt</span>
+                    <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-white">
+                      IKEv2 Exchange Evidence Log
+                    </h2>
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400">
+                      5 Messages Captured
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 font-mono text-xs text-teal-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400" /> Complete Handshake Confirmed
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-mono text-xs">
+                    <thead>
+                      <tr className="border-b border-zinc-800 bg-[#0c0e11] text-zinc-400 text-[11px] uppercase tracking-wider">
+                        <th className="py-2.5 px-4">Msg #</th>
+                        <th className="py-2.5 px-4">Exchange Type</th>
+                        <th className="py-2.5 px-4">Timestamp</th>
+                        <th className="py-2.5 px-4">SPI / Key Payloads</th>
+                        <th className="py-2.5 px-4 text-right">Audit Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-800/60">
+                      <tr
+                        className={`hover:bg-zinc-800/30 cursor-pointer transition-colors ${
+                          inspectedPkt === "Packet #42" ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
+                        }`}
+                        onClick={() => selectEvidencePacket(42, "IKE_SA_INIT (Req)", "0x8a91f3c401340b12")}
+                      >
+                        <td className="py-2.5 px-4 text-zinc-500 font-medium">01</td>
+                        <td className="py-2.5 px-4 font-medium flex items-center gap-1.5 text-zinc-200">
+                          <span className="material-symbols-outlined text-[14px] text-teal-400">arrow_forward</span>
+                          <span>IKE_SA_INIT (Req)</span>
+                          <span className="text-[10px] text-teal-400 ml-1">#42</span>
+                        </td>
+                        <td className="py-2.5 px-4 text-zinc-400">00:00:00.114</td>
+                        <td className="py-2.5 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-zinc-300">8a91f3c4...</span>
+                            <span className="text-zinc-600">|</span>
+                            <span className="text-zinc-400 truncate max-w-xs">SA, KE (DH Grp 2), Ni, NAT-D</span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px] font-medium">
+                            OK
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr
+                        className={`hover:bg-zinc-800/30 cursor-pointer transition-colors ${
+                          inspectedPkt === "Packet #45" ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
+                        }`}
+                        onClick={() => selectEvidencePacket(45, "IKE_SA_INIT (Resp)", "0x7c2901a8ef11b402")}
+                      >
+                        <td className="py-2.5 px-4 text-zinc-500 font-medium">02</td>
+                        <td className="py-2.5 px-4 font-medium flex items-center gap-1.5 text-zinc-200">
+                          <span className="material-symbols-outlined text-[14px] text-zinc-400">arrow_back</span>
+                          <span>IKE_SA_INIT (Resp)</span>
+                          <span className="text-[10px] text-teal-400 ml-1">#45</span>
+                        </td>
+                        <td className="py-2.5 px-4 text-zinc-400">00:00:00.189</td>
+                        <td className="py-2.5 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-zinc-300">7c2901a8...</span>
+                            <span className="text-zinc-600">|</span>
+                            <span className="text-zinc-400 truncate max-w-xs">SA (Transform 1), KE, Nr, NAT-D Mismatch</span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px] font-medium">
+                            NAT_DETECT
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr
+                        className={`hover:bg-zinc-800/30 cursor-pointer transition-colors ${
+                          inspectedPkt === "Packet #58" ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
+                        }`}
+                        onClick={() => selectEvidencePacket(58, "IKE_AUTH (Req)", "0x8a91f3c401340b12")}
+                      >
+                        <td className="py-2.5 px-4 text-zinc-500 font-medium">03</td>
+                        <td className="py-2.5 px-4 font-medium flex items-center gap-1.5 text-zinc-200">
+                          <span className="material-symbols-outlined text-[14px] text-teal-400">arrow_forward</span>
+                          <span>IKE_AUTH (Req)</span>
+                          <span className="text-[10px] text-teal-400 ml-1">#58</span>
+                        </td>
+                        <td className="py-2.5 px-4 text-zinc-400">00:00:00.412</td>
+                        <td className="py-2.5 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-zinc-300">8a91f3c4...</span>
+                            <span className="text-zinc-600">|</span>
+                            <span className="text-zinc-400 truncate max-w-xs">
+                              Encrypted: SK {"{"} IDi, AUTH(PSK), SA(Child) {"}"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px] font-medium">
+                            AUTH_OK
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr
+                        className={`hover:bg-zinc-800/30 cursor-pointer transition-colors ${
+                          inspectedPkt === "Packet #61" ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
+                        }`}
+                        onClick={() => selectEvidencePacket(61, "IKE_AUTH (Resp)", "0x7c2901a8ef11b402")}
+                      >
+                        <td className="py-2.5 px-4 text-zinc-500 font-medium">04</td>
+                        <td className="py-2.5 px-4 font-medium flex items-center gap-1.5 text-zinc-200">
+                          <span className="material-symbols-outlined text-[14px] text-zinc-400">arrow_back</span>
+                          <span>IKE_AUTH (Resp)</span>
+                          <span className="text-[10px] text-teal-400 ml-1">#61</span>
+                        </td>
+                        <td className="py-2.5 px-4 text-zinc-400">00:00:00.490</td>
+                        <td className="py-2.5 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-zinc-300">7c2901a8...</span>
+                            <span className="text-zinc-600">|</span>
+                            <span className="text-zinc-400 truncate max-w-xs">
+                              Encrypted: SK {"{"} IDr, AUTH(PSK), SA(Child) {"}"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px] font-medium">
+                            ESTABLISHED
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr
+                        className={`hover:bg-zinc-800/30 cursor-pointer transition-colors bg-rose-500/5 ${
+                          inspectedPkt === "Packet #142" ? "bg-rose-500/10 border-l-2 border-rose-500" : ""
+                        }`}
+                        onClick={() => selectEvidencePacket(142, "CREATE_CHILD_SA (Req)", "0x8a91f3c401340b12")}
+                      >
+                        <td className="py-2.5 px-4 text-rose-400 font-bold">05</td>
+                        <td className="py-2.5 px-4 font-semibold flex items-center gap-1.5 text-zinc-100">
+                          <span className="material-symbols-outlined text-[14px] text-rose-400">warning</span>
+                          <span>CREATE_CHILD_SA</span>
+                          <span className="text-[10px] text-rose-400 font-bold ml-1">#142</span>
+                        </td>
+                        <td className="py-2.5 px-4 text-zinc-300">00:00:02.381</td>
+                        <td className="py-2.5 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-zinc-300">8a91f3c4...</span>
+                            <span className="text-zinc-600">|</span>
+                            <span className="text-rose-400 text-xs truncate max-w-xs">
+                              Rekey Child SA — Missing KEi (NO PFS)
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
+                            RISK_DETECTED
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
+            {/* SECTION 3: Negotiated Cryptographic Proposals & Transforms Matrix */}
+            {(activeFilter === "all" || activeFilter === "ike" || activeFilter === "esp") && (
+              <section className="bg-[#111317] border border-zinc-800/80 rounded-lg overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-zinc-800/80 bg-[#14171c] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-teal-400 text-[18px]">security_update_good</span>
+                    <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-white">
+                      Cryptographic Proposals &amp; Transforms Matrix
+                    </h2>
+                  </div>
+                  <span className="font-mono text-xs text-rose-400 font-medium flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">report</span> Security Posture: Sub-Optimal
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-mono text-xs">
+                    <thead>
+                      <tr className="border-b border-zinc-800 bg-[#0c0e11] text-zinc-400 text-[11px] uppercase tracking-wider">
+                        <th className="py-2.5 px-4">Transform Type</th>
+                        <th className="py-2.5 px-4">IKE_SA (Control Plane)</th>
+                        <th className="py-2.5 px-4">Child SA / ESP (Data Plane)</th>
+                        <th className="py-2.5 px-4">Evidence Source</th>
+                        <th className="py-2.5 px-4 text-right">Cryptographic Evaluation</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-800/60">
+                      <tr className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="py-2 px-4 text-zinc-200 font-medium">Encryption (ENCR)</td>
+                        <td className="py-2 px-4 text-zinc-300">
+                          AES-CBC-128 <span className="text-zinc-500">(128-bit key)</span>
+                        </td>
+                        <td className="py-2 px-4 text-zinc-300">
+                          AES-CBC-128 <span className="text-zinc-500">(IV: 16B)</span>
+                        </td>
+                        <td className="py-2 px-4">
+                          <span
+                            className="text-teal-400 hover:underline cursor-pointer"
+                            onClick={() => selectEvidencePacket(42, "IKE_SA_INIT (Req)", "0x8a91f3c401340b12")}
+                          >
+                            #42, #58
+                          </span>
+                        </td>
+                        <td className="py-2 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-300 text-[10px]">
+                            Sub-optimal (NIST SP 800-77r1)
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="py-2 px-4 text-zinc-200 font-medium">Integrity (INTEG)</td>
+                        <td className="py-2 px-4 text-zinc-300">AUTH_HMAC_SHA1_96</td>
+                        <td className="py-2 px-4 text-zinc-300">
+                          AUTH_HMAC_SHA1_96 <span className="text-zinc-500">(ICV: 12B)</span>
+                        </td>
+                        <td className="py-2 px-4">
+                          <span
+                            className="text-teal-400 hover:underline cursor-pointer"
+                            onClick={() => selectEvidencePacket(42, "IKE_SA_INIT (Req)", "0x8a91f3c401340b12")}
+                          >
+                            #42, #58
+                          </span>
+                        </td>
+                        <td className="py-2 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-medium">
+                            Legacy SHA1 (Collision Vector)
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="py-2 px-4 text-zinc-200 font-medium">Pseudo-Random (PRF)</td>
+                        <td className="py-2 px-4 text-zinc-300">PRF_HMAC_SHA1</td>
+                        <td className="py-2 px-4 text-zinc-500">N/A (Data Plane)</td>
+                        <td className="py-2 px-4">
+                          <span
+                            className="text-teal-400 hover:underline cursor-pointer"
+                            onClick={() => selectEvidencePacket(45, "IKE_SA_INIT (Resp)", "0x7c2901a8ef11b402")}
+                          >
+                            #45
+                          </span>
+                        </td>
+                        <td className="py-2 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 text-[10px]">
+                            RFC 7296 Compliant
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr className="bg-rose-500/5 hover:bg-rose-500/10 transition-colors">
+                        <td className="py-2 px-4 text-rose-400 font-medium">Diffie-Hellman (D-H)</td>
+                        <td className="py-2 px-4">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-zinc-200 font-medium">Group 2</span>
+                            <span className="px-1.5 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
+                              CRITICAL: 1024b MODP
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-zinc-500">Child SA:</span>
+                            <span className="px-1.5 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
+                              PFS DISABLED
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">
+                          <span
+                            className="text-teal-400 hover:underline cursor-pointer"
+                            onClick={() => selectEvidencePacket(142, "CREATE_CHILD_SA (Req)", "0x8a91f3c401340b12")}
+                          >
+                            #42 &amp; #142
+                          </span>
+                        </td>
+                        <td className="py-2 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
+                            Vulnerable to Logjam
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="py-2 px-4 text-zinc-200 font-medium">Nonce Entropy</td>
+                        <td className="py-2 px-4 text-zinc-300">Ni (32B), Nr (32B)</td>
+                        <td className="py-2 px-4 text-zinc-300">Derived via SKEYSEED</td>
+                        <td className="py-2 px-4">
+                          <span
+                            className="text-teal-400 hover:underline cursor-pointer"
+                            onClick={() => selectEvidencePacket(42, "IKE_SA_INIT (Req)", "0x8a91f3c401340b12")}
+                          >
+                            #42, #45
+                          </span>
+                        </td>
+                        <td className="py-2 px-4 text-right">
+                          <span className="px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px]">
+                            7.994 b/B (Nominal)
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
+            {/* SECTION 4: ESP Security Associations (SA) & Data Plane Telemetry */}
+            {(activeFilter === "all" || activeFilter === "esp" || activeFilter === "sa") && (
+              <section className="bg-[#111317] border border-zinc-800/80 rounded-lg p-5">
+                <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800/80">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-teal-400 text-[18px]">dns</span>
+                    <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-white">
+                      ESP Active Security Associations (SA) &amp; Sequence State
+                    </h2>
+                  </div>
+                  <span className="font-mono text-xs text-zinc-500">UDP Port 4500 Encap</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Ingress SA Card */}
+                  <div className="bg-[#14171c] border border-zinc-800/60 p-4 rounded-lg flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between pb-2 border-b border-zinc-800/60">
+                        <div className="flex items-center gap-1.5 font-mono text-xs">
+                          <span className="text-teal-400 font-bold">INGRESS SA</span>
+                          <span className="text-zinc-500">(Responder → Initiator)</span>
+                        </div>
+                        <span className="font-mono text-xs text-teal-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
+                          SPI: 0x41f89c02
+                        </span>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-y-2 font-mono text-xs">
+                        <span className="text-zinc-500">Lifetime Remaining:</span>
+                        <span className="text-zinc-200 text-right">28,800s Hard / 25,920s Soft</span>
+                        <span className="text-zinc-500">Volume Transferred:</span>
+                        <span className="text-zinc-200 text-right font-medium">421,050 pkts (712.4 MB)</span>
+                        <span className="text-zinc-500">Monotonic Sequence:</span>
+                        <span className="text-teal-400 text-right font-bold">421,050 (0 drops)</span>
+                        <span className="text-zinc-500">Anti-Replay Window:</span>
+                        <span className="text-zinc-200 text-right">64 pkts (Strict Bitmap)</span>
+                        <span className="text-zinc-500">Frame Evidence:</span>
+                        <span className="text-zinc-400 text-right">#68 → #842,109</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-2 border-t border-zinc-800/60">
+                      <div className="flex justify-between font-mono text-[11px] text-zinc-500 mb-1">
+                        <span>SEQUENCE CONTINUITY</span>
+                        <span className="text-teal-400 font-semibold">100% HEALTH</span>
+                      </div>
+                      <svg className="w-full h-5 text-teal-400" preserveAspectRatio="none" viewBox="0 0 200 20">
+                        <path
+                          d="M0,18 L30,16 L60,13 L90,10 L120,8 L150,5 L180,3 L200,1"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Egress SA Card */}
+                  <div className="bg-[#14171c] border border-zinc-800/60 p-4 rounded-lg flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between pb-2 border-b border-zinc-800/60">
+                        <div className="flex items-center gap-1.5 font-mono text-xs">
+                          <span className="text-zinc-200 font-bold">EGRESS SA</span>
+                          <span className="text-zinc-500">(Initiator → Responder)</span>
+                        </div>
+                        <span className="font-mono text-xs text-zinc-300 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
+                          SPI: 0x9a021da3
+                        </span>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-y-2 font-mono text-xs">
+                        <span className="text-zinc-500">Lifetime Remaining:</span>
+                        <span className="text-zinc-200 text-right">28,800s / 4.00 GB Cap</span>
+                        <span className="text-zinc-500">Volume Transferred:</span>
+                        <span className="text-zinc-200 text-right font-medium">421,059 pkts (707.6 MB)</span>
+                        <span className="text-zinc-500">Monotonic Sequence:</span>
+                        <span className="text-teal-400 text-right font-bold">421,059 (0 drops)</span>
+                        <span className="text-zinc-500">Anti-Replay Window:</span>
+                        <span className="text-zinc-200 text-right">64 pkts (Strict Bitmap)</span>
+                        <span className="text-zinc-500">Frame Evidence:</span>
+                        <span className="text-zinc-400 text-right">#69 → #842,108</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-2 border-t border-zinc-800/60">
+                      <div className="flex justify-between font-mono text-[11px] text-zinc-500 mb-1">
+                        <span>SEQUENCE CONTINUITY</span>
+                        <span className="text-teal-400 font-semibold">100% HEALTH</span>
+                      </div>
+                      <svg className="w-full h-5 text-teal-400" preserveAspectRatio="none" viewBox="0 0 200 20">
+                        <path
+                          d="M0,18 L25,16 L55,14 L95,11 L130,7 L165,4 L200,1"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* SECTION 5: Inline Expandable Packet Dissection Inspector Drawer (Right 4 Cols on 2xl) */}
+          <div className="2xl:col-span-4 bg-[#111317] p-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-teal-400 text-[18px]">find_in_page</span>
+                <h3 className="font-mono text-sm font-semibold uppercase tracking-wider text-white">
+                  Protocol Frame Inspector
+                </h3>
+              </div>
+              <span className="font-mono text-xs px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400">
+                {inspectedPkt}
+              </span>
+            </div>
+
+            {/* Active Frame Overview Strip */}
+            <div className="bg-[#0c0e11] border border-zinc-800/60 p-3 rounded-lg font-mono text-xs flex flex-col gap-1.5">
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Exchange Type:</span>
+                <span className="text-zinc-200 font-semibold">{inspectedExchange}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Timestamp:</span>
+                <span className="text-zinc-300">00:00:02.381 (T+2.267s)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Initiator SPI:</span>
+                <span className="text-teal-400">{inspectedSpi}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Encapsulation:</span>
+                <span className="text-zinc-300">UDP:4500 (Non-ESP Marker 0x00000000)</span>
+              </div>
+            </div>
+
+            {/* Deterministic Protocol Assertion / Proof Box */}
+            <div className="bg-rose-500/10 border-l-2 border-rose-500 p-3 rounded-r-lg flex flex-col gap-1">
+              <div className="flex items-center gap-1.5 text-rose-400 font-mono text-xs font-semibold">
+                <span className="material-symbols-outlined text-[16px]">gpp_maybe</span> Deterministic Cryptographic Proof
+              </div>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                Child SA Rekey initiated without <code className="text-teal-400 font-mono">KEi</code> payload at offset{" "}
+                <code className="text-teal-400 font-mono">0x0028</code>. The absence of an ephemeral Diffie-Hellman public
+                key proves <strong className="text-rose-400 font-semibold">PFS is Disabled</strong>. Past sessions remain
+                vulnerable to retrospective decryption if private keys are compromised.
+              </p>
+            </div>
+
+            {/* Raw Hex & ASCII Dissection Panel */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between font-mono text-[11px] text-zinc-500">
+                <span className="uppercase">Frame Hex Payload (Byte Dissection)</span>
+                <span>16-Byte Chunked</span>
+              </div>
+              <div className="bg-[#0c0e11] border border-zinc-800/60 p-3 rounded-lg font-mono text-[11px] overflow-x-auto leading-5 select-text">
+                <div className="grid grid-cols-12 gap-x-2">
+                  <span className="col-span-2 text-zinc-600">0000</span>
+                  <span className="col-span-6 text-zinc-200">00 00 00 00 8a 91 f3 c4</span>
+                  <span className="col-span-4 text-zinc-500">....4..|</span>
+
+                  <span className="col-span-2 text-zinc-600">0008</span>
+                  <span className="col-span-6 text-zinc-200">01 34 0b 12 7c 29 01 a8</span>
+                  <span className="col-span-4 text-zinc-500">)..ef11.</span>
+
+                  <span className="col-span-2 text-zinc-600">0010</span>
+                  <span className="col-span-6 text-zinc-200">ef 11 b4 02 2e 20 23 20</span>
+                  <span className="col-span-4 text-zinc-500">.... # .</span>
+
+                  <span className="col-span-2 text-zinc-600">0018</span>
+                  <span className="col-span-6 text-zinc-200">00 00 00 02 00 00 00 9c</span>
+                  <span className="col-span-4 text-zinc-500">....\x9c</span>
+
+                  <span className="col-span-2 text-teal-400 font-bold">0020</span>
+                  <span className="col-span-6 text-teal-300 font-bold">29 00 00 80 00 00 00 24</span>
+                  <span className="col-span-4 text-teal-400">).....$</span>
+
+                  <span className="col-span-2 text-rose-400 font-bold">0028</span>
+                  <span className="col-span-6 text-rose-400 font-bold">01 03 04 03 00 00 00 0c</span>
+                  <span className="col-span-4 text-rose-400">........</span>
+
+                  <span className="col-span-2 text-zinc-600">0030</span>
+                  <span className="col-span-6 text-zinc-200">80 0c 00 80 00 00 00 08</span>
+                  <span className="col-span-4 text-zinc-500">........</span>
+
+                  <span className="col-span-2 text-zinc-600">0038</span>
+                  <span className="col-span-6 text-zinc-200">03 00 00 02 00 00 00 08</span>
+                  <span className="col-span-4 text-zinc-500">........</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Payload Structural Breakdown Tree */}
+            <div className="flex flex-col gap-1.5">
+              <span className="font-mono text-[11px] text-zinc-500 uppercase">Decoded Payload Hierarchy</span>
+              <div className="bg-[#0c0e11] border border-zinc-800/60 p-3 rounded-lg font-mono text-xs flex flex-col gap-1.5 divide-y divide-zinc-800/60">
+                <div className="pt-1 flex items-center justify-between text-zinc-300">
+                  <span>Non-ESP Marker (4 Bytes)</span>
+                  <span className="text-teal-400">0x00000000 [OK]</span>
+                </div>
+                <div className="pt-1.5 flex items-center justify-between text-zinc-300">
+                  <span>IKE Header [HDR] (28 Bytes)</span>
+                  <span className="text-zinc-400">Type: CREATE_CHILD_SA (36)</span>
+                </div>
+                <div className="pt-1.5 flex items-center justify-between text-zinc-300">
+                  <span>Security Association [SA]</span>
+                  <span className="text-zinc-400">SPI: 0x9a021da3</span>
+                </div>
+                <div className="pt-1.5 flex items-center justify-between text-rose-400 font-medium">
+                  <span>Key Exchange [KEi]</span>
+                  <span>ABSENT (PFS Disabled)</span>
+                </div>
+                <div className="pt-1.5 flex items-center justify-between text-zinc-300">
+                  <span>Traffic Selectors [TSi, TSr]</span>
+                  <span className="text-zinc-400">0.0.0.0/0 ↔ 0.0.0.0/0</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Button */}
+            <div className="mt-auto pt-3">
+              <button
+                className="w-full h-8 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 font-mono text-xs font-medium rounded flex items-center justify-center gap-1.5 transition-colors"
+                type="button"
+                onClick={() => {
+                  downloadFile(
+                    "frame-dissection.json",
+                    JSON.stringify(
+                      {
+                        frame: inspectedPkt,
+                        exchange: inspectedExchange,
+                        spi: inspectedSpi,
+                        source: "TunnelSight Forensic Dissector",
+                        timestamp: new Date().toISOString(),
+                      },
+                      null,
+                      2
+                    )
+                  );
+                  toast({
+                    title: "Frame Exported",
+                    body: `${inspectedPkt} dissection downloaded.`,
+                    kind: "ok",
+                  });
+                }}
+              >
+                <span className="material-symbols-outlined text-[16px]">download</span>
+                <span>Export {inspectedPkt} Dissection</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </AppShell>
     </div>
   );
 }
+

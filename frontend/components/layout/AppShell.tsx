@@ -106,10 +106,10 @@ item.label}</span>
               <span className="text-outline">Buffer:</span>
               <span className="text-tertiary">98.4% Free</span>
             </div>
-            <button data-action="search" className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button">
-              <span className="material-symbols-outlined text-[16px]">search</span>
-              <span className="font-code-sm text-code-sm">Search packets/SPI/tunnels</span>
-              <kbd className="bg-surface-container-highest px-space-xs rounded font-code-sm text-code-sm text-outline">⌘K</kbd>
+            <button data-action="search" className="flex items-center gap-2 bg-[#14171c] hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 px-3 py-1.5 rounded-sm transition-colors text-xs font-mono" type="button">
+              <span className="material-symbols-outlined text-[16px] text-teal-400">search</span>
+              <span>Search packets/SPI/tunnels</span>
+              <kbd className="bg-zinc-800 border border-zinc-700/60 px-1.5 py-0.5 rounded-sm text-[10px] text-zinc-400">⌘K</kbd>
             </button>
             <div className="flex items-center gap-space-xs">
               <button data-action="export" className="p-space-xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Quick Export" type="button">

@@ -92,20 +92,38 @@ export default function AnalyzePage() {
 </button>
 </div>
 </div>
+{/* Import Flow Sequence */}
+<div className="grid grid-cols-3 gap-2 p-2 bg-surface-container-low rounded border border-hairline font-mono text-[11px]">
+  <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-surface-container text-on-surface">
+    <span className="w-4 h-4 rounded-full bg-primary text-on-primary font-bold text-[10px] flex items-center justify-center">1</span>
+    <span className="font-semibold">File Intake</span>
+    <span className="text-outline text-[10px]">(.pcap / .pcapng)</span>
+  </div>
+  <div className="flex items-center gap-2 px-3 py-1.5 rounded text-outline">
+    <span className="w-4 h-4 rounded-full bg-surface-container-highest text-outline font-bold text-[10px] flex items-center justify-center">2</span>
+    <span>Protocol Validate</span>
+    <span className="text-[10px]">(RFC 7296)</span>
+  </div>
+  <div className="flex items-center gap-2 px-3 py-1.5 rounded text-outline">
+    <span className="w-4 h-4 rounded-full bg-surface-container-highest text-outline font-bold text-[10px] flex items-center justify-center">3</span>
+    <span>Cryptographic Dissect</span>
+  </div>
+</div>
+
 {/* Primary Streamlined Upload Area */}
-<div className="bg-surface-container-lowest border border-outline-variant/30 rounded p-space-xl shadow-xl flex flex-col gap-space-md">
+<div className="bg-surface-container-lowest border border-hairline rounded p-space-xl shadow-xl flex flex-col gap-space-md">
 {/* Drop Target Terminal Box */}
-<div className="border-2 border-dashed border-outline-variant/50 hover:border-primary/60 bg-surface-container-low hover:bg-surface-container rounded-lg p-space-2xl flex flex-col items-center justify-center text-center transition-all cursor-pointer group" id="drop-zone">
+<div className="border-2 border-dashed border-outline-variant/40 hover:border-primary/60 bg-surface-container-low hover:bg-surface-container rounded-lg p-space-2xl flex flex-col items-center justify-center text-center transition-colors cursor-pointer group" id="drop-zone">
 <input accept=".pcap,.pcapng,.cap,.erf" className="hidden" id="pcap-file-input" type="file" />
-<div className="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:scale-105 group-hover:bg-primary group-hover:text-on-primary transition-all shadow-inner">
+<div className="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors shadow-inner">
 <span className="material-symbols-outlined text-[30px]">upload_file</span>
 </div>
 <div className="mt-space-md flex flex-col items-center">
-<div className="font-headline-md text-headline-md text-on-surface tracking-wide">
-            Drop PCAP here
+<div className="font-headline-md text-headline-md text-on-surface tracking-wide font-semibold">
+            Drop forensic PCAP trace here
           </div>
 <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 max-w-sm">
-            or click to browse your forensic capture files from local disk
+            or click to browse local capture files (up to 4 GB per trace)
           </p>
 </div>
 <div className="mt-space-md flex items-center gap-space-sm">

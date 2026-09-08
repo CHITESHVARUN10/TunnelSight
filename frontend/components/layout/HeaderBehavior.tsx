@@ -1,15 +1,17 @@
 "use client";
-// Shared header behavior for all app pages. Pages tag their (visually
-// untouched) header buttons with data-action; this component delegates:
-//   search -> /search, analyze -> /analyze, live -> /analysis/live,
-//   profile -> /profile, export -> snapshot download + toast,
-//   notifications -> dropdown panel.
-// Mounted once in the auth/app layout segment via AppShell.
+// Shared header behavior for all app pages. Pages tag their header buttons
+// with data-action; this component delegates:
+//   search -> triggers GlobalSearchModal overlay on top of current screen
+//   analyze -> /analyze, live -> /analysis/live, profile -> /profile
+//   export -> snapshot download + toast
+//   notifications -> dropdown panel
+// Mounted once globally in layout.tsx.
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { mockLogout } from "@/lib/mock/session";
 import { downloadFile, useToast } from "@/lib/mock/toast";
+import { GlobalSearchModal } from "@/components/modals/GlobalSearchModal";
 
 export function HeaderBehavior() {
   const router = useRouter();
@@ -32,8 +34,10 @@ export function HeaderBehavior() {
       const el = (e.target as HTMLElement).closest("[data-action]");
       if (!el || !(el instanceof HTMLElement)) return;
       const action = el.dataset.action;
-      if (action === "search") router.push("/search");
-      else if (action === "analyze") router.push("/analyze");
+      if (action === "search") {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("tunnelsight:open-search"));
+      } else if (action === "analyze") router.push("/analyze");
       else if (action === "live") router.push("/analysis/live");
       else if (action === "profile") router.push("/profile");
       else if (action === "export") {
@@ -56,37 +60,42 @@ export function HeaderBehavior() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  if (!notesOpen) return null;
   return (
-    <div className="fixed right-4 top-header-height z-[90] w-80 rounded-lg border border-surface-container-highest bg-surface-container-lowest p-2 shadow-2xl">
-      <div className="px-2 py-1 font-label-md text-label-md font-semibold uppercase tracking-wider text-on-surface-variant">
-        Notifications
-      </div>
-      {[
-        { icon: "warning", title: "PFS disabled on weak-vpn-07", body: "Child SA rekey omitted ephemeral exchange." },
-        { icon: "insights", title: "Egress spike in W-28", body: "4.8x burst anomaly vs baseline." },
-        { icon: "verified", title: "Engine v2.4.1-rc3 online", body: "DPDK Ring 0 · 0.02ms." },
-      ].map((n) => (
-        <div key={n.title} className="flex gap-2 rounded p-2 hover:bg-surface-container">
-          <span className="material-symbols-outlined text-[18px] text-primary">{n.icon}</span>
-          <div>
-            <div className="font-body-md text-body-md font-medium text-on-surface">{n.title}</div>
-            <div className="font-body-sm text-body-sm text-on-surface-variant">{n.body}</div>
+    <>
+      <GlobalSearchModal />
+      {notesOpen && (
+        <div className="fixed right-4 top-16 z-[95] w-84 rounded-sm border border-zinc-800 bg-[#111317] p-2.5 shadow-2xl font-mono text-xs text-zinc-300 animate-in fade-in">
+          <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 border-b border-zinc-800/80 mb-1 flex items-center justify-between">
+            <span>System Notifications</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
           </div>
+          {[
+            { icon: "warning", color: "text-amber-400", title: "PFS disabled on weak-vpn-07", body: "Child SA rekey omitted ephemeral exchange." },
+            { icon: "insights", color: "text-rose-400", title: "Egress spike in W-28", body: "4.8x burst anomaly vs baseline." },
+            { icon: "verified", color: "text-teal-400", title: "Engine v2.4.1 online", body: "DPDK Ring 0 · 0.02ms latency." },
+          ].map((n) => (
+            <div key={n.title} className="flex gap-2.5 rounded-sm p-2 hover:bg-[#14171c] transition-colors cursor-pointer">
+              <span className={`material-symbols-outlined text-[18px] ${n.color} shrink-0 mt-0.5`}>{n.icon}</span>
+              <div>
+                <div className="text-zinc-200 font-medium text-xs leading-tight">{n.title}</div>
+                <div className="text-zinc-500 text-[11px] mt-0.5 leading-snug">{n.body}</div>
+              </div>
+            </div>
+          ))}
+          <button
+            onClick={() => {
+              mockLogout();
+              setNotesOpen(false);
+              toast({ title: "Signed out", body: "Mock session cleared (prototype).", kind: "info" });
+              router.push("/login");
+            }}
+            className="mt-1 pt-1 border-t border-zinc-800/80 flex w-full items-center gap-2 rounded-sm p-2 text-left hover:bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px]">logout</span>
+            <span className="font-medium text-xs">Sign out</span>
+          </button>
         </div>
-      ))}
-      <button
-        onClick={() => {
-          mockLogout();
-          setNotesOpen(false);
-          toast({ title: "Signed out", body: "Mock session cleared (prototype).", kind: "info" });
-          router.push("/login");
-        }}
-        className="mt-1 flex w-full items-center gap-2 rounded p-2 text-left hover:bg-surface-container"
-      >
-        <span className="material-symbols-outlined text-[18px] text-on-surface-variant">logout</span>
-        <span className="font-body-md text-body-md font-medium text-on-surface">Sign out</span>
-      </button>
-    </div>
+      )}
+    </>
   );
 }

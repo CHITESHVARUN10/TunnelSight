@@ -257,6 +257,13 @@ main {
 }
 
 /* ---- Premium polish utilities (motion-system era) ---- */
+.font-display-serif {
+  font-family: var(--font-display-serif), "Fraunces", Georgia, "Times New Roman", serif;
+  font-feature-settings: "opsz" 36, "calt" 1;
+}
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
 .glass {
   background: rgba(26, 28, 31, 0.6);
   backdrop-filter: blur(16px);

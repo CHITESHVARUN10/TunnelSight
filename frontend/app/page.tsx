@@ -12,6 +12,7 @@ import ScrollStory from "@/components/motion/ScrollStory";
 import { LineReveal } from "@/components/motion/Parallax";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/lib/theme";
+import { Footer } from "@/components/layout/Footer";
 
 const HeroBg = dynamic(() => import("@/components/motion/HeroBg"), { ssr: false });
 
@@ -594,44 +595,7 @@ export default function LandingPage() {
       </section>
 
       {/* ============ FOOTER ============ */}
-      <footer className="w-full bg-surface-container-lowest border-t border-hairline py-space-3xl">
-        <div className="max-w-6xl mx-auto px-space-base grid grid-cols-1 md:grid-cols-5 gap-space-xl">
-          <div className="md:col-span-2 flex flex-col gap-space-sm">
-            <div className="flex items-center gap-space-xs">
-              <span className="w-2 h-2 bg-primary rounded-DEFAULT shadow-logo"></span>
-              <span className="font-headline-sm text-headline-sm text-on-surface">TunnelSight Observability Engine</span>
-            </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant max-w-sm leading-relaxed">
-              Deterministic protocol diagnostics, deep packet inspection, and cryptographic
-              audit posture for mission-critical IPsec and IKEv2 infrastructures.
-            </p>
-            <div className="flex items-center gap-space-xs font-code-sm text-code-sm text-outline">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
-              <span>KERNEL ENGINE ONLINE: v4.18.0-FIPS</span>
-            </div>
-          </div>
-          <div className="flex flex-col gap-space-xs">
-            <span className="font-label-md text-label-md uppercase tracking-wider text-outline">Product</span>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#" onClick={(e) => scrollTo(e, "capabilities")}>Capabilities</Link>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#" onClick={(e) => scrollTo(e, "evidence-model")}>Evidence Model</Link>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#" onClick={(e) => scrollTo(e, "workbench-preview")}>Workbench Preview</Link>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="/analyze">Live Terminal</Link>
-          </div>
-          <div className="flex flex-col gap-space-xs">
-            <span className="font-label-md text-label-md uppercase tracking-wider text-outline">Documentation</span>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">RFC 7296 Notes</Link>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">NIST SP 800-77r1 Mapping</Link>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Remediation Playbooks</Link>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">API Reference</Link>
-          </div>
-          <div className="flex flex-col gap-space-xs">
-            <span className="font-label-md text-label-md uppercase tracking-wider text-outline">Project</span>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="/overview">Overview</Link>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="/dataset">Dataset</Link>
-            <Link className="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" href="/login">Sign In</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

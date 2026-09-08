@@ -1,164 +1,239 @@
 "use client";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { AppShell } from "@/components/layout/AppShell";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LiveConfirmDialogsPage() {
+  const router = useRouter();
   const [view, setView] = useState<"start" | "stop" | "both">("both");
   const [toast, setToast] = useState({ visible: false, msg: "Action executed" });
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const dismiss = () => {
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push("/analysis/live");
+    }
+  };
+
   const showToast = (msg: string) => {
     setToast({ visible: true, msg });
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast((t) => ({ ...t, visible: false })), 3000);
   };
-  const simulateAction = (msg: string) => showToast(msg);
-  const showDismissMessage = (msg: string) => showToast(msg);
+
+  const simulateAction = (msg: string) => {
+    showToast(msg);
+    setTimeout(dismiss, 600);
+  };
+  const showDismissMessage = (msg: string) => {
+    showToast(msg);
+    setTimeout(dismiss, 400);
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        dismiss();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
-    <div className="bg-background font-sans text-sm text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen">
-
-
-  {/* Persistent Authenticated Shell Navigation Underlay */}
-  <AppShell active="" innerClassName="p-space-base">
-
+    <div className="min-h-screen bg-[#0c0e11] font-sans text-zinc-200 antialiased selection:bg-teal-500/20 selection:text-teal-200 flex flex-col relative overflow-x-hidden">
       {/* Background Content (Simulated Workbench underneath dialogs) */}
-      <div className="flex flex-col gap-space-base max-w-7xl w-full mx-auto opacity-35 filter blur-[1.5px] pointer-events-none select-none">
-        <div className="flex items-center justify-between pb-space-xs border-b border-surface-container-highest/40">
-          <div className="flex flex-col">
-            <h1 className="text-lg font-semibold text-on-surface tracking-tight">Live IPsec Analysis — Continuous Interface Monitoring</h1>
-            <span className="text-xs text-outline font-mono">dpdk0 · Promiscuous Ingest · Circular Ring Buffer Active</span>
+      <div className="fixed inset-0 pointer-events-none filter blur-[2px] opacity-20 flex flex-col z-0 select-none" aria-hidden="true">
+        {/* Top Header Mock */}
+        <header className="h-14 border-b border-zinc-800/80 bg-[#111317] px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-sm bg-teal-500 flex items-center justify-center font-mono text-black font-bold text-xs">&gt;_</div>
+            <span className="font-mono text-sm tracking-wider font-semibold text-white">TUNNELSIGHT</span>
+            <span className="text-xs text-zinc-500 font-mono">/ Live Monitor</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-1 rounded bg-tertiary/10 text-tertiary font-mono text-xs border border-tertiary/20 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span> CAPTURING
+            <span className="px-2 py-0.5 rounded-sm bg-teal-950/40 text-teal-400 font-mono text-xs border border-teal-800/40 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span> CAPTURING
             </span>
           </div>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-4 gap-space-md">
-          <div className="bg-surface-container-low p-space-md rounded border border-surface-container-highest/40 flex flex-col gap-1">
-            <span className="text-[11px] font-mono text-outline uppercase">Active ESP Flows</span>
-            <div className="text-xl font-mono text-on-surface font-semibold">128 <span className="text-xs text-tertiary font-normal">Active</span></div>
-            <span className="text-[11px] font-mono text-outline">Zero drop rate on ring</span>
+        {/* Mock Live Workbench */}
+        <main className="flex-1 p-8 max-w-7xl w-full mx-auto flex flex-col gap-6">
+          <div className="flex items-center justify-between pb-4 border-b border-zinc-800/80">
+            <div>
+              <h1 className="text-2xl font-display-serif text-white tracking-tight">Live IPsec Analysis — Continuous Interface Monitoring</h1>
+              <span className="text-xs text-zinc-500 font-mono">dpdk0 · Promiscuous Ingest · Circular Ring Buffer Active</span>
+            </div>
           </div>
-          <div className="bg-surface-container-low p-space-md rounded border border-surface-container-highest/40 flex flex-col gap-1">
-            <span className="text-[11px] font-mono text-outline uppercase">Wire Packets</span>
-            <div className="text-xl font-mono text-on-surface font-semibold">1,842,901</div>
-            <span className="text-[11px] font-mono text-outline">Avg: 94.2 kpps</span>
-          </div>
-          <div className="bg-surface-container-low p-space-md rounded border border-surface-container-highest/40 flex flex-col gap-1">
-            <span className="text-[11px] font-mono text-outline uppercase">Session Elapsed</span>
-            <div className="text-xl font-mono text-primary font-semibold">00:18:42</div>
-            <span className="text-[11px] font-mono text-outline">Buffer retention: 4.8 GiB</span>
-          </div>
-          <div className="bg-surface-container-low p-space-md rounded border border-surface-container-highest/40 flex flex-col gap-1">
-            <span className="text-[11px] font-mono text-outline uppercase">Security Findings</span>
-            <div className="text-xl font-mono text-error font-semibold">3 <span className="text-xs text-error/80 font-normal">Flagged</span></div>
-            <span className="text-[11px] font-mono text-outline">1 P0 Critical (DH Grp 2)</span>
-          </div>
-        </div>
 
-        {/* Wire Telemetry Table preview */}
-        <div className="bg-surface-container-low rounded border border-surface-container-highest/40 p-space-md flex flex-col gap-2">
-          <div className="flex justify-between items-center text-xs font-mono text-outline">
-            <span>PACKET INGEST STREAM</span>
-            <span>SHOWING LAST 5 FRAMES</span>
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-[#111317] p-4 rounded-sm border border-zinc-800/80 flex flex-col gap-1">
+              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Active ESP Flows</span>
+              <div className="text-2xl font-display-serif text-white font-semibold">128 <span className="text-xs text-teal-400 font-mono font-normal">Active</span></div>
+              <span className="text-[11px] font-mono text-zinc-500">Zero drop rate on ring</span>
+            </div>
+            <div className="bg-[#111317] p-4 rounded-sm border border-zinc-800/80 flex flex-col gap-1">
+              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Wire Packets</span>
+              <div className="text-2xl font-display-serif text-white font-semibold">1,842,901</div>
+              <span className="text-[11px] font-mono text-zinc-500">Avg: 94.2 kpps</span>
+            </div>
+            <div className="bg-[#111317] p-4 rounded-sm border border-zinc-800/80 flex flex-col gap-1">
+              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Session Elapsed</span>
+              <div className="text-2xl font-display-serif text-teal-400 font-semibold">00:18:42</div>
+              <span className="text-[11px] font-mono text-zinc-500">Buffer retention: 4.8 GiB</span>
+            </div>
+            <div className="bg-[#111317] p-4 rounded-sm border border-zinc-800/80 flex flex-col gap-1">
+              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Security Findings</span>
+              <div className="text-2xl font-display-serif text-rose-400 font-semibold">3 <span className="text-xs text-rose-300 font-mono font-normal">Flagged</span></div>
+              <span className="text-[11px] font-mono text-zinc-500">1 P0 Critical (DH Grp 2)</span>
+            </div>
           </div>
-          <div className="h-24 bg-surface-container-lowest rounded p-2 font-mono text-xs text-outline space-y-1">
-            <div>14:32:01.002 [ESP] SPI 0x7a89f31c SEQ 148209 LEN 1420 192.0.2.14 -{'>'} 198.51.100.8</div>
-            <div>14:32:01.008 [ESP] SPI 0xd411e89b SEQ 94103 LEN 256 198.51.100.8 -{'>'} 192.0.2.14</div>
-            <div>14:32:01.014 [IKE_AUTH] CHILD_SA rekey detected NO_PFS (Transform ID 2)</div>
+
+          <div className="bg-[#111317] rounded-sm border border-zinc-800/80 p-4 flex flex-col gap-2">
+            <div className="flex justify-between items-center text-xs font-mono text-zinc-400">
+              <span>PACKET INGEST STREAM</span>
+              <span>SHOWING LAST 3 FRAMES</span>
+            </div>
+            <div className="bg-[#0c0e11] rounded-sm p-3 font-mono text-xs text-zinc-400 space-y-1 border border-zinc-800/60">
+              <div>14:32:01.002 [ESP] SPI 0x7a89f31c SEQ 148209 LEN 1420 192.0.2.14 -&gt; 198.51.100.8</div>
+              <div>14:32:01.008 [ESP] SPI 0xd411e89b SEQ 94103 LEN 256 198.51.100.8 -&gt; 192.0.2.14</div>
+              <div>14:32:01.014 [IKE_AUTH] CHILD_SA rekey detected NO_PFS (Transform ID 2)</div>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
 
-      {/* Presentation Canvas for Confirmation Modals (Interactive Switcher & Clean Side-by-Side Context) */}
-      <div className="fixed inset-0 top-header-height left-sidebar-expanded z-40 bg-surface-container-lowest/80 backdrop-blur-[2px] flex flex-col items-center justify-center p-space-base overflow-y-auto">
+      {/* Top Switcher Bar */}
+      <div className="relative z-40 bg-[#111317]/90 backdrop-blur-md border-b border-zinc-800/80 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Link href="/analysis/live" className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1 font-mono text-xs">
+            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+            <span>Live Analysis</span>
+          </Link>
+          <span className="text-zinc-700 font-mono">|</span>
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+            <span className="text-xs font-mono font-semibold text-zinc-300 uppercase tracking-wider">Live Capture Confirmation Dialogs</span>
+          </div>
+        </div>
 
-        {/* Top Switcher Bar for Reviewers */}
-        <div className="mb-6 flex items-center gap-2 bg-surface-container-low border border-surface-container-highest/60 p-1 rounded-lg text-xs select-none shadow-lg">
-          <span className="text-outline px-2 font-mono text-[11px] uppercase tracking-wider">Dialog View:</span>
-          <button id="tab-start" className={view === "start" ? "px-3 py-1.5 rounded font-medium transition-all bg-primary-container text-on-primary-container font-mono" : "px-3 py-1.5 rounded font-medium transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-mono"} onClick={() => setView("start")}>
-            1. Start Live Analysis
+        <div className="flex items-center gap-1.5 bg-[#0c0e11] p-1 rounded-sm border border-zinc-800/80 text-xs font-mono">
+          <button
+            id="tab-start"
+            className={view === "start" ? "px-3 py-1 rounded-sm bg-[#14171c] text-white font-medium border border-zinc-700 transition-colors flex items-center gap-1.5" : "px-3 py-1 rounded-sm text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1.5"}
+            onClick={() => setView("start")}
+          >
+            <span className="material-symbols-outlined text-teal-400 text-[15px]">play_circle</span>
+            Start Analysis
           </button>
-          <button id="tab-stop" className={view === "stop" ? "px-3 py-1.5 rounded font-medium transition-all bg-primary-container text-on-primary-container font-mono" : "px-3 py-1.5 rounded font-medium transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-mono"} onClick={() => setView("stop")}>
-            2. Stop Live Analysis
+          <button
+            id="tab-stop"
+            className={view === "stop" ? "px-3 py-1 rounded-sm bg-[#14171c] text-white font-medium border border-zinc-700 transition-colors flex items-center gap-1.5" : "px-3 py-1 rounded-sm text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1.5"}
+            onClick={() => setView("stop")}
+          >
+            <span className="material-symbols-outlined text-amber-400 text-[15px]">stop_circle</span>
+            Stop Analysis
           </button>
-          <button id="tab-both" className={view === "both" ? "px-3 py-1.5 rounded font-medium transition-all bg-primary-container text-on-primary-container font-mono" : "px-3 py-1.5 rounded font-medium transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-mono"} onClick={() => setView("both")}>
+          <button
+            id="tab-both"
+            className={view === "both" ? "px-3 py-1 rounded-sm bg-[#14171c] text-white font-medium border border-zinc-700 transition-colors flex items-center gap-1.5" : "px-3 py-1 rounded-sm text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1.5"}
+            onClick={() => setView("both")}
+          >
+            <span className="material-symbols-outlined text-zinc-400 text-[15px]">view_column</span>
             Compare Both
           </button>
         </div>
+      </div>
 
-        {/* Dialogs Wrapper Container */}
-        <div id="modals-container" className={view === "both" ? "w-full max-w-4xl flex items-center justify-center gap-8 flex-wrap" : "w-full max-w-md flex items-center justify-center"}>
-
+      {/* Main Presentation Canvas for Dialogs */}
+      <div className="relative z-30 flex-1 flex flex-col items-center justify-center p-6 bg-black/40">
+        <div id="modals-container" className={view === "both" ? "w-full max-w-4xl flex items-center justify-center gap-6 flex-wrap" : "w-full max-w-md flex items-center justify-center"}>
           {/* ========================================================= */}
           {/* DIALOG 1: START LIVE ANALYSIS                             */}
           {/* ========================================================= */}
-          <div id="modal-start" className={view === "stop" ? "hidden w-full max-w-[460px] bg-surface-container-low rounded-xl border border-surface-container-highest/80 shadow-2xl overflow-hidden transition-all duration-200" : "w-full max-w-[460px] bg-surface-container-low rounded-xl border border-surface-container-highest/80 shadow-2xl overflow-hidden transition-all duration-200"}>
+          <div
+            id="modal-start"
+            className={view === "stop" ? "hidden w-full max-w-[440px] bg-[#111317] rounded-sm border border-zinc-800/80 shadow-2xl overflow-hidden transition-all duration-200" : "w-full max-w-[440px] bg-[#111317] rounded-sm border border-zinc-800/80 shadow-2xl overflow-hidden transition-all duration-200"}
+          >
             {/* Modal Header */}
-            <div className="px-5 pt-5 pb-3 border-b border-surface-container-highest/40 flex items-start justify-between">
+            <div className="px-5 pt-5 pb-3.5 border-b border-zinc-800/80 bg-[#14171c]/50 flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shrink-0">
-                  <span className="material-symbols-outlined text-[19px]">pulse_alert</span>
+                <div className="w-9 h-9 rounded-sm bg-teal-950/40 border border-teal-800/40 flex items-center justify-center text-teal-400 shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">sensors</span>
                 </div>
                 <div>
-                  <h2 className="font-semibold text-base text-on-surface tracking-tight leading-snug">Start live analysis?</h2>
-                  <p className="text-[11px] font-mono text-outline mt-0.5">Continuous interface ingest &amp; protocol inspection</p>
+                  <h2 className="font-display-serif font-semibold text-base text-white tracking-tight leading-snug">Start live analysis?</h2>
+                  <p className="text-[11px] font-mono text-zinc-400 mt-0.5">Continuous interface ingest &amp; protocol inspection</p>
                 </div>
               </div>
-              <button className="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container transition-colors" title="Close" onClick={() => showDismissMessage('Start analysis cancelled')}>
+              <button
+                className="text-zinc-500 hover:text-zinc-300 p-1 rounded-sm hover:bg-[#14171c] transition-colors"
+                title="Close"
+                onClick={() => showDismissMessage("Start analysis cancelled")}
+              >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
             {/* Modal Content / Parameters */}
-            <div className="px-5 py-4 flex flex-col gap-3.5">
+            <div className="px-5 py-4 flex flex-col gap-3.5 bg-[#0c0e11]/60">
               {/* Parameter List Cards */}
-              <div className="bg-surface-container-lowest/80 rounded-lg border border-surface-container-highest/50 divide-y divide-surface-container-highest/40">
+              <div className="bg-[#14171c] rounded-sm border border-zinc-800/80 divide-y divide-zinc-800/60">
                 {/* Interface Row */}
                 <div className="p-3 flex items-center justify-between text-xs">
-                  <span className="text-on-surface-variant font-medium">Interface</span>
+                  <span className="text-zinc-400 font-mono text-[11px] uppercase tracking-wider">Interface</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                    <span className="font-mono text-on-surface font-semibold bg-surface-container px-2 py-0.5 rounded border border-surface-container-highest/50">eth0</span>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+                    <span className="font-mono text-white font-semibold bg-[#111317] px-2 py-0.5 rounded-sm border border-zinc-800">dpdk0 (eth0)</span>
                   </div>
                 </div>
 
                 {/* Analysis Profile Row */}
                 <div className="p-3 flex items-center justify-between text-xs">
-                  <span className="text-on-surface-variant font-medium">Analysis Profile</span>
-                  <span className="font-mono text-primary font-medium">Enterprise Edge Audit</span>
+                  <span className="text-zinc-400 font-mono text-[11px] uppercase tracking-wider">Analysis Profile</span>
+                  <span className="font-mono text-teal-400 font-medium">Enterprise Edge Audit</span>
                 </div>
 
                 {/* Engines Row */}
                 <div className="p-3 flex items-center justify-between text-xs">
-                  <span className="text-on-surface-variant font-medium">Engines</span>
+                  <span className="text-zinc-400 font-mono text-[11px] uppercase tracking-wider">Engines</span>
                   <div className="flex items-center gap-1">
-                    <span className="font-mono text-[11px] text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-surface-container-highest/50">IPsec</span>
-                    <span className="text-outline-variant font-mono text-xs">+</span>
-                    <span className="font-mono text-[11px] text-on-surface bg-surface-container px-1.5 py-0.5 rounded border border-surface-container-highest/50">ML</span>
-                    <span className="text-outline-variant font-mono text-xs">+</span>
-                    <span className="font-mono text-[11px] text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded border border-tertiary/30">Anomaly Detection</span>
+                    <span className="font-mono text-[11px] text-zinc-200 bg-[#111317] px-1.5 py-0.5 rounded-sm border border-zinc-800">IPsec</span>
+                    <span className="text-zinc-600 font-mono text-xs">+</span>
+                    <span className="font-mono text-[11px] text-zinc-200 bg-[#111317] px-1.5 py-0.5 rounded-sm border border-zinc-800">ML</span>
+                    <span className="text-zinc-600 font-mono text-xs">+</span>
+                    <span className="font-mono text-[11px] text-teal-400 bg-teal-950/30 px-1.5 py-0.5 rounded-sm border border-teal-800/40">Anomaly</span>
                   </div>
                 </div>
               </div>
 
               {/* Authorization Notice */}
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-surface-container/60 border border-surface-container-highest/40 text-xs">
-                <span className="material-symbols-outlined text-outline text-[16px] shrink-0 mt-0.5">verified_user</span>
-                <p className="text-[11px] text-on-surface-variant leading-relaxed">
-                  <span className="font-medium text-on-surface">Small authorization notice:</span> Only capture traffic on interfaces you are authorized to monitor.
+              <div className="flex items-start gap-2.5 p-3 rounded-sm bg-[#14171c] border border-zinc-800/80 text-xs">
+                <span className="material-symbols-outlined text-zinc-400 text-[16px] shrink-0 mt-0.5">verified_user</span>
+                <p className="text-[11px] text-zinc-400 leading-relaxed font-mono">
+                  <span className="font-medium text-zinc-300">Authorization notice:</span> Only capture traffic on interfaces you are authorized to monitor under organizational mandate.
                 </p>
               </div>
             </div>
 
             {/* Modal Actions Footer */}
-            <div className="px-5 py-3.5 bg-surface-container-lowest/90 border-t border-surface-container-highest/50 flex items-center justify-end gap-2.5">
-              <button className="px-3.5 py-1.5 rounded text-xs font-mono text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" type="button" onClick={() => showDismissMessage('Start analysis cancelled')}>
+            <div className="px-5 py-3.5 bg-[#111317] border-t border-zinc-800/80 flex items-center justify-end gap-2.5">
+              <button
+                className="px-3.5 py-1.5 rounded-sm text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-800 transition-colors"
+                type="button"
+                onClick={() => showDismissMessage("Start analysis cancelled")}
+              >
                 Cancel
               </button>
-              <button className="px-4 py-1.5 rounded text-xs font-mono font-medium text-on-primary-container bg-primary hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-1.5" type="button" onClick={() => simulateAction('Live analysis initiated on eth0')}>
+              <button
+                className="px-4 py-1.5 rounded-sm text-xs font-mono font-semibold text-black bg-teal-500 hover:bg-teal-400 transition-colors shadow-sm flex items-center gap-1.5"
+                type="button"
+                onClick={() => simulateAction("Live analysis initiated on dpdk0")}
+              >
                 <span className="material-symbols-outlined text-[15px]">play_arrow</span>
                 <span>Start Analysis</span>
               </button>
@@ -168,93 +243,106 @@ export default function LiveConfirmDialogsPage() {
           {/* ========================================================= */}
           {/* DIALOG 2: STOP LIVE ANALYSIS                              */}
           {/* ========================================================= */}
-          <div id="modal-stop" className={view === "start" ? "hidden w-full max-w-[460px] bg-surface-container-low rounded-xl border border-surface-container-highest/80 shadow-2xl overflow-hidden transition-all duration-200" : "w-full max-w-[460px] bg-surface-container-low rounded-xl border border-surface-container-highest/80 shadow-2xl overflow-hidden transition-all duration-200"}>
+          <div
+            id="modal-stop"
+            className={view === "start" ? "hidden w-full max-w-[440px] bg-[#111317] rounded-sm border border-zinc-800/80 shadow-2xl overflow-hidden transition-all duration-200" : "w-full max-w-[440px] bg-[#111317] rounded-sm border border-zinc-800/80 shadow-2xl overflow-hidden transition-all duration-200"}
+          >
             {/* Modal Header */}
-            <div className="px-5 pt-5 pb-3 border-b border-surface-container-highest/40 flex items-start justify-between">
+            <div className="px-5 pt-5 pb-3.5 border-b border-zinc-800/80 bg-[#14171c]/50 flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-warning/10 border border-warning/25 flex items-center justify-center text-warning shrink-0">
-                  <span className="material-symbols-outlined text-[19px]">stop_circle</span>
+                <div className="w-9 h-9 rounded-sm bg-amber-950/40 border border-amber-800/40 flex items-center justify-center text-amber-400 shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">stop_circle</span>
                 </div>
                 <div>
-                  <h2 className="font-semibold text-base text-on-surface tracking-tight leading-snug">Stop live analysis?</h2>
-                  <p className="text-[11px] font-mono text-outline mt-0.5">Finalize buffer ingest and save session trace</p>
+                  <h2 className="font-display-serif font-semibold text-base text-white tracking-tight leading-snug">Stop live analysis?</h2>
+                  <p className="text-[11px] font-mono text-zinc-400 mt-0.5">Finalize buffer ingest and save session trace</p>
                 </div>
               </div>
-              <button className="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container transition-colors" title="Close" onClick={() => showDismissMessage('Analysis continuing')}>
+              <button
+                className="text-zinc-500 hover:text-zinc-300 p-1 rounded-sm hover:bg-[#14171c] transition-colors"
+                title="Close"
+                onClick={() => showDismissMessage("Analysis continuing")}
+              >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
             {/* Modal Content / Session Statistics */}
-            <div className="px-5 py-4 flex flex-col gap-3.5">
-              <div className="flex items-center justify-between text-xs text-outline font-mono">
+            <div className="px-5 py-4 flex flex-col gap-3.5 bg-[#0c0e11]/60">
+              <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
                 <span className="uppercase tracking-wider text-[10px]">Session Statistics</span>
-                <span className="text-tertiary flex items-center gap-1 text-[11px]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                  Active on eth0
+                <span className="text-teal-400 flex items-center gap-1 text-[11px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+                  Active on dpdk0
                 </span>
               </div>
 
-              {/* Metrics Grid (Useful session stats) */}
-              <div className="grid grid-cols-2 gap-2 bg-surface-container-lowest/80 p-2.5 rounded-lg border border-surface-container-highest/50">
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-2 bg-[#14171c] p-2.5 rounded-sm border border-zinc-800/80">
                 {/* Duration */}
-                <div className="bg-surface-container/60 p-2.5 rounded border border-surface-container-highest/30 flex flex-col">
-                  <span className="text-[10px] font-mono text-outline uppercase tracking-wider">Duration</span>
-                  <div className="text-base font-mono font-semibold text-on-surface mt-0.5">00:18:42</div>
+                <div className="bg-[#111317] p-2.5 rounded-sm border border-zinc-800/60 flex flex-col">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Duration</span>
+                  <div className="text-base font-mono font-semibold text-white mt-0.5">00:18:42</div>
                 </div>
 
                 {/* Packets */}
-                <div className="bg-surface-container/60 p-2.5 rounded border border-surface-container-highest/30 flex flex-col">
-                  <span className="text-[10px] font-mono text-outline uppercase tracking-wider">Packets</span>
-                  <div className="text-base font-mono font-semibold text-on-surface mt-0.5">1,842,901</div>
+                <div className="bg-[#111317] p-2.5 rounded-sm border border-zinc-800/60 flex flex-col">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Packets</span>
+                  <div className="text-base font-mono font-semibold text-white mt-0.5">1,842,901</div>
                 </div>
 
                 {/* ESP Flows */}
-                <div className="bg-surface-container/60 p-2.5 rounded border border-surface-container-highest/30 flex flex-col">
-                  <span className="text-[10px] font-mono text-outline uppercase tracking-wider">ESP Flows</span>
-                  <div className="text-base font-mono font-semibold text-primary mt-0.5">128</div>
+                <div className="bg-[#111317] p-2.5 rounded-sm border border-zinc-800/60 flex flex-col">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">ESP Flows</span>
+                  <div className="text-base font-mono font-semibold text-teal-400 mt-0.5">128</div>
                 </div>
 
                 {/* Findings */}
-                <div className="bg-surface-container/60 p-2.5 rounded border border-surface-container-highest/30 flex flex-col">
-                  <span className="text-[10px] font-mono text-outline uppercase tracking-wider">Findings</span>
-                  <div className="text-base font-mono font-semibold text-error mt-0.5 flex items-center gap-1.5">
+                <div className="bg-[#111317] p-2.5 rounded-sm border border-zinc-800/60 flex flex-col">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Findings</span>
+                  <div className="text-base font-mono font-semibold text-rose-400 mt-0.5 flex items-center gap-1.5">
                     <span>3</span>
-                    <span className="text-[10px] font-sans px-1.5 py-0.2 rounded bg-error/15 text-error font-medium">1 Critical</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-sm bg-rose-950/50 text-rose-300 font-medium">1 Critical</span>
                   </div>
                 </div>
               </div>
 
-              <div className="text-[11px] font-mono text-on-surface-variant flex items-center justify-between px-1">
-                <span className="text-outline">Trace Destination:</span>
-                <span className="text-on-surface font-medium">/var/log/tunnelsight/live-eth0-001842.pcap</span>
+              <div className="text-[11px] font-mono text-zinc-400 flex items-center justify-between px-1">
+                <span className="text-zinc-500">Destination:</span>
+                <span className="text-zinc-200 font-medium">/var/log/tunnelsight/live-dpdk0-001842.pcap</span>
               </div>
             </div>
 
             {/* Modal Actions Footer */}
-            <div className="px-5 py-3.5 bg-surface-container-lowest/90 border-t border-surface-container-highest/50 flex items-center justify-end gap-2.5">
-              <button className="px-3.5 py-1.5 rounded text-xs font-mono text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" type="button" onClick={() => simulateAction('Resuming live monitor on eth0')}>
+            <div className="px-5 py-3.5 bg-[#111317] border-t border-zinc-800/80 flex items-center justify-end gap-2.5">
+              <button
+                className="px-3.5 py-1.5 rounded-sm text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-800 transition-colors"
+                type="button"
+                onClick={() => simulateAction("Resuming live monitor on dpdk0")}
+              >
                 Continue Analysis
               </button>
-              <button className="px-4 py-1.5 rounded text-xs font-mono font-medium text-on-primary-container bg-primary hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-1.5" type="button" onClick={() => simulateAction('Capture saved: live-eth0-001842.pcap')}>
+              <button
+                className="px-4 py-1.5 rounded-sm text-xs font-mono font-semibold text-black bg-teal-500 hover:bg-teal-400 transition-colors shadow-sm flex items-center gap-1.5"
+                type="button"
+                onClick={() => simulateAction("Capture saved: live-dpdk0-001842.pcap")}
+              >
                 <span className="material-symbols-outlined text-[15px]">save</span>
                 <span>Stop &amp; Save Capture</span>
               </button>
             </div>
           </div>
-
         </div>
 
         {/* Toast Feedback Banner */}
-        <div id="toast" className={toast.visible ? "transition-all duration-200 mt-5 px-3 py-1.5 rounded bg-surface-container-high border border-primary/40 text-xs font-mono text-on-surface flex items-center gap-2 shadow-lg" : "opacity-0 pointer-events-none transition-all duration-200 mt-5 px-3 py-1.5 rounded bg-surface-container-high border border-primary/40 text-xs font-mono text-on-surface flex items-center gap-2 shadow-lg"}>
-          <span className="w-2 h-2 rounded-full bg-primary"></span>
+        <div
+          id="toast"
+          className={toast.visible ? "transition-all duration-200 mt-6 px-4 py-2 rounded-sm bg-[#14171c] border border-zinc-800 text-xs font-mono text-zinc-200 flex items-center gap-2.5 shadow-2xl" : "opacity-0 pointer-events-none transition-all duration-200 mt-6 px-4 py-2 rounded-sm bg-[#14171c] border border-zinc-800 text-xs font-mono text-zinc-200 flex items-center gap-2.5 shadow-2xl"}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
           <span id="toast-text">{toast.msg}</span>
         </div>
-
-      </AppShell>
-
-  
-
+      </div>
     </div>
   );
 }
