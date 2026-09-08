@@ -136,7 +136,7 @@ export default function CaptureDrawerPage() {
 {/* Dimmed Ambient Backdrop Filter */}
 <div className={drawerOpen ? "absolute inset-0 bg-surface-container-lowest/80 backdrop-blur-[2px] transition-opacity duration-200 z-40" : "absolute inset-0 bg-surface-container-lowest/80 backdrop-blur-[2px] transition-opacity duration-200 z-40 opacity-0 pointer-events-none"} id="backdrop-scrim" onClick={closeDrawer}></div>
 {/* SLIDE-OUT CAPTURE DETAIL DRAWER (STRICT FIDELITY) */}
-<aside className={drawerOpen ? "absolute top-0 right-0 bottom-0 w-full max-w-[490px] bg-surface-container-lowest z-50 flex flex-col justify-between shadow-2xl transition-transform duration-300 transform translate-x-0" : "absolute top-0 right-0 bottom-0 w-full max-w-[490px] bg-surface-container-lowest z-50 flex flex-col justify-between shadow-2xl transition-transform duration-300 transform translate-x-full"} id="capture-drawer" style={{backgroundColor: '#0c0e11', boxShadow: '-8px 0 32px rgba(0, 0, 0, 0.75)'}}>
+<aside className={drawerOpen ? "absolute top-0 right-0 bottom-0 w-full max-w-[490px] bg-surface-container-lowest z-50 flex flex-col justify-between shadow-2xl transition-transform duration-300 transform translate-x-0" : "absolute top-0 right-0 bottom-0 w-full max-w-[490px] bg-surface-container-lowest z-50 flex flex-col justify-between shadow-2xl transition-transform duration-300 transform translate-x-full"} id="capture-drawer" style={{backgroundColor: 'var(--color-surface-container-lowest)'}}>
 {/* Scrollable Drawer Interior */}
 <div className="flex-1 overflow-y-auto flex flex-col p-space-base gap-space-lg">
 {/* 1. HEADER SECTION */}
@@ -328,7 +328,7 @@ export default function CaptureDrawerPage() {
 </div>
 </div>
 {/* 5. ACTIONS SECTION (Pinned at Drawer Bottom) */}
-<div className="p-space-base bg-surface-container-lowest flex flex-col gap-space-sm select-none" style={{backgroundColor: '#0c0e11'}}>
+<div className="p-space-base bg-surface-container-lowest flex flex-col gap-space-sm select-none">
 {/* Primary Action */}
 <button className="w-full bg-primary-container hover:bg-primary text-on-primary-container font-headline-sm text-headline-sm font-semibold py-space-xs px-space-md rounded flex items-center justify-center gap-space-xs shadow-md transition-all active:scale-[0.99]" type="button" onClick={openFullAnalysis}>
 <span>Open Full Analysis</span>

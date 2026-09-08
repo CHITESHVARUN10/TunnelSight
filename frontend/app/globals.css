@@ -77,6 +77,9 @@
   --color-on-tertiary-container: #003522;
   --color-secondary: #c2c6d1;
 
+  /* ---- Theme-aware hairline (dark: white 9% · light: ink 14%) ---- */
+  --color-hairline: rgba(255, 255, 255, 0.09);
+
   /* ---- Brand system (auth/dialog screens 19, 20, 24, 25, 27) ---- */
   --color-brand-teal: #00a896;
   --color-brand-teal-hover: #009383;
@@ -135,6 +138,9 @@
   --font-code-md: "Geist Mono", ui-monospace, monospace;
   --font-headline-lg: "Geist", "Inter", sans-serif;
   --font-display: "Geist", "Inter", sans-serif;
+  /* Landing editorial cut: high-contrast serif for display lines, mono for labels.
+     App screens stay on Geist/Inter; this token is landing-only. */
+  --font-display-serif: "Fraunces", Georgia, "Times New Roman", serif;
   --font-label-md: "Inter", sans-serif;
   --font-headline-md: "Geist", "Inter", sans-serif;
   --font-body-lg: "Inter", system-ui, sans-serif;
@@ -381,4 +387,543 @@ main {
 .custom-switch input:checked + .slider:before {
   transform: translateX(16px);
   background-color: #00a896;
+}
+
+/* ---- Landing premium layer (research-backed) ----
+   Serif display + mono labels, film grain, top light, hairlines over boxes,
+   transform-only parallax helpers. Landing-only; app screens untouched. */
+.hero-display {
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+.section-display {
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+/* Single film-grain overlay: fixed, pointer-transparent, ~4% analog texture */
+.landing-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* Top light: cool beam falling from the page crown onto the hero */
+.landing-beam {
+  background:
+    linear-gradient(to bottom, rgba(94, 234, 212, 0.13), transparent 55%),
+    radial-gradient(58% 42% at 50% 0%, rgba(94, 234, 212, 0.12), transparent 70%);
+}
+/* Cinematic vignette so lit centers read against deep edges */
+.landing-vignette {
+  background: radial-gradient(120% 90% at 50% 8%, transparent 42%, rgba(0, 0, 0, 0.52) 100%);
+}
+.hairline-t {
+  border-top: 1px solid var(--color-hairline);
+}
+.hairline-b {
+  border-bottom: 1px solid var(--color-hairline);
+}
+/* Perspective tilt for the hero product shot (flattened under reduced motion) */
+.perspective-1200 {
+  perspective: 1200px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.tilt-card {
+  transform: rotateX(5deg) rotateY(-7deg);
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+::selection {
+  background: rgba(0, 168, 150, 0.45);
+  color: #f4efe6;
+}
+:focus-visible {
+  outline: 2px solid #59dbc7;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tilt-card {
+    transform: none;
+  }
+}
+
+/* ================= LIGHT THEME =================
+   Premium warm-paper light mode. html.light overrides every semantic token
+   (token-driven screens adapt automatically), remaps hardcoded dark-only
+   utilities to designed counterparts, and restyles shared components.
+   Dark remains the default; toggle via lib/theme. */
+html.dark {
+  color-scheme: dark;
+}
+html.light {
+  color-scheme: light;
+
+  --color-on-tertiary: #ffffff;
+  --color-primary-container: #a7f0dc;
+  --color-on-tertiary-fixed-variant: #005236;
+  --color-inverse-on-surface: #f2f1ea;
+  --color-surface-container: #e2dfd3;
+  --color-surface-tint: #006b5e;
+  --color-on-secondary: #ffffff;
+  --color-primary-fixed: #7ff0d6;
+  --color-surface-dim: #dcd8cb;
+  --color-surface-container-lowest: #fdfcf8;
+  --color-on-surface-variant: #5a605c;
+  --color-primary: #006b5e;
+  --color-tertiary-fixed-dim: #2e7d4f;
+  --color-secondary-container: #dbe2ec;
+  --color-on-secondary-fixed: #171c24;
+  --color-tertiary-container: #a9efc0;
+  --color-on-secondary-container: #2e3640;
+  --color-outline: #74786f;
+  --color-on-primary-fixed: #00201b;
+  --color-on-secondary-fixed-variant: #4a5560;
+  --color-on-primary: #ffffff;
+  --color-outline-variant: #d5d1c1;
+  --color-surface-container-highest: #c6c1b0;
+  --color-on-background: #20211f;
+  --color-on-primary-container: #00201b;
+  --color-inverse-surface: #30312e;
+  --color-on-primary-fixed-variant: #005047;
+  --color-inverse-primary: #5cdbc0;
+  --color-on-surface: #20211f;
+  --color-on-error: #ffffff;
+  --color-primary-fixed-dim: #006b5e;
+  --color-error: #b3261e;
+  --color-secondary-fixed: #dee2ee;
+  --color-surface: #f2f0e9;
+  --color-background: #f2f0e9;
+  --color-error-container: #f9dedc;
+  --color-surface-variant: #d9d5c6;
+  --color-on-error-container: #410e0b;
+  --color-tertiary-fixed: #6ffbbe;
+  --color-tertiary: #2e7d4f;
+  --color-on-tertiary-fixed: #002113;
+  --color-surface-bright: #bdb8a5;
+  --color-surface-container-high: #d6d2c2;
+  --color-surface-container-low: #eae7dc;
+  --color-secondary-fixed-dim: #3d4753;
+  --color-on-tertiary-container: #072711;
+  --color-secondary: #4a5560;
+
+  --color-brand-teal: #00796c;
+  --color-brand-teal-hover: #006157;
+  --color-brand-teal-dim: rgba(0, 121, 108, 0.12);
+  --color-brand-surface: #f2f0e9;
+  --color-brand-surface-low: #eae7dc;
+  --color-brand-surface-lowest: #fdfcf8;
+  --color-brand-surface-container: #e2dfd3;
+  --color-brand-border: #d5d1c1;
+  --color-brand-border-subtle: #e7e4d6;
+  --color-brand-muted: #5f665f;
+  --color-brand-danger: #b3261e;
+  --color-brand-danger-dim: rgba(179, 38, 30, 0.08);
+  --color-brand-success: #2e7d32;
+  --color-brand-success-dim: rgba(46, 125, 50, 0.1);
+
+  --color-teal-brand: #00796c;
+  --color-teal-bright: #006b5e;
+  --color-surface-card: #ffffff;
+  --color-surface-border: #d8d4c5;
+  --color-surface-panel: #f7f5ee;
+  --color-surface-base: #eae7dc;
+
+  --color-hairline: rgba(32, 33, 31, 0.14);
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ---- Shared component restyles (light) ---- */
+html.light .glass {
+  background: rgba(255, 255, 255, 0.72);
+}
+html.light .glow-teal {
+  box-shadow:
+    0 0 0 1px rgba(0, 107, 94, 0.14),
+    0 12px 32px -12px rgba(60, 70, 60, 0.28);
+}
+html.light .glow-teal-soft {
+  box-shadow: 0 6px 24px -8px rgba(60, 70, 60, 0.22);
+}
+html.light .text-glow-teal {
+  text-shadow: none;
+}
+html.light .modal-backdrop {
+  background: rgba(32, 33, 31, 0.48);
+}
+html.light .bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(32, 33, 31, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(32, 33, 31, 0.055) 1px, transparent 1px);
+}
+html.light .grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(32, 33, 31, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(32, 33, 31, 0.055) 1px, transparent 1px);
+}
+html.light .technical-grid {
+  background-image:
+    linear-gradient(to right, rgba(32, 33, 31, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(32, 33, 31, 0.05) 1px, transparent 1px);
+}
+html.light .custom-switch .slider {
+  background-color: #cfcabb;
+  border-color: #b9b4a1;
+}
+html.light .landing-beam {
+  background:
+    linear-gradient(to bottom, rgba(0, 121, 108, 0.1), transparent 55%),
+    radial-gradient(58% 42% at 50% 0%, rgba(0, 121, 108, 0.1), transparent 70%);
+}
+html.light .landing-vignette {
+  background: radial-gradient(120% 90% at 50% 8%, transparent 55%, rgba(70, 68, 55, 0.12) 100%);
+}
+html.light .landing-grain {
+  opacity: 0.06;
+}
+/* Aurora washes hardest in a lit scene — halve it so ink type stays crisp */
+html.light .hero-aurora {
+  opacity: 0.5;
+}
+html.light .theme-toggle-fab {
+  box-shadow:
+    0 0 0 1px rgba(0, 107, 94, 0.14),
+    0 10px 28px -10px rgba(60, 70, 60, 0.3);
+}
+/* Theme-aware lift shadows (replace harsh black arbitrary shadows) */
+.shadow-lift {
+  box-shadow: 0 48px 90px -40px rgba(0, 0, 0, 0.85);
+}
+html.light .shadow-lift {
+  box-shadow:
+    0 0 0 1px rgba(32, 33, 31, 0.06),
+    0 32px 64px -32px rgba(60, 64, 55, 0.35);
+}
+.shadow-lift-sm {
+  box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.9);
+}
+html.light .shadow-lift-sm {
+  box-shadow:
+    0 0 0 1px rgba(32, 33, 31, 0.06),
+    0 14px 30px -14px rgba(60, 64, 55, 0.3);
+}
+.shadow-logo {
+  box-shadow: 0 0 12px rgba(89, 219, 199, 0.8);
+}
+html.light .shadow-logo {
+  box-shadow: 0 0 10px rgba(0, 121, 108, 0.55);
+}
+
+/* ---- Hardcoded-utility remaps (light) ----
+   Auth / dialog / palette / zinc-era screens use literal dark utilities.
+   Grouped by role so the light theme stays coherent. */
+
+/* Headings on dark fills -> warm ink */
+html.light .text-white {
+  color: #22251f;
+}
+html.light .text-\[\#e1e4ea\] {
+  color: #22251f;
+}
+/* ...except where the fill stays saturated (badges, danger buttons) */
+html.light .bg-red-600.text-white,
+html.light .bg-red-600 .text-white,
+html.light .bg-red-500.text-white,
+html.light .bg-red-500 .text-white,
+html.light .bg-\[\#EF4444\].text-white,
+html.light .bg-\[\#EF4444\] .text-white,
+html.light .bg-emerald-500.text-white,
+html.light .bg-emerald-500 .text-white,
+html.light .bg-\[\#10B981\].text-white,
+html.light .bg-\[\#10B981\] .text-white,
+html.light .bg-amber-500.text-white,
+html.light .bg-amber-500 .text-white,
+html.light .bg-\[\#F59E0B\].text-white,
+html.light .bg-\[\#F59E0B\] .text-white {
+  color: #ffffff;
+}
+/* Teal fills keep a bright teal + dark text pairing in both themes */
+html.light .bg-brand-teal {
+  background-color: #00a896;
+}
+html.light .bg-\[\#00a896\] {
+  background-color: #00a896;
+}
+html.light .hover\:bg-\[\#028072\]:hover {
+  background-color: #00a896;
+}
+html.light .hover\:bg-\[\#028e7f\]:hover {
+  background-color: #00a896;
+}
+
+/* Muted zinc/gray/slate/neutral ramps -> warm slate-ink ramp */
+html.light .text-zinc-100,
+html.light .text-slate-100,
+html.light .text-neutral-100 {
+  color: #23261f;
+}
+html.light .text-zinc-200,
+html.light .text-gray-200,
+html.light .text-slate-200,
+html.light .text-neutral-200 {
+  color: #33362f;
+}
+html.light .text-zinc-300,
+html.light .text-gray-300,
+html.light .text-slate-300,
+html.light .text-neutral-300 {
+  color: #41453d;
+}
+html.light .text-zinc-400,
+html.light .text-gray-400,
+html.light .text-slate-400,
+html.light .text-neutral-400,
+html.light .text-\[\#8c94a4\],
+html.light .text-\[\#9ea7b8\],
+html.light .text-\[\#a0a8b7\],
+html.light .text-\[\#9da6b8\] {
+  color: #4c5249;
+}
+html.light .text-zinc-500,
+html.light .text-gray-500,
+html.light .text-slate-500,
+html.light .text-neutral-500,
+html.light .text-\[\#727b8e\],
+html.light .text-\[\#59606d\] {
+  color: #6e7468;
+}
+html.light .text-zinc-600 {
+  color: #565b52;
+}
+html.light .text-\[\#c5cbe0\] {
+  color: #33362f;
+}
+html.light .text-\[\#3c424e\] {
+  color: #33362f;
+}
+html.light .text-black {
+  color: #23261f;
+}
+/* Hover ramps */
+html.light .hover\:text-white:hover {
+  color: #23261f;
+}
+/* Pale fixed-accent hovers wash out on paper — hold the deep accent instead */
+html.light .hover\:text-primary-fixed:hover {
+  color: var(--color-primary);
+}
+html.light .hover\:text-zinc-200:hover,
+html.light .hover\:text-gray-200:hover,
+html.light .hover\:text-slate-200:hover,
+html.light .hover\:text-neutral-200:hover,
+html.light .hover\:text-gray-300:hover {
+  color: #23261f;
+}
+html.light .hover\:text-zinc-400:hover,
+html.light .hover\:text-neutral-400:hover {
+  color: #33362f;
+}
+
+/* Dark fills -> paper tones (hierarchy preserved) */
+html.light .bg-\[\#0c0e11\] {
+  background-color: #eae7db;
+}
+html.light .bg-\[\#111317\] {
+  background-color: #f2f0e9;
+}
+html.light .bg-\[\#13161c\] {
+  background-color: #e9e6d9;
+}
+html.light .bg-\[\#14171d\] {
+  background-color: #e7e4d7;
+}
+html.light .bg-\[\#16191f\] {
+  background-color: #e4e1d4;
+}
+html.light .bg-\[\#181b22\] {
+  background-color: #e3e0d3;
+}
+html.light .bg-\[\#1a1e27\],
+html.light .bg-\[\#1c2026\],
+html.light .bg-\[\#1e222b\],
+html.light .bg-\[\#1f242d\] {
+  background-color: #e0ddcf;
+}
+html.light .bg-\[\#252b34\] {
+  background-color: #d9d5c6;
+}
+html.light .bg-\[\#22252a\] {
+  background-color: #ffffff;
+}
+html.light .bg-\[\#0d0f12\] {
+  background-color: #e9e6d9;
+}
+html.light .bg-\[\#0e1014\] {
+  background-color: #e8e5d8;
+}
+html.light .bg-\[\#13161d\],
+html.light .bg-\[\#14161d\],
+html.light .bg-\[\#14171c\],
+html.light .bg-\[\#14171e\] {
+  background-color: #e6e3d6;
+}
+html.light .bg-\[\#161920\] {
+  background-color: #e4e1d4;
+}
+html.light .bg-\[\#181d26\] {
+  background-color: #e1ded1;
+}
+html.light .bg-\[\#1c212b\],
+html.light .bg-\[\#1d222b\] {
+  background-color: #dfdccf;
+}
+html.light .bg-\[\#1e2430\] {
+  background-color: #dedbce;
+}
+html.light .bg-\[\#252c3b\] {
+  background-color: #d7d3c3;
+}
+html.light .bg-\[\#f59e0b\] {
+  background-color: #d99a00;
+}
+html.light .bg-zinc-800 {
+  background-color: #e3e0d2;
+}
+html.light .bg-zinc-900 {
+  background-color: #dbd7c7;
+}
+html.light .hover\:bg-zinc-800:hover {
+  background-color: #d5d1c0;
+}
+
+/* Dark hairline borders -> warm hairlines */
+html.light .border-\[\#262a33\],
+html.light .border-\[\#1e2229\],
+html.light .border-\[\#1c2027\],
+html.light .border-\[\#23272e\],
+html.light .border-\[\#1f232c\],
+html.light .border-\[\#20242e\],
+html.light .border-\[\#2a303c\],
+html.light .border-\[\#2a2e38\],
+html.light .border-\[\#1e222b\],
+html.light .border-\[\#1a1c1f\],
+html.light .border-\[\#333844\],
+html.light .border-\[\#2e3544\] {
+  border-color: #d3cfbd;
+}
+html.light .border-\[\#222731\],
+html.light .border-\[\#222733\],
+html.light .border-\[\#2a2f3b\],
+html.light .border-\[\#2a303d\],
+html.light .border-\[\#2d3647\] {
+  border-color: #d3cfbd;
+}
+html.light .divide-\[\#1c2027\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #d3cfbd;
+}
+html.light .border-zinc-700 {
+  border-color: #cdc8b6;
+}
+html.light .border-zinc-800 {
+  border-color: #d5d1c0;
+}
+html.light .border-gray-300 {
+  border-color: #c6c0ae;
+}
+
+/* Semantic accents -> light-safe counterparts */
+html.light .text-\[\#EF4444\] {
+  color: #b3261e;
+}
+html.light .bg-\[\#EF4444\] {
+  background-color: #d92d20;
+}
+html.light .text-red-400 {
+  color: #b3261e;
+}
+html.light .bg-red-950 {
+  background-color: #f9dedc;
+}
+html.light .border-red-500 {
+  border-color: #b3261e;
+}
+html.light .bg-red-500 {
+  background-color: #d92d20;
+}
+html.light .bg-red-600 {
+  background-color: #b3261e;
+}
+html.light .hover\:bg-red-500:hover {
+  background-color: #b3261e;
+}
+html.light .focus\:ring-red-500:focus {
+  --tw-ring-color: #b3261e;
+}
+html.light .text-\[\#FBBF24\],
+html.light .text-\[\#fbbf24\],
+html.light .text-amber-300 {
+  color: #8a5a00;
+}
+html.light .text-amber-400 {
+  color: #96600a;
+}
+html.light .text-amber-200 {
+  color: #7a5200;
+}
+html.light .bg-amber-500 {
+  background-color: #d99a00;
+}
+html.light .bg-\[\#F59E0B\] {
+  background-color: #d99a00;
+}
+html.light .border-amber-400,
+html.light .border-amber-500 {
+  border-color: #b57e00;
+}
+html.light .text-\[\#10B981\],
+html.light .text-\[\#34D399\],
+html.light .text-\[\#02c39a\],
+html.light .text-emerald-400,
+html.light .text-teal-300 {
+  color: #2e7d32;
+}
+html.light .bg-\[\#10B981\],
+html.light .bg-emerald-500 {
+  background-color: #2e9e5b;
+}
+html.light .bg-\[\#028072\] {
+  background-color: #00796c;
+}
+html.light .bg-slate-400 {
+  background-color: #7b8177;
+}
+
+/* Form + selection details */
+html.light .placeholder-\[\#434956\]::placeholder {
+  color: #8a8f83;
+}
+html.light .accent-\[\#00a896\] {
+  accent-color: #00796c;
+}
+html.light .selection\:bg-\[\#00a896\]\/30::selection {
+  background-color: rgba(0, 121, 108, 0.25);
+}
+html.light .selection\:text-white::selection {
+  color: #22251f;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt-card {
+    transform: none;
+  }
 }

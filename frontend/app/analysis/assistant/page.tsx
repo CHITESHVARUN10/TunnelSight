@@ -263,7 +263,7 @@ export default function AssistantPage() {
 {/* Finding 3 */}
 <div className="bg-surface-container-low hover:bg-surface-container p-space-md rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md transition-colors">
 <div className="flex items-start gap-space-md min-w-0">
-<div className="bg-secondary-container/50 text-secondary-fixed px-space-xs py-space-2xs rounded font-label-sm text-label-sm uppercase font-semibold shrink-0">
+<div className="bg-secondary-container/50 text-secondary px-space-xs py-space-2xs rounded font-label-sm text-label-sm uppercase font-semibold shrink-0">
               HIGH
             </div>
 <div className="flex flex-col gap-space-2xs min-w-0">

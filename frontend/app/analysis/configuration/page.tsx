@@ -34,7 +34,7 @@ export default function VpnConfigurationPage() {
 <span className="h-5 px-1.5 rounded bg-surface-container-high text-on-surface font-code-sm text-code-sm flex items-center">IKEv2</span>
 <span className="h-5 px-1.5 rounded bg-surface-container-high text-on-surface-variant font-code-sm text-code-sm flex items-center">ESP Tunnel Mode</span>
 <span className="h-5 px-1.5 rounded bg-surface-container-high text-on-surface-variant font-code-sm text-code-sm flex items-center">IPv4</span>
-<span className="h-5 px-1.5 rounded bg-secondary-container/40 text-secondary-fixed font-code-sm text-code-sm flex items-center gap-1">
+<span className="h-5 px-1.5 rounded bg-secondary-container/40 text-secondary font-code-sm text-code-sm flex items-center gap-1">
 <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>NAT-T Active
         </span>
 <span className="h-5 px-2 rounded bg-tertiary/10 text-tertiary font-code-sm text-code-sm flex items-center gap-1">
@@ -261,10 +261,10 @@ export default function VpnConfigurationPage() {
 <div>
 <div className="flex items-center justify-between pb-space-xs border-b border-surface-container-highest/40">
 <div className="flex items-center gap-1 font-code-sm text-code-sm">
-<span className="text-secondary-fixed font-bold">EGRESS SA</span>
+<span className="text-secondary font-bold">EGRESS SA</span>
 <span className="text-outline">(Initiator → Responder)</span>
 </div>
-<span className="font-code-sm text-code-sm text-secondary-fixed font-mono bg-surface-container-highest px-1.5 rounded">SPI: 0x9a021da3</span>
+<span className="font-code-sm text-code-sm text-secondary font-mono bg-surface-container-highest px-1.5 rounded">SPI: 0x9a021da3</span>
 </div>
 <div className="mt-space-sm grid grid-cols-2 gap-y-1.5 font-code-sm text-code-sm">
 <span className="text-outline">Lifetime Remaining:</span>

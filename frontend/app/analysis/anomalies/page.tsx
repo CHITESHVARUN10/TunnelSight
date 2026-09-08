@@ -164,15 +164,15 @@ export default function AnomaliesPage() {
 <path d="M 0 105 
                      L 40 104 L 80 106 L 120 102 L 160 104 L 200 103 L 240 102 L 280 104 L 320 101 L 360 98 
                      L 400 95 L 430 75 L 460 22 L 490 12 L 520 28 L 550 50 L 580 60 L 610 58 L 650 62 L 690 68 
-                     L 730 85 L 770 94 L 810 98 L 850 101 L 900 102" fill="none" stroke="#59dbc7" strokeLinecap="round" strokeWidth="1.75"></path>
+                     L 730 85 L 770 94 L 810 98 L 850 101 L 900 102" fill="none" style={{stroke: 'var(--color-primary)'}} strokeLinecap="round" strokeWidth="1.75"></path>
 {/* Critical Spike Segment Over Threshold */}
-<path d="M 438 65 L 460 22 L 490 12 L 520 28 L 542 45" fill="none" stroke="#ffb4ab" strokeLinecap="round" strokeWidth="2.5"></path>
+<path d="M 438 65 L 460 22 L 490 12 L 520 28 L 542 45" fill="none" style={{stroke: 'var(--color-error)'}} strokeLinecap="round" strokeWidth="2.5"></path>
 {/* Highlight Peak Dot at W-28 */}
-<circle className="animate-pulse" cx="490" cy="12" fill="#ffb4ab" r="4.5"></circle>
-<circle cx="490" cy="12" fill="none" opacity="0.6" r="8" stroke="#ffb4ab" strokeWidth="1"></circle>
+<circle className="animate-pulse" cx="490" cy="12" style={{fill: 'var(--color-error)'}} r="4.5"></circle>
+<circle cx="490" cy="12" fill="none" opacity="0.6" r="8" style={{stroke: 'var(--color-error)'}} strokeWidth="1"></circle>
 {/* Secondary Sustained Points */}
-<circle cx="580" cy="60" fill="#c2c6d1" r="2.5"></circle>
-<circle cx="610" cy="58" fill="#c2c6d1" r="2.5"></circle>
+<circle cx="580" cy="60" style={{fill: 'var(--color-secondary)'}} r="2.5"></circle>
+<circle cx="610" cy="58" style={{fill: 'var(--color-secondary)'}} r="2.5"></circle>
 </svg>
 {/* Active Investigation Focus Indicator (Window W-28) */}
 <div className="absolute left-[51%] top-0 bottom-0 w-20 -ml-10 bg-primary/10 border-x border-primary/40 pointer-events-none flex flex-col justify-start items-center">

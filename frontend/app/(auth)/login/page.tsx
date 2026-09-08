@@ -130,7 +130,7 @@ export default function LoginPage() {
 <a className="text-primary hover:text-primary-fixed transition-colors" href="#">Forgot password?</a>
 </div>
 {/* Primary Submit */}
-<button className="w-full h-8 bg-primary-container hover:bg-[#14b8a6] text-on-primary font-headline-sm text-headline-sm font-semibold rounded flex items-center justify-center gap-space-xs transition-colors mt-space-sm shadow-sm" type="submit">
+<button className="w-full h-8 bg-primary-container hover:bg-[#14b8a6] text-on-primary-container font-headline-sm text-headline-sm font-semibold rounded flex items-center justify-center gap-space-xs transition-colors mt-space-sm shadow-sm" type="submit">
 <span>Sign In to Terminal</span>
 <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
 </button>
