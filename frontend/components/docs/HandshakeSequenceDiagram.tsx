@@ -2,6 +2,14 @@
 
 import { useState } from "react";
 
+import {
+  DOC_ACTIVE,
+  DOC_IDLE,
+  DocLabel,
+  DocPanel,
+  DocWell,
+} from "@/components/docs/DocChrome";
+
 interface HandshakeMessage {
   id: number;
   direction: "left-to-right" | "right-to-left";
@@ -156,9 +164,9 @@ export function HandshakeSequenceDiagram() {
   const activeMsg = messages.find((m) => m.id === selectedMessageId) || messages[0];
 
   return (
-    <div className="w-full bg-[#0c0d10] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl font-sans">
+    <DocPanel className="w-full overflow-hidden font-sans">
       {/* Header controls */}
-      <div className="p-4 bg-[#101216] border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 font-mono text-[10px] text-[#b0aea5] uppercase tracking-wider mb-0.5">
             <span className="w-2 h-2 rounded-full bg-[#d97757]" />
@@ -173,7 +181,7 @@ export function HandshakeSequenceDiagram() {
 
         {/* Toggle Mode */}
         <div className="flex items-center gap-2 select-none">
-          <div className="p-1 bg-[#07080a] border border-white/[0.06] rounded-lg flex items-center gap-1 font-mono text-xs">
+          <DocWell className="p-1 flex items-center gap-1 font-mono text-xs">
             <button
               onClick={() => {
                 setProtocolMode("ikev2");
@@ -202,14 +210,14 @@ export function HandshakeSequenceDiagram() {
             >
               IKEv1 Legacy (RFC 2409)
             </button>
-          </div>
+          </DocWell>
 
           {protocolMode === "ikev2" && (
             <button
               onClick={() => setSimulateCookieDefense(!simulateCookieDefense)}
               className={`px-2.5 py-1.5 rounded-lg border text-xs font-mono transition-all flex items-center gap-1.5 ${
                 simulateCookieDefense
-                  ? "bg-[#d49a4f]/20 text-[#e4b373] border-[#d49a4f]/40 font-semibold"
+                  ? `${DOC_ACTIVE} font-semibold`
                   : "bg-white/[0.03] text-[#8c8a82] hover:text-[#f7f4ee] border-white/[0.06]"
               }`}
               type="button"
@@ -226,25 +234,25 @@ export function HandshakeSequenceDiagram() {
         {/* Left: Sequence Diagram Gateway Columns */}
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between px-2 font-mono text-xs text-[#d8d4c7]">
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-[#101216] border border-white/[0.05]">
+            <DocWell className="flex items-center gap-2 p-2">
               <span className="w-2.5 h-2.5 rounded-sm bg-[#d97757]" />
               <div>
                 <div className="font-semibold text-[#f7f4ee]">Initiator Gateway</div>
                 <div className="text-[10px] text-[#8c8a82]">192.0.2.14 (Corp Edge)</div>
               </div>
-            </div>
+            </DocWell>
 
             <span className="text-[10px] text-[#8c8a82] uppercase tracking-wider">
               {protocolMode === "ikev2" ? "2 Round Trips (42ms)" : "3 Round Trips (75ms)"}
             </span>
 
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-[#101216] border border-white/[0.05]">
+            <DocWell className="flex items-center gap-2 p-2">
               <div className="text-right">
                 <div className="font-semibold text-[#f7f4ee]">Responder Gateway</div>
                 <div className="text-[10px] text-[#8c8a82]">198.51.100.8 (Branch Edge)</div>
               </div>
               <span className="w-2.5 h-2.5 rounded-sm bg-[#788c5d]" />
-            </div>
+            </DocWell>
           </div>
 
           {/* Wire Flight Lines */}
@@ -259,8 +267,8 @@ export function HandshakeSequenceDiagram() {
                   onClick={() => setSelectedMessageId(msg.id)}
                   className={`p-3 rounded-lg border cursor-pointer transition-all ${
                     isSelected
-                      ? "bg-white/[0.05] border-white/40 ring-1 ring-white/10"
-                      : "bg-[#07080a] border-white/[0.05] hover:border-white/[0.12]"
+                      ? `${DOC_ACTIVE} ring-1 ring-white/10`
+                      : `${DOC_IDLE} hover:border-white/[0.12]`
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs font-mono mb-1.5">
@@ -321,14 +329,14 @@ export function HandshakeSequenceDiagram() {
 
         {/* Right: Message Payload Inspector */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="p-5 rounded-lg bg-[#07080a] border border-white/[0.08] space-y-3">
+          <DocWell className="p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] text-[#8c8a82] uppercase tracking-wider">
+              <DocLabel>
                 Packet Payload Dissector
-              </span>
+              </DocLabel>
               <span className={`text-xs font-mono px-2 py-0.5 rounded border ${
                 activeMsg.encrypted
-                  ? "bg-[#788c5d]/15 text-[#b4cca0] border-[#788c5d]/30"
+                  ? DOC_ACTIVE
                   : "bg-white/[0.06] text-[#f7f4ee] border-white/20"
               }`}>
                 {activeMsg.encrypted ? "AES-256-GCM Envelope" : "Cleartext Payload"}
@@ -344,14 +352,14 @@ export function HandshakeSequenceDiagram() {
             </p>
 
             <div className="space-y-1.5 pt-2">
-              <span className="font-mono text-[10px] text-[#8c8a82] uppercase tracking-wider block">
+              <DocLabel className="block">
                 Encapsulated Payloads:
-              </span>
+              </DocLabel>
               <div className="space-y-1 font-mono text-xs">
                 {activeMsg.payloads.map((p, i) => (
                   <div
                     key={i}
-                    className="p-2 rounded bg-[#0c0d10] border border-white/[0.04] text-[#d8d4c7] flex items-center gap-2"
+                    className="p-2 rounded text-[#d8d4c7] flex items-center gap-2"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-[#d97757]" />
                     <span>{p}</span>
@@ -361,7 +369,7 @@ export function HandshakeSequenceDiagram() {
             </div>
 
             {simulateCookieDefense && protocolMode === "ikev2" && (
-              <div className="p-3 rounded bg-[#d49a4f]/15 border border-[#d49a4f]/35 text-xs text-[#e4b373] space-y-1 font-sans">
+              <div className="p-3 rounded bg-white/[0.06] border border-white/25 text-xs text-[#e4b373] space-y-1 font-sans">
                 <div className="font-semibold text-[#f7f4ee] font-mono text-[11px] uppercase">
                   DoS Cookie Mechanism Active:
                 </div>
@@ -370,10 +378,10 @@ export function HandshakeSequenceDiagram() {
                 </p>
               </div>
             )}
-          </div>
+          </DocWell>
         </div>
       </div>
-    </div>
+    </DocPanel>
   );
 }
 

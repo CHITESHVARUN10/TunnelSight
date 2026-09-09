@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { DocPanel, DocWell, DocLabel, DocChip, DOC_ACTIVE, DOC_IDLE } from "@/components/docs/DocChrome";
+
 interface DHGroupData {
   group: number;
   name: string;
@@ -10,7 +12,6 @@ interface DHGroupData {
   effectiveSecurityBits: number;
   crackTimeEstimate: string;
   verdict: "FORBIDDEN" | "DEPRECATED" | "MINIMUM" | "RECOMMENDED" | "HIGH_ASSURANCE";
-  verdictColor: string;
   nfsFormula: string;
   rfcStatus: string;
   notes: string;
@@ -25,7 +26,7 @@ const DH_GROUPS: DHGroupData[] = [
     effectiveSecurityBits: 68,
     crackTimeEstimate: "~18 hours on 50 cloud GPUs",
     verdict: "FORBIDDEN",
-    verdictColor: "bg-[#c75450]/20 text-[#f08a85] border-[#c75450]/40",
+
     nfsFormula: "L_p[1/3, 1.923] ≈ 2^68 operations",
     rfcStatus: "RFC 8247: MUST NOT USE",
     notes: "Factored publicly in academic research. Complete loss of confidentiality on encrypted IPsec sessions.",
@@ -38,7 +39,7 @@ const DH_GROUPS: DHGroupData[] = [
     effectiveSecurityBits: 80,
     crackTimeEstimate: "~30 days on state-level cluster",
     verdict: "FORBIDDEN",
-    verdictColor: "bg-[#c75450]/20 text-[#f08a85] border-[#c75450]/40",
+
     nfsFormula: "L_p[1/3, 1.923] ≈ 2^80 operations",
     rfcStatus: "RFC 8247: MUST NOT USE (Logjam Attack)",
     notes: "Vulnerable to precomputation sieve attacks where a single precomputed matrix breaks thousands of VPN gateways.",
@@ -51,7 +52,7 @@ const DH_GROUPS: DHGroupData[] = [
     effectiveSecurityBits: 96,
     crackTimeEstimate: "~25 years on modern supercomputer",
     verdict: "DEPRECATED",
-    verdictColor: "bg-[#d49a4f]/20 text-[#e4b373] border-[#d49a4f]/40",
+
     nfsFormula: "L_p[1/3, 1.923] ≈ 2^96 operations",
     rfcStatus: "RFC 8247: SHOULD NOT USE",
     notes: "Insufficient security margin for enterprise data requiring confidentiality retention beyond 2026.",
@@ -64,7 +65,7 @@ const DH_GROUPS: DHGroupData[] = [
     effectiveSecurityBits: 112,
     crackTimeEstimate: "> 100,000 years with classical hardware",
     verdict: "MINIMUM",
-    verdictColor: "bg-[#c2b59b]/20 text-[#e2dacb] border-[#c2b59b]/40",
+
     nfsFormula: "L_p[1/3, 1.923] ≈ 2^112 operations",
     rfcStatus: "RFC 8247: MINIMUM ACCEPTABLE",
     notes: "The bare minimum acceptable legacy group. High computational overhead on gateway CPUs compared to elliptic curves.",
@@ -77,7 +78,7 @@ const DH_GROUPS: DHGroupData[] = [
     effectiveSecurityBits: 128,
     crackTimeEstimate: "> 10^18 years (Pollard's Rho: 2^128 ops)",
     verdict: "RECOMMENDED",
-    verdictColor: "bg-[#788c5d]/25 text-[#b4cca0] border-[#788c5d]/50",
+
     nfsFormula: "O(√n) Pollard's Rho ≈ 2^128 operations",
     rfcStatus: "RFC 8247: RECOMMENDED (Standard)",
     notes: "Optimal performance and cryptographic security. Fast handshake computation with minimal wire payload overhead (64-byte keys).",
@@ -90,7 +91,7 @@ const DH_GROUPS: DHGroupData[] = [
     effectiveSecurityBits: 192,
     crackTimeEstimate: "> 10^35 years (Exceeds Universe Lifetime)",
     verdict: "HIGH_ASSURANCE",
-    verdictColor: "bg-[#4e8760]/25 text-[#96d9a8] border-[#4e8760]/50",
+
     nfsFormula: "O(√n) Pollard's Rho ≈ 2^192 operations",
     rfcStatus: "NIST CNSA 1.0 MANDATORY",
     notes: "Federal standard for classified military and high-assurance financial IPsec infrastructures requiring Post-Quantum transition.",
@@ -111,9 +112,9 @@ export function DiffieHellmanLattice() {
   const group = DH_GROUPS[selectedGroupIdx];
 
   return (
-    <div className="w-full bg-[#0c0d10] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl font-sans">
+    <DocPanel className="w-full overflow-hidden font-sans">
       {/* Header */}
-      <div className="p-4 bg-[#101216] border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 font-mono text-[10px] text-[#b0aea5] uppercase tracking-wider mb-0.5">
             <span className="w-2 h-2 rounded-full bg-[#d97757]" />
@@ -126,9 +127,9 @@ export function DiffieHellmanLattice() {
           </h4>
         </div>
 
-        <span className="text-xs font-mono px-3 py-1.5 rounded bg-[#07080a] border border-white/[0.08] text-[#d8d4c7]">
+        <DocWell className="px-3 py-1.5 font-mono text-xs text-[#d8d4c7]">
           Selected: <strong className="text-[#f7f4ee]">{group.name} ({group.bitLength}-bit)</strong>
-        </span>
+        </DocWell>
       </div>
 
       {/* Main Interactive Lattice Body */}
@@ -146,9 +147,7 @@ export function DiffieHellmanLattice() {
                   key={g.group}
                   onClick={() => setSelectedGroupIdx(idx)}
                   className={`p-2.5 rounded-lg border text-center transition-all ${
-                    isSelected
-                      ? "bg-white/[0.08] border-white/40 text-[#f7f4ee] font-bold shadow-sm ring-1 ring-white/20"
-                      : "bg-[#07080a] border-white/[0.05] text-[#b0aea5] hover:text-[#f7f4ee] hover:border-white/[0.12]"
+                    isSelected ? `${DOC_ACTIVE} font-bold` : `${DOC_IDLE} hover:text-[#f7f4ee]`
                   }`}
                   type="button"
                 >
@@ -161,14 +160,12 @@ export function DiffieHellmanLattice() {
         </div>
 
         {/* Cryptographic Bit-Strength Gauge */}
-        <div className="p-5 rounded-lg bg-[#07080a] border border-white/[0.06] space-y-4">
+        <DocWell className="p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2.5">
                 <span className="text-xl font-bold text-[#f7f4ee] font-display-serif">{group.name}: {group.type}</span>
-                <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold border ${group.verdictColor}`}>
-                  {group.verdict}
-                </span>
+                <DocChip verdict={group.verdict} />
               </div>
               <div className="text-xs font-mono text-[#b0aea5] mt-1">{group.rfcStatus}</div>
             </div>
@@ -203,13 +200,13 @@ export function DiffieHellmanLattice() {
 
           {/* Mathematical & Real-World Complexity Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 font-mono text-xs">
-            <div className="p-3.5 rounded bg-[#101216] border border-white/[0.05] space-y-1.5">
-              <div className="text-[10px] text-[#8c8a82] uppercase tracking-wider">Estimated Precomputation Attack Time</div>
+            <div className="p-3.5 space-y-1.5">
+              <DocLabel>Estimated Precomputation Attack Time</DocLabel>
               <div className="text-[#f7f4ee] font-semibold text-sm">{group.crackTimeEstimate}</div>
             </div>
 
-            <div className="p-3.5 rounded bg-[#101216] border border-white/[0.05] space-y-1.5">
-              <div className="text-[10px] text-[#8c8a82] uppercase tracking-wider">General Number Field Sieve (NFS) Formula</div>
+            <div className="p-3.5 space-y-1.5">
+              <DocLabel>General Number Field Sieve (NFS) Formula</DocLabel>
               <div className="text-[#f7f4ee] font-serif italic text-sm font-medium tracking-wide">
                 {group.nfsFormula}
               </div>
@@ -219,7 +216,7 @@ export function DiffieHellmanLattice() {
           <p className="text-xs text-[#d8d4c7] leading-relaxed font-sans pt-1">
             <strong className="text-[#f7f4ee] font-medium">Auditor Advisory: </strong>{group.notes}
           </p>
-        </div>
+        </DocWell>
 
         {/* Anthropic-Style Scientific Benchmark Comparison Table */}
         <div className="space-y-2 pt-2">
@@ -230,10 +227,10 @@ export function DiffieHellmanLattice() {
             <span className="text-[10px] font-mono text-[#8c8a82]">Hardware: Dual Intel Xeon Platinum (DPDK Core 0)</span>
           </div>
 
-          <div className="overflow-x-auto border border-white/[0.08] rounded-lg bg-[#07080a]">
+          <DocWell className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono border-collapse">
               <thead>
-                <tr className="border-b border-white/[0.08] bg-[#101216] text-[#8c8a82] text-[10px] uppercase tracking-wider">
+                <tr className="border-b border-white/[0.08] text-[#8c8a82] text-[10px] uppercase tracking-wider">
                   <th className="p-3 font-medium">Transform Group</th>
                   <th className="p-3 font-medium">Security Margin</th>
                   <th className="p-3 font-medium">Factorization Feasibility</th>
@@ -246,9 +243,7 @@ export function DiffieHellmanLattice() {
                   <tr
                     key={row.group}
                     className={`transition-colors ${
-                      row.recommended
-                        ? "bg-[#788c5d]/10 text-[#f7f4ee] font-medium"
-                        : "hover:bg-white/[0.02] text-[#b0aea5]"
+                      row.recommended ? `${DOC_ACTIVE} font-medium` : "hover:bg-white/[0.02] text-[#b0aea5]"
                     }`}
                   >
                     <td className="p-3 flex items-center gap-2">
@@ -260,29 +255,17 @@ export function DiffieHellmanLattice() {
                     <td className="p-3 text-[#d8d4c7]">{row.bits}</td>
                     <td className="p-3">{row.time}</td>
                     <td className="p-3">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[9px] font-bold border ${
-                          row.rfc === "MUST NOT"
-                            ? "bg-[#c75450]/20 text-[#f08a85] border-[#c75450]/30"
-                            : row.rfc === "SHOULD NOT"
-                            ? "bg-[#d49a4f]/20 text-[#e4b373] border-[#d49a4f]/30"
-                            : row.rfc === "MINIMUM"
-                            ? "bg-[#c2b59b]/20 text-[#e2dacb] border-[#c2b59b]/30"
-                            : "bg-[#788c5d]/25 text-[#b4cca0] border-[#788c5d]/40"
-                        }`}
-                      >
-                        {row.rfc}
-                      </span>
+                      <DocChip verdict={row.rfc} />
                     </td>
                     <td className="p-3 text-right text-[#d8d4c7]">{row.overhead}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </DocWell>
         </div>
       </div>
-    </div>
+    </DocPanel>
   );
 }
 

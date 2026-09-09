@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { DocPanel, DocWell, DocLabel, DOC_ACTIVE, DOC_IDLE } from "@/components/docs/DocChrome";
+
 export function AntiReplaySimulator() {
   const WINDOW_SIZE = 64;
   const [highestSeq, setHighestSeq] = useState<number>(40);
@@ -103,9 +105,9 @@ export function AntiReplaySimulator() {
   };
 
   return (
-    <div className="w-full bg-[#0c0d10] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl font-sans">
+    <DocPanel className="w-full overflow-hidden font-sans">
       {/* Header Bar */}
-      <div className="p-4 bg-[#101216] border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 font-mono text-[10px] text-[#b0aea5] uppercase tracking-wider mb-0.5">
             <span className="w-2 h-2 rounded-full bg-[#d97757]" />
@@ -120,16 +122,16 @@ export function AntiReplaySimulator() {
 
         {/* Telemetry Stats */}
         <div className="flex items-center gap-3 font-mono text-xs">
-          <div className="px-3 py-1 rounded bg-[#07080a] border border-white/[0.08] text-[#d8d4c7]">
+          <DocWell className="px-3 py-1 text-[#d8d4c7]">
             <span className="text-[#8c8a82]">WINDOW: </span>
             <span className="text-[#f7f4ee] font-bold">
               [{leftEdge} ... {rightEdge}]
             </span>
-          </div>
-          <div className="px-3 py-1 rounded bg-[#788c5d]/20 border border-[#788c5d]/40 text-[#b4cca0]">
+          </DocWell>
+          <div className={`px-3 py-1 rounded border ${DOC_ACTIVE}`}>
             ✓ {stats.accepted}
           </div>
-          <div className="px-3 py-1 rounded bg-[#c75450]/20 border border-[#c75450]/40 text-[#f08a85]">
+          <div className={`px-3 py-1 rounded border ${DOC_ACTIVE}`}>
             ✗ {stats.replaysDropped} Replays
           </div>
         </div>
@@ -139,12 +141,12 @@ export function AntiReplaySimulator() {
       <div
         className={`px-4 py-2.5 text-xs font-mono border-b flex items-center gap-2 transition-all ${
           lastActionMsg.type === "drop-replay"
-            ? "bg-[#c75450]/20 text-[#f08a85] border-[#c75450]/40"
+            ? DOC_ACTIVE
             : lastActionMsg.type === "drop-stale"
-            ? "bg-[#d49a4f]/20 text-[#e4b373] border-[#d49a4f]/40"
+            ? DOC_ACTIVE
             : lastActionMsg.type === "slide"
             ? "bg-white/[0.06] text-[#f7f4ee] border-white/20"
-            : "bg-[#07080a] text-[#b0aea5] border-white/[0.05]"
+            : "text-[#b0aea5] border-white/[0.05]"
         }`}
       >
         <span className="material-symbols-outlined text-[16px] shrink-0">
@@ -166,31 +168,27 @@ export function AntiReplaySimulator() {
           </div>
 
           {/* 64-Bit Matrix Grid */}
-          <div className="grid grid-cols-16 sm:grid-cols-32 gap-1 bg-[#07080a] p-3 rounded-lg border border-white/[0.06]">
+          <DocWell className="grid grid-cols-16 sm:grid-cols-32 gap-1 p-3">
             {bitmap.map((isSet, idx) => {
               const seqNum = highestSeq - idx;
               return (
                 <div
                   key={idx}
                   title={`Bit ${idx} (Seq #${seqNum}): ${isSet ? "Received" : "Missing"}`}
-                  className={`h-7 rounded-sm flex items-center justify-center font-mono text-[9px] cursor-help transition-all ${
-                    isSet
-                      ? "bg-[#788c5d]/30 text-[#b4cca0] border border-[#788c5d]/60 font-bold"
-                      : "bg-[#0c0d10] text-[#6b6963] border border-white/[0.03]"
+                  className={`h-7 rounded-sm flex items-center justify-center font-mono text-[9px] cursor-help transition-all border ${
+                    isSet ? `${DOC_ACTIVE} font-bold` : DOC_IDLE
                   }`}
                 >
                   {isSet ? "1" : "0"}
                 </div>
               );
             })}
-          </div>
+          </DocWell>
         </div>
 
         {/* Interactive Injection Action Buttons */}
         <div className="space-y-2">
-          <span className="font-mono text-[10px] text-[#8c8a82] uppercase tracking-wider block">
-            Inject Simulated Wire Packets:
-          </span>
+          <DocLabel className="block">Inject Simulated Wire Packets:</DocLabel>
           <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
             <button
               onClick={() => receivePacket(highestSeq + 1)}
@@ -212,7 +210,7 @@ export function AntiReplaySimulator() {
 
             <button
               onClick={() => receivePacket(highestSeq - 3)}
-              className="px-3 py-1.5 rounded-lg bg-[#c75450]/20 hover:bg-[#c75450]/30 text-[#f08a85] border border-[#c75450]/40 transition-all flex items-center gap-1.5"
+              className={`px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 hover:bg-white/[0.12] ${DOC_ACTIVE}`}
               title="Send sequence number already marked as 1 in window"
               type="button"
             >
@@ -222,7 +220,7 @@ export function AntiReplaySimulator() {
 
             <button
               onClick={() => receivePacket(Math.max(1, leftEdge - 5))}
-              className="px-3 py-1.5 rounded-lg bg-[#d49a4f]/20 hover:bg-[#d49a4f]/30 text-[#e4b373] border border-[#d49a4f]/40 transition-all flex items-center gap-1.5"
+              className={`px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 hover:bg-white/[0.12] ${DOC_ACTIVE}`}
               title="Send sequence number outside left window edge"
               type="button"
             >
@@ -240,7 +238,7 @@ export function AntiReplaySimulator() {
           </div>
         </div>
       </div>
-    </div>
+    </DocPanel>
   );
 }
 

@@ -2,6 +2,15 @@
 
 import { useEffect, useState } from "react";
 
+import {
+  DOC_ACTIVE,
+  DOC_IDLE,
+  DocChip,
+  DocLabel,
+  DocPanel,
+  DocWell,
+} from "@/components/docs/DocChrome";
+
 interface PipelineStage {
   passNumber: number;
   title: string;
@@ -9,7 +18,6 @@ interface PipelineStage {
   byteOffset: string;
   action: string;
   securityVerdict: "CONFORMANT" | "AUDITED" | "SYNTHESIZED" | "EXTRACTED";
-  verdictColor: string;
   hexSample: string;
   explanation: string;
   inspectedFields: { label: string; value: string; highlight?: boolean }[];
@@ -23,7 +31,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "0x0000 - 0x0018",
     action: "Verifying pcap/pcapng header magic bytes (0xa1b2c3d4 / 0x0a0d0d0a), nanosecond timestamp precision, and snapshot length.",
     securityVerdict: "AUDITED",
-    verdictColor: "text-[#d8d4c7] border-white/20 bg-white/[0.05]",
     hexSample: "a1 b2 c3 d4 00 02 00 04 00 00 00 00 00 00 00 00 00 04 00 00 00 00 00 01",
     explanation: "Ensures capture file integrity and establishes microsecond clock synchronization across bidirectional tap interfaces.",
     inspectedFields: [
@@ -39,7 +46,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "0x0000 - 0x0022",
     action: "Stripping IEEE 802.3 MAC addresses (14B), checking EtherType 0x0800 (IPv4), and validating IPv4 header checksum.",
     securityVerdict: "AUDITED",
-    verdictColor: "text-[#d8d4c7] border-white/20 bg-white/[0.05]",
     hexSample: "52 54 00 12 34 56 52 54 00 78 9a bc 08 00 45 00 01 f4 a9 4b 40 00 40 11",
     explanation: "Confirms IP encapsulation layer and filters out unrelated multicast or ARP network traffic.",
     inspectedFields: [
@@ -55,7 +61,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "0x0022 - 0x002e",
     action: "Checking UDP ports 500 (standard IKE) or 4500 (NAT-Traversal encapsulation with Non-ESP marker).",
     securityVerdict: "EXTRACTED",
-    verdictColor: "text-[#b4cca0] border-[#788c5d]/40 bg-[#788c5d]/15",
     hexSample: "01 f4 01 f4 01 e0 00 00 00 00 00 00 4f 9a 21 8b c9 3a e2 10 00 00 00 00",
     explanation: "Detects whether an intermediate NAT appliance modified outer port addressing and verifies 4-byte Non-ESP zero marker.",
     inspectedFields: [
@@ -71,7 +76,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "0x002a - 0x0046",
     action: "Extracting Initiator SPI, Responder SPI, Major/Minor Version nibbles, and Exchange Type from the 28-byte IKE header.",
     securityVerdict: "EXTRACTED",
-    verdictColor: "text-[#b4cca0] border-[#788c5d]/40 bg-[#788c5d]/15",
     hexSample: "4f 9a 21 8b c9 3a e2 10 00 00 00 00 00 00 00 00 21 20 22 08 00 00 00 00",
     explanation: "Discriminates between legacy IKEv1 (Major 1) and modern IKEv2 (Major 2). Identifies exchange as IKE_SA_INIT (Type 34).",
     inspectedFields: [
@@ -87,7 +91,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "0x0046 - 0x0078",
     action: "Iterating through proposal substructures: Encryption algorithms, PRFs, Integrity checksums, and Diffie-Hellman groups.",
     securityVerdict: "AUDITED",
-    verdictColor: "text-[#e4b373] border-[#d49a4f]/40 bg-[#d49a4f]/15",
     hexSample: "22 00 00 34 01 00 00 2c 01 01 00 04 03 00 00 0c 01 00 00 14 80 0e 01 00",
     explanation: "Extracts cipher suites offered by the initiator. Flags deprecated transforms (e.g. 3DES, MD5, or DH Group 2).",
     inspectedFields: [
@@ -103,7 +106,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "0x0078 - 0x00c8",
     action: "Parsing KE payload length, DH Group ID, and extracting public key bytes for curve validation.",
     securityVerdict: "CONFORMANT",
-    verdictColor: "text-[#b4cca0] border-[#788c5d]/40 bg-[#788c5d]/15",
     hexSample: "28 00 00 48 00 13 00 00 7a 88 19 b2 cc 45 fe 10 99 a3 00 11 22 33 44 55",
     explanation: "Verifies public coordinate fits NIST P-256 prime modulus and satisfies curve equation y^2 = x^3 - 3x + b.",
     inspectedFields: [
@@ -119,7 +121,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "0x00c8 - 0x00f0",
     action: "Extracting 32-byte pseudo-random initiator nonce and running Shannon entropy analysis.",
     securityVerdict: "CONFORMANT",
-    verdictColor: "text-[#b4cca0] border-[#788c5d]/40 bg-[#788c5d]/15",
     hexSample: "29 00 00 24 3d 91 aa f2 88 41 bc e7 10 94 65 d3 fa 08 23 71 c8 e4 9b 11",
     explanation: "Guarantees nonce freshness and prevents replay attacks or predictability in SKEYSEED secret generation.",
     inspectedFields: [
@@ -135,7 +136,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "0x00f0 - 0x0160",
     action: "Inspecting encrypted payload (SK): IDi, IDr, X.509 cert chains, and AUTH signature verification.",
     securityVerdict: "CONFORMANT",
-    verdictColor: "text-[#b4cca0] border-[#788c5d]/40 bg-[#788c5d]/15",
     hexSample: "24 00 00 84 01 00 00 00 30 82 03 41 30 82 02 29 a0 03 02 01 02 02 10 7a",
     explanation: "Validates gateway identity using RSA-PSS or ECDSA certificates against configured trust anchors.",
     inspectedFields: [
@@ -151,7 +151,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "0x0160 - 0x01b0",
     action: "Parsing TSi and TSr (Traffic Selectors) for tunnel routing boundaries and negotiation of inbound/outbound SPIs.",
     securityVerdict: "EXTRACTED",
-    verdictColor: "text-[#b4cca0] border-[#788c5d]/40 bg-[#788c5d]/15",
     hexSample: "2c 00 00 38 01 00 00 00 01 00 00 10 07 00 00 00 0a 64 00 00 0a 64 ff ff",
     explanation: "Calculates IPsec Security Policy Database (SPD) rules: routing 10.100.0.0/16 to 10.200.0.0/16 across ESP.",
     inspectedFields: [
@@ -167,7 +166,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "Full Session State",
     action: "Comparing negotiated parameters against NIST SP 800-77 Rev. 1, RFC 8247, and BSI TR-02102 requirements.",
     securityVerdict: "CONFORMANT",
-    verdictColor: "text-[#b4cca0] border-[#788c5d]/40 bg-[#788c5d]/15",
     hexSample: "52 46 43 2d 38 32 34 37 2d 43 4f 4e 46 4f 52 4d 41 4e 43 45 2d 50 41 53",
     explanation: "Flags any algorithms marked MUST NOT (e.g. 3DES, MD5) and verifies that PFS is explicitly enforced on Child SAs.",
     inspectedFields: [
@@ -183,7 +181,6 @@ const STAGES: PipelineStage[] = [
     byteOffset: "Configuration Output",
     action: "Compiling verified parameters into drop-in configuration patches for strongSwan (swanctl.conf and ipsec.conf).",
     securityVerdict: "SYNTHESIZED",
-    verdictColor: "text-[#f09c82] border-[#d97757]/40 bg-[#d97757]/15",
     hexSample: "63 6f 6e 6e 65 63 74 69 6f 6e 73 20 7b 20 63 6f 72 70 2d 65 64 67 65 20",
     explanation: "Produces hardened configuration files with broken algorithms removed and correct elliptic curve parameters generated.",
     inspectedFields: [
@@ -209,9 +206,9 @@ export function DecapsulationPipelineDiagram() {
   const stage = STAGES[currentStep];
 
   return (
-    <div className="w-full bg-[#0c0d10] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl font-sans">
+    <DocPanel className="w-full overflow-hidden font-sans">
       {/* Top Diagram Bar: Controls & Step Track */}
-      <div className="p-4 bg-[#101216] border-b border-white/[0.06] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 border-b border-white/[0.06] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 font-mono text-[10px] text-[#b0aea5] uppercase tracking-wider mb-0.5">
             <span className="w-2 h-2 rounded-full bg-[#d97757]" />
@@ -230,7 +227,7 @@ export function DecapsulationPipelineDiagram() {
             onClick={() => setIsPlaying(!isPlaying)}
             className={`px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-all ${
               isPlaying
-                ? "bg-[#d49a4f]/20 text-[#e4b373] border border-[#d49a4f]/40"
+                ? `border ${DOC_ACTIVE}`
                 : "bg-white/[0.06] hover:bg-white/[0.12] text-[#f7f4ee] border border-white/[0.15]"
             }`}
             type="button"
@@ -268,7 +265,7 @@ export function DecapsulationPipelineDiagram() {
       </div>
 
       {/* 11-Pass Scrubber Rail */}
-      <div className="grid grid-cols-11 border-b border-white/[0.06] bg-[#07080a] overflow-x-auto">
+      <div className="grid grid-cols-11 border-b border-white/[0.06] overflow-x-auto">
         {STAGES.map((s, idx) => {
           const isActive = idx === currentStep;
           const isPassed = idx < currentStep;
@@ -308,9 +305,7 @@ export function DecapsulationPipelineDiagram() {
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] font-semibold border ${stage.verdictColor}`}>
-                {stage.securityVerdict}
-              </span>
+              <DocChip verdict={stage.securityVerdict} />
               <span className="font-mono text-xs text-[#8c8a82]">{stage.workerCore}</span>
               <span className="text-zinc-700">·</span>
               <span className="font-mono text-xs text-[#8c8a82]">{stage.byteOffset}</span>
@@ -325,28 +320,26 @@ export function DecapsulationPipelineDiagram() {
             {stage.action}
           </p>
 
-          <div className="p-3.5 rounded-lg bg-[#101216] border border-white/[0.05] space-y-2">
-            <span className="font-mono text-[10px] text-[#8c8a82] uppercase tracking-wider block font-semibold">
+          <DocWell className="p-3.5 space-y-2">
+            <DocLabel className="block font-semibold">
               Engine Decisional Impact
-            </span>
+            </DocLabel>
             <p className="text-xs text-[#b0aea5] leading-relaxed font-sans">
               {stage.explanation}
             </p>
-          </div>
+          </DocWell>
 
           {/* Inspected Fields Chips */}
           <div className="space-y-1.5 pt-1">
-            <span className="font-mono text-[10px] text-[#8c8a82] uppercase tracking-wider block">
+            <DocLabel className="block">
               Extracted Protocol Attributes:
-            </span>
+            </DocLabel>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs">
               {stage.inspectedFields.map((f, i) => (
                 <div
                   key={i}
                   className={`p-2.5 rounded-lg border ${
-                    f.highlight
-                      ? "bg-[#d97757]/10 border-[#d97757]/30 text-[#f7f4ee]"
-                      : "bg-[#07080a] border-white/[0.05] text-[#b0aea5]"
+                    f.highlight ? DOC_ACTIVE : DOC_IDLE
                   }`}
                 >
                   <div className="text-[10px] text-[#8c8a82] uppercase font-sans">{f.label}</div>
@@ -359,13 +352,13 @@ export function DecapsulationPipelineDiagram() {
 
         {/* Right Column: Hex Dump & Packet Anatomy */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="bg-[#07080a] border border-white/[0.07] rounded-lg p-4 space-y-2">
+          <DocWell className="p-4 space-y-2">
             <div className="flex items-center justify-between font-mono text-[10px] text-[#8c8a82] uppercase">
               <span>DPDK Zero-Copy Wire Bytes</span>
               <span className="text-[#d8d4c7]">OFFSET {stage.byteOffset}</span>
             </div>
 
-            <pre className="p-3 bg-[#0c0d10] rounded border border-white/[0.04] font-mono text-[11px] text-[#d8d4c7] leading-relaxed overflow-x-auto tracking-wider">
+            <pre className="p-3 font-mono text-[11px] text-[#d8d4c7] leading-relaxed overflow-x-auto tracking-wider">
               <code>{stage.hexSample}</code>
             </pre>
 
@@ -373,13 +366,13 @@ export function DecapsulationPipelineDiagram() {
               <span className="w-1.5 h-1.5 rounded-full bg-[#788c5d]" />
               <span>Parsed in 0.002ms via DPDK Ring Buffers</span>
             </div>
-          </div>
+          </DocWell>
 
           {/* Packet Anatomy Stack */}
           <div className="space-y-1.5">
-            <span className="font-mono text-[10px] text-[#8c8a82] uppercase tracking-wider block">
+            <DocLabel className="block">
               Packet Decapsulation Anatomy:
-            </span>
+            </DocLabel>
             <div className="flex flex-col gap-1 text-[11px] font-mono">
               <div
                 className={`px-3 py-1.5 rounded border transition-all ${
@@ -393,7 +386,7 @@ export function DecapsulationPipelineDiagram() {
               <div
                 className={`px-3 py-1.5 rounded border transition-all ${
                   stage.passNumber === 3
-                    ? "bg-[#d49a4f]/15 border-[#d49a4f]/40 text-[#f7f4ee] font-semibold"
+                    ? `${DOC_ACTIVE} font-semibold`
                     : stage.passNumber > 3
                     ? "bg-white/[0.02] border-white/[0.05] text-[#8c8a82]"
                     : "opacity-40 border-white/[0.03] text-[#6b6963]"
@@ -404,7 +397,7 @@ export function DecapsulationPipelineDiagram() {
               <div
                 className={`px-3 py-1.5 rounded border transition-all ${
                   stage.passNumber >= 4 && stage.passNumber <= 6
-                    ? "bg-[#d97757]/15 border-[#d97757]/40 text-[#f7f4ee] font-semibold"
+                    ? `${DOC_ACTIVE} font-semibold`
                     : stage.passNumber > 6
                     ? "bg-white/[0.02] border-white/[0.05] text-[#8c8a82]"
                     : "opacity-40 border-white/[0.03] text-[#6b6963]"
@@ -415,7 +408,7 @@ export function DecapsulationPipelineDiagram() {
               <div
                 className={`px-3 py-1.5 rounded border transition-all ${
                   stage.passNumber >= 7
-                    ? "bg-[#788c5d]/20 border-[#788c5d]/40 text-[#b4cca0] font-semibold"
+                    ? `${DOC_ACTIVE} font-semibold`
                     : "opacity-40 border-white/[0.03] text-[#6b6963]"
                 }`}
               >
@@ -425,7 +418,7 @@ export function DecapsulationPipelineDiagram() {
           </div>
         </div>
       </div>
-    </div>
+    </DocPanel>
   );
 }
 

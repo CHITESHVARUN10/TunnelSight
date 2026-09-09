@@ -2,13 +2,19 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import {
+  DocPanel,
+  DocWell,
+  DocChip,
+  DOC_ACTIVE,
+  DOC_IDLE,
+} from "@/components/docs/DocChrome";
 
 interface SystemNode {
   id: string;
   route: string;
   title: string;
   phase: "Intake" | "Engine" | "Triage" | "Deep Forensics" | "Action";
-  phaseColor: string;
   inputs: string[];
   outputs: string[];
   keyTelemetry: string;
@@ -21,7 +27,6 @@ const NODES: SystemNode[] = [
     route: "/analyze",
     title: "Forensic Ingestion Conduit",
     phase: "Intake",
-    phaseColor: "bg-[#d49a4f]/15 text-[#e4b373] border-[#d49a4f]/30",
     inputs: ["Raw PCAP / PCAPNG (.pcap, .pcapng up to 5GB)"],
     outputs: ["Verified SHA-256 Digest", "DPDK Ring Buffer Descriptor"],
     keyTelemetry: "Client-side SHA-256 hash, Snaplen integrity, profile validation",
@@ -32,7 +37,6 @@ const NODES: SystemNode[] = [
     route: "/analysis/progress",
     title: "11-Stage Verification Pipeline",
     phase: "Engine",
-    phaseColor: "bg-[#d97757]/15 text-[#f09c82] border-[#d97757]/30",
     inputs: ["Raw Ring Packets", "Enterprise Edge Audit Profile"],
     outputs: ["Extracted SA Proposals", "Decapsulated SPI Ledger", "ML Feature Vectors"],
     keyTelemetry: "1.2M pkts/sec decapsulation rate across 4 DPDK worker cores",
@@ -43,7 +47,6 @@ const NODES: SystemNode[] = [
     route: "/overview",
     title: "Security Operations Overview",
     phase: "Triage",
-    phaseColor: "bg-[#788c5d]/15 text-[#b4cca0] border-[#788c5d]/30",
     inputs: ["Fleet Telemetry Streams", "Historical Audit Scores"],
     outputs: ["Triage Drawer Triggers", "Global Posture Rating (0-100)"],
     keyTelemetry: "Fleet Posture Score, Active SA tally, 0.02ms DPDK queue latency",
@@ -54,7 +57,6 @@ const NODES: SystemNode[] = [
     route: "/analysis/results",
     title: "Forensic Assessment Results",
     phase: "Triage",
-    phaseColor: "bg-[#788c5d]/15 text-[#b4cca0] border-[#788c5d]/30",
     inputs: ["Pipeline Output Artifacts", "RFC 8247 Ruleset"],
     outputs: ["Remediation Drawers", "Cryptographic Health Radar"],
     keyTelemetry: "P0/P1/P2/P3 violation counts, RFC non-conformance tags, CVSS radar",
@@ -65,7 +67,6 @@ const NODES: SystemNode[] = [
     route: "/analysis/configuration",
     title: "VPN Configurations & SAs",
     phase: "Deep Forensics",
-    phaseColor: "bg-white/[0.06] text-[#f7f4ee] border-white/20",
     inputs: ["Decapsulated IKE_SA Headers", "CHILD_SA State"],
     outputs: ["Hex Dump Inspections", "Rekey Desynchronization Flags"],
     keyTelemetry: "Inbound/Outbound SPI pairs (0x7a89f31c), Cipher Suites, SA Lifetime",
@@ -76,7 +77,6 @@ const NODES: SystemNode[] = [
     route: "/analysis/traffic",
     title: "Encrypted Traffic Intelligence",
     phase: "Deep Forensics",
-    phaseColor: "bg-white/[0.06] text-[#f7f4ee] border-white/20",
     inputs: ["Raw ESP Payload Packets"],
     outputs: ["Entropy Histograms", "Burstiness Time-Series"],
     keyTelemetry: "Shannon Entropy (7.98 / 8.00), Packet Length Bins, Mbps Throughput",
@@ -87,7 +87,6 @@ const NODES: SystemNode[] = [
     route: "/analysis/anomalies",
     title: "ML Anomaly Detection (SHAP)",
     phase: "Deep Forensics",
-    phaseColor: "bg-white/[0.06] text-[#f7f4ee] border-white/20",
     inputs: ["Burst Interval Vectors", "Entropy Distributions"],
     outputs: ["Isolation Forest Outliers", "Local SHAP Explanations"],
     keyTelemetry: "Outlier Score (-0.42 to +0.85), % Feature Contribution, Anomaly Threshold",
@@ -98,7 +97,6 @@ const NODES: SystemNode[] = [
     route: "/analysis/findings",
     title: "Security Threat Matrix",
     phase: "Action",
-    phaseColor: "bg-[#c75450]/15 text-[#f08a85] border-[#c75450]/30",
     inputs: ["Aggregated Vulnerability Detections"],
     outputs: ["Prioritized Threat Table", "Executive Executive Summary PDF"],
     keyTelemetry: "CVE-2016-2183 (Sweet32), CVE-2015-4000 (Logjam), Precomputation risk",
@@ -109,7 +107,6 @@ const NODES: SystemNode[] = [
     route: "/reports",
     title: "Compliance & Executive Reports",
     phase: "Action",
-    phaseColor: "bg-[#c75450]/15 text-[#f08a85] border-[#c75450]/30",
     inputs: ["Full Forensic Session Dossier"],
     outputs: ["NIST SP 800-77 Rev. 1 Attestation", "BSI TR-02102 Export"],
     keyTelemetry: "Audit hash signature, Executive posture letter, Pass/Fail attestation",
@@ -120,7 +117,6 @@ const NODES: SystemNode[] = [
     route: "/live-monitor",
     title: "Real-Time Gateway Monitor",
     phase: "Deep Forensics",
-    phaseColor: "bg-white/[0.06] text-[#f7f4ee] border-white/20",
     inputs: ["Live DPDK Ingestion Stream"],
     outputs: ["Real-time Throughput Graph", "DPD Failure Alerts"],
     keyTelemetry: "Active Tunnels (12), Wire Bandwidth, Dead Peer Detection (DPD) Heartbeat",
@@ -131,7 +127,6 @@ const NODES: SystemNode[] = [
     route: "/gateway-config",
     title: "Synthesized Remediation Generator",
     phase: "Action",
-    phaseColor: "bg-[#c75450]/15 text-[#f08a85] border-[#c75450]/30",
     inputs: ["Discovered Policy Flaws", "Target Daemon Profile"],
     outputs: ["Hardened swanctl.conf", "Legacy ipsec.conf", "Diff View"],
     keyTelemetry: "Before/After Diff, Automated Syntax Verification, Zero Downtime Reload",
@@ -142,7 +137,6 @@ const NODES: SystemNode[] = [
     route: "/history",
     title: "Cryptographic Audit Ledger",
     phase: "Intake",
-    phaseColor: "bg-[#d49a4f]/15 text-[#e4b373] border-[#d49a4f]/30",
     inputs: ["Historical PCAP Audit Sessions"],
     outputs: ["Audit Comparison Tool", "Posture Drift Tracking"],
     keyTelemetry: "Audit Timeline, Baseline vs Current Score, Configuration Drift",
@@ -155,9 +149,9 @@ export function SystemArchitectureMap() {
   const node = NODES.find((n) => n.id === selectedNodeId) || NODES[0];
 
   return (
-    <div className="w-full bg-[#0c0d10] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl font-sans">
+    <DocPanel className="w-full overflow-hidden font-sans">
       {/* Header */}
-      <div className="p-4 bg-[#101216] border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 font-mono text-[10px] text-[#b0aea5] uppercase tracking-wider mb-0.5">
             <span className="w-2 h-2 rounded-full bg-[#d97757]" />
@@ -170,9 +164,9 @@ export function SystemArchitectureMap() {
           </h4>
         </div>
 
-        <span className="text-xs font-mono px-3 py-1.5 rounded bg-[#07080a] border border-white/[0.08] text-[#d8d4c7]">
+        <DocWell className="px-3 py-1.5 text-xs font-mono text-[#d8d4c7]">
           Selected Node: <strong className="text-[#f7f4ee]">{node.route}</strong>
-        </span>
+        </DocWell>
       </div>
 
       {/* Main Architecture Circuit Layout */}
@@ -192,16 +186,14 @@ export function SystemArchitectureMap() {
                   onClick={() => setSelectedNodeId(n.id)}
                   className={`p-3 rounded-lg border text-left transition-all relative ${
                     isSelected
-                      ? "bg-white/[0.08] border-white/40 ring-1 ring-white/15"
-                      : "bg-[#07080a] border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.02]"
+                      ? `${DOC_ACTIVE} ring-1 ring-white/15`
+                      : `${DOC_IDLE} hover:border-white/[0.12] hover:text-[#f7f4ee]`
                   }`}
                   type="button"
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-mono text-[10px] text-[#f7f4ee] font-bold">{n.route}</span>
-                    <span className={`text-[8px] font-mono px-1 rounded uppercase ${n.phaseColor}`}>
-                      {n.phase}
-                    </span>
+                  <div className="flex flex-col items-start gap-1.5 mb-1.5 min-w-0">
+                    <span className="font-mono text-[10px] text-[#f7f4ee] font-bold truncate w-full">{n.route}</span>
+                    <DocChip verdict={n.phase} className="uppercase shrink-0" />
                   </div>
                   <div className="text-xs font-semibold text-[#f7f4ee] truncate">{n.title}</div>
                 </button>
@@ -212,11 +204,9 @@ export function SystemArchitectureMap() {
 
         {/* Selected Node Inspector Drawer */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="p-5 rounded-lg bg-[#07080a] border border-white/[0.08] space-y-3">
+          <DocWell className="p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <span className={`text-xs font-mono px-2 py-0.5 rounded border ${node.phaseColor}`}>
-                PHASE: {node.phase.toUpperCase()}
-              </span>
+              <DocChip verdict={`PHASE: ${node.phase.toUpperCase()}`} />
               <Link
                 href={node.route}
                 className="text-xs font-mono text-[#f7f4ee] hover:text-[#d97757] flex items-center gap-1 group transition-colors"
@@ -233,12 +223,12 @@ export function SystemArchitectureMap() {
             </h5>
 
             <div className="space-y-2 pt-1 font-mono text-xs">
-              <div className="p-2.5 rounded bg-[#0c0d10] border border-white/[0.04] space-y-1">
+              <div className="p-2.5 rounded border border-white/[0.04] space-y-1">
                 <div className="text-[10px] text-[#8c8a82] uppercase">Input Telemetry Ingested:</div>
                 <div className="text-[#d8d4c7] text-[11px]">{node.inputs.join(", ")}</div>
               </div>
 
-              <div className="p-2.5 rounded bg-[#0c0d10] border border-white/[0.04] space-y-1">
+              <div className="p-2.5 rounded border border-white/[0.04] space-y-1">
                 <div className="text-[10px] text-[#8c8a82] uppercase">Output Artifacts Produced:</div>
                 <div className="text-[#b4cca0] text-[11px]">{node.outputs.join(", ")}</div>
               </div>
@@ -252,10 +242,10 @@ export function SystemArchitectureMap() {
                 {node.decisionalImpact}
               </p>
             </div>
-          </div>
+          </DocWell>
         </div>
       </div>
-    </div>
+    </DocPanel>
   );
 }
 

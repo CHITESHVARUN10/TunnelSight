@@ -1,15 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/lib/mock/toast";
 import { Footer } from "@/components/layout/Footer";
 import { ConstellationCanvas } from "@/components/docs/ConstellationCanvas";
+import { StarDrift } from "@/components/docs/StarDrift";
 import { DecapsulationPipelineDiagram } from "@/components/docs/DecapsulationPipelineDiagram";
 import { HandshakeSequenceDiagram } from "@/components/docs/HandshakeSequenceDiagram";
 import { AntiReplaySimulator } from "@/components/docs/AntiReplaySimulator";
 import { DiffieHellmanLattice } from "@/components/docs/DiffieHellmanLattice";
 import { SystemArchitectureMap } from "@/components/docs/SystemArchitectureMap";
+import {
+  DocPanel,
+  DOC_ACTIVE,
+  DOC_IDLE,
+} from "@/components/docs/DocChrome";
 
 const CHAPTERS = [
   { id: "prologue", roman: "00", title: "Prologue: The Invisible Wire", category: "Philosophy" },
@@ -85,6 +91,8 @@ export default function DocumentationPage() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activePatchTab, setActivePatchTab] = useState<"swanctl" | "ipsec">("swanctl");
   const [copiedPatch, setCopiedPatch] = useState(false);
+  // 0 → 1 as the prologue scrolls out: breaks the hero spiral into the gutters
+  const disperseRef = useRef(0);
   const toast = useToast();
 
   useEffect(() => {
@@ -92,6 +100,15 @@ export default function DocumentationPage() {
       const total = document.documentElement.scrollHeight - window.innerHeight;
       if (total > 0) {
         setScrollProgress(Math.min(100, Math.max(0, (window.scrollY / total) * 100)));
+      }
+
+      // Disperse the hero galaxy laterally as the prologue scrolls out
+      const prologue = document.getElementById("prologue");
+      if (prologue) {
+        const rect = prologue.getBoundingClientRect();
+        const raw = Math.min(1, Math.max(0, -rect.top / (rect.height * 0.9)));
+        // Smoothstep for a stately, non-linear break
+        disperseRef.current = raw * raw * (3 - 2 * raw);
       }
 
       // Check current chapter in viewport
@@ -131,9 +148,36 @@ export default function DocumentationPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#07080a] text-[#d8d4c7] font-sans antialiased selection:bg-[#d97757]/30 selection:text-[#f7f4ee] flex flex-col justify-between">
-      {/* ============ ASTRA INTERACTIVE SPIRAL GALAXY CANVAS ============ */}
-      <ConstellationCanvas />
+    <div className="relative min-h-screen bg-[#02040a] text-[#d8d4c7] font-sans antialiased selection:bg-[#d97757]/30 selection:text-[#f7f4ee] flex flex-col justify-between">
+      {/* ============ AMBIENT STARDRIFT (page continuity layer) ============ */}
+      <StarDrift />
+
+      {/* ============ FIXED GALAXY (formation → gutters, reforms on scroll-up) ============ */}
+      <ConstellationCanvas disperseRef={disperseRef} />
+
+      {/* ============ BOTTOM BLUE HUE (cold floor wash) ============ */}
+      <div
+        className="fixed inset-x-0 bottom-0 h-[42vh] pointer-events-none z-0"
+        style={{ background: "linear-gradient(to top, rgba(48, 80, 150, 0.13), transparent)" }}
+        aria-hidden="true"
+      />
+
+      {/* ============ FILM GRAIN (analog texture, lifts the brights) ============ */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0 opacity-[0.05]"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* ============ VIGNETTE (lit center reads against deep edges) ============ */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse 90% 80% at 50% 42%, transparent 55%, rgba(0,0,0,0.5) 100%)" }}
+        aria-hidden="true"
+      />
 
       {/* ============ READING PROGRESS BAR (WARM ANTHROPIC GRADIENT) ============ */}
       <div className="fixed top-0 inset-x-0 h-[2px] z-50 bg-[#14161a] pointer-events-none">
@@ -143,64 +187,57 @@ export default function DocumentationPage() {
         />
       </div>
 
-      {/* ============ ANTHROPIC & OPENAI MINIMAL EDITORIAL HEADER ============ */}
-      <header className="sticky top-0 z-40 bg-[#07080a]/85 backdrop-blur-xl border-b border-white/[0.06] select-none">
+      {/* ============ QUIET EDITORIAL HEADER ============ */}
+      <header className="sticky top-0 z-40 bg-[#02040a]/85 backdrop-blur-xl border-b border-white/[0.06] select-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           {/* Brand lockup */}
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 group">
-              <span className="font-display-serif text-lg font-bold text-[#f7f4ee] tracking-tight group-hover:text-[#d97757] transition-colors">
-                TunnelSight
-              </span>
-              <span className="hidden sm:inline-block font-mono text-[10px] text-[#8c8a82] uppercase tracking-widest pl-2.5 border-l border-white/[0.1]">
-                Systems Dossier · RFC 4301
-              </span>
-            </Link>
-          </div>
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <span className="font-display-serif text-lg font-bold text-[#f7f4ee] tracking-tight group-hover:text-[#d97757] transition-colors">
+              TunnelSight
+            </span>
+            <span className="hidden sm:inline-block font-mono text-[10px] text-[#8c8a82] uppercase tracking-widest pl-2.5 border-l border-white/[0.1]">
+              Systems Dossier
+            </span>
+          </Link>
 
-          {/* Center Chapter Spine Navigation */}
-          <nav className="hidden xl:flex items-center gap-6 text-xs font-mono text-[#8c8a82]">
+          {/* Chapter numerals */}
+          <nav className="hidden xl:flex items-center gap-5 text-xs font-mono" aria-label="Chapters">
             {CHAPTERS.map((ch) => (
               <button
                 key={ch.id}
                 onClick={() => scrollToChapter(ch.id)}
-                className={`transition-colors flex items-center gap-1.5 ${
+                title={ch.title}
+                className={`transition-colors ${
                   activeChapterId === ch.id
-                    ? "text-[#f7f4ee] font-bold"
-                    : "hover:text-[#f7f4ee]"
+                    ? "text-[#d97757]"
+                    : "text-[#6b6963] hover:text-[#f7f4ee]"
                 }`}
                 type="button"
               >
-                <span className={activeChapterId === ch.id ? "text-[#d97757]" : "text-[#6b6963]"}>
-                  {ch.roman}.
-                </span>
-                <span>{ch.title.split(":")[0]}</span>
+                {ch.roman}
               </button>
             ))}
           </nav>
 
-          {/* Right Tools */}
-          <div className="flex items-center gap-3">
+          {/* Quiet links */}
+          <div className="flex items-center gap-5 text-xs font-mono text-[#8c8a82]">
             <button
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent("tunnelsight:open-search"));
-              }}
-              className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#8c8a82] hover:text-[#f7f4ee] text-xs font-mono transition-all"
+              onClick={() => scrollToChapter("prologue")}
+              className="hidden sm:inline hover:text-[#f7f4ee] transition-colors"
               type="button"
             >
-              <span className="material-symbols-outlined text-[15px] text-[#b0aea5]">search</span>
-              <span>Search Dossier</span>
-              <kbd className="bg-white/[0.06] border border-white/[0.1] px-1.5 py-0.5 rounded text-[10px]">⌘K</kbd>
+              Index
             </button>
-
-            <Link
-              href="/overview"
-              className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-[#f7f4ee] hover:bg-white text-[#0a0c10] text-xs font-medium font-sans transition-all shadow-sm group"
+            <button
+              onClick={() => scrollToChapter("chapter-5")}
+              className="hidden sm:inline hover:text-[#f7f4ee] transition-colors"
+              type="button"
             >
+              Remediation
+            </button>
+            <Link href="/overview" className="flex items-center gap-1 text-[#f7f4ee] hover:text-[#d97757] transition-colors">
               <span>Console</span>
-              <span className="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">
-                arrow_forward
-              </span>
+              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
             </Link>
           </div>
         </div>
@@ -211,7 +248,7 @@ export default function DocumentationPage() {
         id="prologue"
         className="relative z-10 pt-24 pb-20 px-4 sm:px-6 max-w-4xl mx-auto text-center border-b border-white/[0.06]"
       >
-        <div className="space-y-6">
+        <div className="relative space-y-6">
           <div className="inline-flex items-center gap-2 font-mono text-[11px] text-[#b0aea5] uppercase tracking-[0.25em]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#d97757]" />
             <span>September 2026</span>
@@ -219,11 +256,13 @@ export default function DocumentationPage() {
             <span>Security Engineering &amp; Systems Research</span>
           </div>
 
-          <h1 className="font-display-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#f7f4ee] leading-[1.1] max-w-3xl mx-auto">
+          <h1 id="docs-headline" className="font-display-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#f7f4ee] leading-[1.1] max-w-3xl mx-auto"
+            style={{ textShadow: "0 2px 30px rgba(5,7,13,0.9), 0 1px 8px rgba(5,7,13,0.8)" }}>
             The Invisible Wire: A Mathematical Treatise on IPsec
           </h1>
 
-          <p className="text-base sm:text-lg text-[#d8d4c7] leading-relaxed max-w-2xl mx-auto font-sans">
+          <p className="text-base sm:text-lg text-[#d8d4c7] leading-relaxed max-w-2xl mx-auto font-sans"
+            style={{ textShadow: "0 1px 20px rgba(5,7,13,0.9)" }}>
             Every day, petabytes of enterprise secrets traverse hostile public backbones shielded only by numbers: modular primes, elliptic coordinates, and symmetric permutations. This manual explains how TunnelSight peers through that encapsulation—not by guessing, but through deterministic decapsulation, bitwise verification, and RFC compliance.
           </p>
 
@@ -372,15 +411,15 @@ export default function DocumentationPage() {
         </div>
 
         {/* Remediation Workbench */}
-        <div className="w-full bg-[#0c0d10] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl font-sans">
-          <div className="p-3 bg-[#101216] border-b border-white/[0.06] flex items-center justify-between flex-wrap gap-2">
+        <DocPanel className="w-full overflow-hidden font-sans">
+          <div className="p-3 border-b border-white/[0.06] flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2 font-mono text-xs">
               <button
                 onClick={() => setActivePatchTab("swanctl")}
-                className={`px-3 py-1 rounded-md transition-all ${
+                className={`px-3 py-1 rounded-md transition-all border ${
                   activePatchTab === "swanctl"
-                    ? "bg-[#d97757]/20 text-[#d97757] border border-[#d97757]/40 font-semibold"
-                    : "text-[#b0aea5] hover:text-[#f7f4ee]"
+                    ? `${DOC_ACTIVE} text-[#f7f4ee] font-semibold`
+                    : `${DOC_IDLE} hover:text-[#f7f4ee]`
                 }`}
                 type="button"
               >
@@ -388,10 +427,10 @@ export default function DocumentationPage() {
               </button>
               <button
                 onClick={() => setActivePatchTab("ipsec")}
-                className={`px-3 py-1 rounded-md transition-all ${
+                className={`px-3 py-1 rounded-md transition-all border ${
                   activePatchTab === "ipsec"
-                    ? "bg-[#d97757]/20 text-[#d97757] border border-[#d97757]/40 font-semibold"
-                    : "text-[#b0aea5] hover:text-[#f7f4ee]"
+                    ? `${DOC_ACTIVE} text-[#f7f4ee] font-semibold`
+                    : `${DOC_IDLE} hover:text-[#f7f4ee]`
                 }`}
                 type="button"
               >
@@ -407,7 +446,7 @@ export default function DocumentationPage() {
                     : STRONGSWAN_IPSEC_CONF_PATCH
                 )
               }
-              className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-white/[0.05] hover:bg-white/[0.1] text-[#d97757] hover:text-[#f7f4ee] border border-white/[0.08] text-xs font-mono transition-all"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-transparent border border-white/15 text-[#d8d4c7] hover:text-[#f7f4ee] hover:border-white/25 text-xs font-mono transition-all"
               type="button"
             >
               <span className="material-symbols-outlined text-[15px]">
@@ -424,11 +463,11 @@ export default function DocumentationPage() {
                 : STRONGSWAN_IPSEC_CONF_PATCH}
             </code>
           </pre>
-        </div>
+        </DocPanel>
       </section>
 
       {/* ============ FOOTER SECTION WITH AURORA ============ */}
-      <Footer />
+      <Footer tone="dark" accent="ember" />
     </div>
   );
 }
