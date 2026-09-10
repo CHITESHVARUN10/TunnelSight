@@ -1,12 +1,37 @@
 "use client";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/mock/toast";
-import { executiveReportJSON } from "@/lib/mock/analysis";
 import { AppShell } from "@/components/layout/AppShell";
+import { getAnalysis, type Analysis } from "@/lib/analysis";
 
 export default function VpnConfigurationPage() {
   const toast = useToast();
+  const params = useSearchParams();
+  const analysisId = params.get("analysis_id");
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+
+  useEffect(() => {
+    if (!analysisId) return;
+    let dead = false;
+    (async () => {
+      try {
+        const a = await getAnalysis(analysisId);
+        if (!dead) setAnalysis(a);
+      } catch (err) {
+        if (!dead) toast({ title: "Configuration unavailable", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+      }
+    })();
+    return () => {
+      dead = true;
+    };
+  }, [analysisId, toast]);
+
+  const crypto = (analysis?.config_json?.ipsec_config?.cryptography ?? {}) as Record<string, unknown>;
+  const sa = (analysis?.config_json?.ipsec_config?.sa_config ?? {}) as Record<string, unknown>;
   const [activeFilter, setActiveFilter] = useState("all");
   const [inspectedPkt, setInspectedPkt] = useState("Packet #142");
   const [inspectedExchange, setInspectedExchange] = useState("CREATE_CHILD_SA (Req)");
@@ -34,7 +59,7 @@ export default function VpnConfigurationPage() {
                 Captures
               </Link>
               <span className="text-zinc-700">/</span>
-              <span className="text-teal-400 font-medium">weak-vpn-07.pcap</span>
+              <span className="text-teal-400 font-medium">{analysis?.filename ?? "—"}</span>
               <span className="text-zinc-700">/</span>
               <span className="text-zinc-300">VPN Configuration &amp; Protocol Inspection</span>
             </div>
@@ -70,7 +95,10 @@ export default function VpnConfigurationPage() {
                 className="h-7 px-3 bg-teal-500 hover:bg-teal-400 text-zinc-950 rounded text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors"
                 type="button"
                 onClick={() => {
-                  downloadFile("vpn-configuration-proof.json", executiveReportJSON());
+                  downloadFile(
+                    `${analysis?.filename ?? "vpn"}-configuration-proof.json`,
+                    JSON.stringify({ capture: analysis?.filename, ipsec_config: analysis?.config_json?.ipsec_config, security_score: analysis?.security_score, risk_level: analysis?.risk_level }, null, 2)
+                  );
                   toast({ title: "Proof Exported", body: "vpn-configuration-proof.json downloaded.", kind: "ok" });
                 }}
               >
@@ -97,25 +125,30 @@ export default function VpnConfigurationPage() {
             </div>
 
             {/* Session Badges */}
+            {!analysisId ? (
+              <div className="font-mono text-xs text-zinc-500">
+                No analysis selected. <Link className="underline text-teal-400" href="/analyze">Upload a capture</Link>.
+              </div>
+            ) : (
             <div className="flex items-center gap-2 font-mono text-xs">
               <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-300 flex items-center">
-                IKEv2
+                {String(sa.ike_version ?? "IKE?")}
               </span>
               <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 flex items-center">
-                ESP Tunnel Mode
+                ESP {String(sa.mode ?? "?")} Mode
               </span>
               <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 flex items-center">
-                IPv4
+                {String(crypto.encryption_algorithm ?? "cipher?")}
+              </span>
+              <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 flex items-center">
+                DH {String(crypto.dh_group ?? "?")} · PFS {crypto.pfs_enabled ? "on" : "off"}
               </span>
               <span className="h-6 px-2.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-                NAT-T Active (UDP 4500)
-              </span>
-              <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900/80 text-zinc-400 flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[14px] text-teal-400">verified</span>
-                Evidence Confirmed
+                Score {analysis?.security_score ?? "—"} · {analysis?.risk_level ?? "—"}
               </span>
             </div>
+            )}
           </div>
         </div>
 

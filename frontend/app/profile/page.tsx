@@ -1,13 +1,88 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useToast } from "@/lib/mock/toast";
 import { AppShell } from "@/components/layout/AppShell";
+import { api } from "@/lib/api";
+import { me } from "@/lib/auth";
+
+type Profile = {
+  display_name: string | null;
+  organization: string | null;
+  role: string | null;
+  timezone: string | null;
+};
 
 export default function ProfilePage() {
   const toast = useToast();
-  const editProfile = () => toast({ title: "Edit profile", body: "Profile editor opened (mock).", kind: "info" });
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [email, setEmail] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ display_name: "", organization: "", role: "", timezone: "" });
+  const [pw, setPw] = useState({ old_password: "", new_password: "" });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const u = await me();
+        const p = (await api("/api/profile")) as Profile;
+        if (!cancelled) {
+          setEmail(u.email);
+          setProfile(p);
+          setForm({
+            display_name: p.display_name ?? "",
+            organization: p.organization ?? "",
+            role: p.role ?? "",
+            timezone: p.timezone ?? "",
+          });
+        }
+      } catch (err) {
+        if (!cancelled)
+          toast({ title: "Profile unavailable", body: err instanceof Error ? err.message : "Sign in again.", kind: "warn" });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [toast]);
+
+  const editProfile = () => setEditing((v) => !v);
+  const saveProfile = async () => {
+    try {
+      const p = (await api("/api/profile", {
+        method: "PATCH",
+        body: JSON.stringify({
+          display_name: form.display_name || undefined,
+          organization: form.organization || undefined,
+          role: form.role || undefined,
+          timezone: form.timezone || undefined,
+        }),
+      })) as Profile;
+      setProfile(p);
+      setEditing(false);
+      toast({ title: "Profile saved", body: "Identity updated.", kind: "ok" });
+    } catch (err) {
+      toast({ title: "Save failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
+  };
   const changePreference = () => toast({ title: "Preference staged", body: "Workbench preference change staged (mock).", kind: "info" });
-  const changePassword = () => toast({ title: "Password change", body: "Password rotation flow started (mock).", kind: "info" });
+  const changePassword = async () => {
+    if (!pw.old_password || !pw.new_password) {
+      toast({ title: "Password change", body: "Enter current and new passphrase below.", kind: "info" });
+      return;
+    }
+    try {
+      await api("/api/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify(pw),
+      });
+      setPw({ old_password: "", new_password: "" });
+      toast({ title: "Password changed", body: "Rotation complete.", kind: "ok" });
+    } catch (err) {
+      toast({ title: "Password change failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
+  };
   const manageKeys = () => toast({ title: "Security keys", body: "2 FIDO2 tokens registered (mock).", kind: "info" });
   const manageSessions = () => toast({ title: "Sessions", body: "3 active sessions reviewed (mock).", kind: "info" });
 
@@ -64,7 +139,9 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-base text-white font-semibold">Dr. Jonathan Chen</span>
+                    <span className="text-base text-white font-semibold">
+                      {profile?.display_name || email || "Analyst"}
+                    </span>
                     <span className="bg-teal-950/60 border border-teal-800/50 text-teal-300 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wide">
                       Verified Staff
                     </span>
@@ -72,11 +149,11 @@ export default function ProfilePage() {
                       Active
                     </span>
                   </div>
-                  <span className="text-xs text-zinc-400">Lead Cryptographic Forensic Analyst</span>
+                  <span className="text-xs text-zinc-400">{profile?.role || "Analyst"}</span>
                   <div className="flex flex-wrap items-center gap-2 mt-1 text-zinc-500 font-mono text-xs">
-                    <span className="text-zinc-300">j.chen@tunnelsight.defense.internal</span>
+                    <span className="text-zinc-300">{email}</span>
                     <span className="text-zinc-600">/</span>
-                    <span>Cyber Defense Command · Threat Forensics</span>
+                    <span>{profile?.organization || "—"}</span>
                   </div>
                 </div>
               </div>
@@ -86,8 +163,28 @@ export default function ProfilePage() {
                   type="button"
                   onClick={editProfile}
                 >
-                  Edit Profile
+                  {editing ? "Cancel" : "Edit Profile"}
                 </button>
+                {editing && (
+                  <div className="flex flex-col gap-2 w-full md:w-64">
+                    {(["display_name", "organization", "role", "timezone"] as const).map((k) => (
+                      <input
+                        key={k}
+                        value={form[k]}
+                        onChange={(e) => setForm({ ...form, [k]: e.target.value })}
+                        placeholder={k}
+                        className="h-8 px-2 bg-[#14171c] border border-zinc-800 rounded-sm text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-teal-500/50"
+                      />
+                    ))}
+                    <button
+                      className="px-3 py-1.5 rounded-sm bg-teal-500 hover:bg-teal-400 text-black text-xs font-mono font-semibold"
+                      type="button"
+                      onClick={saveProfile}
+                    >
+                      Save
+                    </button>
+                  </div>
+                )}
                 <span className="text-[11px] font-mono text-zinc-500">Last sign-in: Today, 14:02 UTC (FIDO2)</span>
               </div>
             </div>
@@ -168,7 +265,21 @@ export default function ProfilePage() {
                     Last changed 18 days ago. Entropy threshold 16+ characters with hardware iteration standard.
                   </p>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/60">
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/60 gap-2">
+                  <input
+                    type="password"
+                    value={pw.old_password}
+                    onChange={(e) => setPw({ ...pw, old_password: e.target.value })}
+                    placeholder="current passphrase"
+                    className="h-8 px-2 bg-[#14171c] border border-zinc-800 rounded-sm text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-teal-500/50 w-36"
+                  />
+                  <input
+                    type="password"
+                    value={pw.new_password}
+                    onChange={(e) => setPw({ ...pw, new_password: e.target.value })}
+                    placeholder="new passphrase (8+)"
+                    className="h-8 px-2 bg-[#14171c] border border-zinc-800 rounded-sm text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-teal-500/50 w-36"
+                  />
                   <button
                     className="px-3 py-1 rounded-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-mono transition-colors"
                     type="button"

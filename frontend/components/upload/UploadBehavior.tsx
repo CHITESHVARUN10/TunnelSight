@@ -1,20 +1,18 @@
 "use client";
-// Demo upload flow for /analyze. Wires existing markup by id (no visual changes):
-// drop-zone click/drag-drop + Select Capture -> file picker; Load sample trace
-// fetches /demo/weak-vpn-07.pcap; selection stored in sessionStorage;
-// Proceed to Deep Inspection -> /analysis/progress (warns if nothing selected).
+// Real upload flow for /analyze. Keeps the actual File for upload; same DOM ids.
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
+import { apiForm } from "@/lib/api";
 import { useToast } from "@/lib/mock/toast";
 
-export const DEMO_FILE_KEY = "ts_demo_file";
-export const DEMO_SAMPLE = { name: "weak-vpn-07.pcap", size: 24060, sample: true };
+export const DEMO_SAMPLE = { name: "weak-vpn-07.pcap", sample: true };
 
 export function UploadBehavior() {
   const router = useRouter();
   const toast = useToast();
-  const [file, setFile] = useState<{ name: string; size: number } | null>(null);
+  const fileRef = useRef<File | null>(null);
+  const busyRef = useRef(false);
 
   useEffect(() => {
     const input = document.getElementById("pcap-file-input") as HTMLInputElement | null;
@@ -23,29 +21,46 @@ export function UploadBehavior() {
     const sample = document.getElementById("load-sample-btn");
     if (!input || !zone) return;
 
-    const pick = (f: File | { name: string; size: number }) => {
-      const rec = { name: f.name, size: f.size };
-      sessionStorage.setItem(DEMO_FILE_KEY, JSON.stringify(rec));
-      setFile(rec);
-      toast({ title: "Capture staged", body: `${rec.name} (${rec.size.toLocaleString()} bytes) ready for ingestion.`, kind: "ok" });
+    const showStaged = (f: File) => {
+      fileRef.current = f;
+      toast({ title: "Capture staged", body: `${f.name} (${f.size.toLocaleString()} bytes) ready for ingestion.`, kind: "ok" });
     };
     const openPicker = () => input.click();
     const onChange = () => {
-      if (input.files && input.files[0]) pick(input.files[0]);
+      if (input.files && input.files[0]) showStaged(input.files[0]);
       input.value = "";
     };
     const onDrop = (e: DragEvent) => {
       e.preventDefault();
-      if (e.dataTransfer?.files[0]) pick(e.dataTransfer.files[0]);
+      if (e.dataTransfer?.files[0]) showStaged(e.dataTransfer.files[0]);
     };
     const onDrag = (e: DragEvent) => e.preventDefault();
     const onSample = async () => {
       try {
         const r = await fetch("/demo/weak-vpn-07.pcap");
         const buf = await r.arrayBuffer();
-        pick({ name: DEMO_SAMPLE.name, size: buf.byteLength });
+        showStaged(new File([buf], DEMO_SAMPLE.name, { type: "application/octet-stream" }));
       } catch {
-        pick(DEMO_SAMPLE);
+        toast({ title: "Sample unavailable", body: "Pick a file instead.", kind: "warn" });
+      }
+    };
+
+    const proceed = async () => {
+      const f = fileRef.current;
+      if (!f) {
+        toast({ title: "No capture selected", body: "Choose a file or load the sample trace first.", kind: "warn" });
+        return;
+      }
+      if (busyRef.current) return;
+      busyRef.current = true;
+      try {
+        const form = new FormData();
+        form.append("file", f, f.name);
+        const row = await apiForm("/api/analyze", form);
+        router.push(`/analysis/progress?analysis_id=${row.id}`);
+      } catch (err) {
+        busyRef.current = false;
+        toast({ title: "Upload failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
       }
     };
 
@@ -55,6 +70,10 @@ export function UploadBehavior() {
     zone.addEventListener("drop", onDrop);
     zone.addEventListener("dragover", onDrag);
     sample?.addEventListener("click", onSample);
+    const btns = Array.from(document.querySelectorAll("button")).filter((b) =>
+      (b.textContent ?? "").includes("Proceed to Deep Inspection")
+    );
+    btns.forEach((b) => b.addEventListener("click", proceed));
     return () => {
       trigger?.removeEventListener("click", openPicker);
       zone.removeEventListener("click", openPicker);
@@ -62,45 +81,9 @@ export function UploadBehavior() {
       zone.removeEventListener("drop", onDrop);
       zone.removeEventListener("dragover", onDrag);
       sample?.removeEventListener("click", onSample);
+      btns.forEach((b) => b.removeEventListener("click", proceed));
     };
-  }, [toast]);
+  }, [router, toast]);
 
-  const proceed = () => {
-    const raw = sessionStorage.getItem(DEMO_FILE_KEY);
-    if (!raw) {
-      toast({ title: "No capture selected", body: "Choose a file or load the sample trace first.", kind: "warn" });
-      return;
-    }
-    router.push("/analysis/progress");
-  };
-
-  return (
-    <>
-      {file ? (
-        <div className="fixed bottom-6 left-1/2 z-[90] -translate-x-1/2">
-          <button
-            onClick={proceed}
-            className="flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-headline-sm text-headline-sm font-semibold text-on-primary shadow-2xl hover:bg-primary-fixed"
-          >
-            <span className="material-symbols-outlined text-[18px]">play_arrow</span>
-            Analyze {file.name} →
-          </button>
-        </div>
-      ) : null}
-      <ProceedHook onProceed={proceed} />
-    </>
-  );
-}
-
-// Hooks the in-design "Proceed to Deep Inspection" button (found by label).
-function ProceedHook({ onProceed }: { onProceed: () => void }) {
-  useEffect(() => {
-    const btns = Array.from(document.querySelectorAll("button")).filter((b) =>
-      (b.textContent ?? "").includes("Proceed to Deep Inspection")
-    );
-    const h = () => onProceed();
-    btns.forEach((b) => b.addEventListener("click", h));
-    return () => btns.forEach((b) => b.removeEventListener("click", h));
-  }, [onProceed]);
   return null;
 }

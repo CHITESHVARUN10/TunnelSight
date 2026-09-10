@@ -1,29 +1,59 @@
 "use client";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/mock/toast";
-import { TRAFFIC_MIX } from "@/lib/mock/analysis";
 import { AppShell } from "@/components/layout/AppShell";
-type WindowInfo = { id: string; range: string; conf: string; sec: string; rate: string; pkts: string; meanSize: string; jitter: string };
-const WINDOWS: WindowInfo[] = [
-  { id: "W-01", range: "00:00 - 00:05", conf: "91.8%", sec: "WEB (6.2%)", rate: "1.12 MB/s", pkts: "4,210", meanSize: "1,328 B", jitter: "0.120 ms" },
-  { id: "W-02", range: "00:05 - 00:10", conf: "78.4%", sec: "VOIP (14.2%)", rate: "2.40 MB/s", pkts: "8,904", meanSize: "1,348 B", jitter: "0.082 ms" },
-  { id: "W-03", range: "00:10 - 00:15", conf: "64.1%", sec: "VIDEO (32.0%)", rate: "0.78 MB/s", pkts: "2,980", meanSize: "680 B", jitter: "0.245 ms" },
-  { id: "W-04", range: "00:15 - 00:20", conf: "84.0%", sec: "WEB (11.0%)", rate: "3.90 MB/s", pkts: "14,200", meanSize: "1,372 B", jitter: "0.065 ms" },
-  { id: "W-05", range: "00:20 - 00:25", conf: "89.5%", sec: "WEB (8.1%)", rate: "5.10 MB/s", pkts: "18,440", meanSize: "1,380 B", jitter: "0.052 ms" },
-  { id: "W-06", range: "00:25 - 00:30", conf: "86.1%", sec: "VOIP (7.2%)", rate: "4.78 MB/s", pkts: "17,100", meanSize: "1,376 B", jitter: "0.058 ms" },
-  { id: "W-07", range: "00:30 - 00:35", conf: "88.3%", sec: "WEB (7.9%)", rate: "5.40 MB/s", pkts: "19,300", meanSize: "1,382 B", jitter: "0.048 ms" },
-  { id: "W-08", range: "00:35 - 00:40", conf: "87.4%", sec: "WEB (9.1%)", rate: "6.84 MB/s", pkts: "24,190", meanSize: "1,384 B", jitter: "0.041 ms" },
-];
+import { getAnalysis, getTraffic, getWindows, type Analysis, type Window } from "@/lib/analysis";
+
+function winLabel(id: number) {
+  return `W-${String(id + 1).padStart(2, "0")}`;
+}
 
 export default function TrafficIntelligencePage() {
   const toast = useToast();
-  const [selectedWindow, setSelectedWindow] = useState("W-08");
-  function selectWindow(id: string) {
-    setSelectedWindow(id);
+  const params = useSearchParams();
+  const analysisId = params.get("analysis_id");
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [windows, setWindows] = useState<Window[]>([]);
+  const [mix, setMix] = useState<Record<string, number>>({});
+  const [selected, setSelected] = useState(0);
+
+  useEffect(() => {
+    if (!analysisId) return;
+    let dead = false;
+    (async () => {
+      try {
+        const [a, t, w] = await Promise.all([getAnalysis(analysisId), getTraffic(analysisId), getWindows(analysisId)]);
+        if (!dead) {
+          setAnalysis(a);
+          setMix(t.mix);
+          setWindows(w);
+        }
+      } catch (err) {
+        if (!dead) toast({ title: "Traffic unavailable", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+      }
+    })();
+    return () => {
+      dead = true;
+    };
+  }, [analysisId, toast]);
+
+  const active = windows.find((w) => w.window_id === selected) ?? windows[0];
+  const mixEntries = Object.entries(mix).sort((a, b) => b[1] - a[1]);
+  const colors = ["bg-teal-500", "bg-sky-500", "bg-amber-500", "bg-zinc-600", "bg-violet-500"];
+  const activeId = winLabel(active?.window_id ?? selected);
+  if (!analysisId) {
+    return (
+      <div className="bg-[#0c0e11] font-sans text-sm text-zinc-300 antialiased">
+        <AppShell active="/analysis/traffic">
+          <div className="p-8 text-sm">No analysis selected. <Link className="underline" href="/analyze">Upload a capture</Link>.</div>
+        </AppShell>
+      </div>
+    );
   }
-  const activeRange = WINDOWS.find((w) => w.id === selectedWindow)?.range ?? "00:35 - 00:40";
-  const activeNum = selectedWindow.split("-")[1];
   return (
     <div className="bg-[#0c0e11] font-sans text-sm text-zinc-300 antialiased selection:bg-teal-500/20 selection:text-teal-200">
       <AppShell active="/analysis/traffic">
@@ -34,7 +64,7 @@ export default function TrafficIntelligencePage() {
             <div className="flex items-center gap-2 font-mono text-xs text-zinc-400">
               <Link href="/history" className="text-zinc-500 hover:text-zinc-300 transition-colors">Captures</Link>
               <span className="text-zinc-700">/</span>
-              <span className="text-teal-400 font-medium">weak-vpn-07.pcap</span>
+              <span className="text-teal-400 font-medium">{analysis?.filename ?? "—"}</span>
               <span className="text-zinc-700">/</span>
               <span className="text-zinc-200 font-medium">Encrypted Traffic Intelligence &amp; Flow ML</span>
             </div>
@@ -55,7 +85,7 @@ export default function TrafficIntelligencePage() {
               <button
                 className="flex items-center gap-1.5 bg-teal-500/10 border border-teal-500/30 px-3 py-1 rounded text-teal-300 hover:bg-teal-500/20 transition-colors text-xs font-mono font-medium"
                 type="button"
-                onClick={() => { downloadFile("traffic-intelligence.json", JSON.stringify({ capture: "weak-vpn-07.pcap", spi: "0xC3E8019A", mix: TRAFFIC_MIX, window: selectedWindow }, null, 2)); toast({ title: "Traffic intel exported", body: "traffic-intelligence.json downloaded.", kind: "ok" }); }}
+                onClick={() => { downloadFile(`${analysis?.filename ?? "traffic"}-intelligence.json`, JSON.stringify({ capture: analysis?.filename, mix, windows }, null, 2)); toast({ title: "Traffic intel exported", body: "traffic-intelligence.json downloaded.", kind: "ok" }); }}
               >
                 <span className="material-symbols-outlined text-[14px]">file_download</span>
                 <span>Export JSON</span>
@@ -117,53 +147,24 @@ export default function TrafficIntelligencePage() {
             <div className="flex flex-col gap-3">
               {/* Multi-segment Mixture Bar */}
               <div className="h-3 w-full rounded-md bg-zinc-950 flex overflow-hidden border border-zinc-800/80">
-                <div className="h-full bg-teal-500 relative cursor-pointer transition-opacity hover:opacity-90" style={{width: '83%'}} title="Video: 83%"></div>
-                <div className="h-full bg-sky-500 relative cursor-pointer transition-opacity hover:opacity-90" style={{width: '10%'}} title="Web: 10%"></div>
-                <div className="h-full bg-amber-500 relative cursor-pointer transition-opacity hover:opacity-90" style={{width: '4%'}} title="VoIP: 4%"></div>
-                <div className="h-full bg-zinc-700 relative cursor-pointer transition-opacity hover:opacity-90" style={{width: '3%'}} title="Control: 3%"></div>
+                {mixEntries.map(([label, ratio], i) => (
+                  <div key={label} className={`h-full ${colors[i % colors.length]} relative cursor-pointer transition-opacity hover:opacity-90`} style={{ width: `${Math.round(ratio * 100)}%` }} title={`${label}: ${Math.round(ratio * 100)}%`}></div>
+                ))}
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="flex items-center justify-between bg-[#0c0e11] px-4 py-2.5 rounded border border-zinc-800/80">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-                    <span className="font-medium text-white text-xs">Video Stream</span>
+                {mixEntries.map(([label, ratio], i) => (
+                  <div key={label} className="flex items-center justify-between bg-[#0c0e11] px-4 py-2.5 rounded border border-zinc-800/80">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${colors[i % colors.length]}`}></span>
+                      <span className="font-medium text-white text-xs capitalize">{label}</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-mono text-xs">
+                      <span className="text-teal-300 font-semibold">{Math.round(ratio * 100)}%</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="text-teal-300 font-semibold">83%</span>
-                    <span className="text-zinc-500">| 94.2% conf</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between bg-[#0c0e11] px-4 py-2.5 rounded border border-zinc-800/80">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-sky-400"></span>
-                    <span className="font-medium text-white text-xs">Web / TLS</span>
-                  </div>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="text-sky-300 font-semibold">10%</span>
-                    <span className="text-zinc-500">| 88.5% conf</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between bg-[#0c0e11] px-4 py-2.5 rounded border border-zinc-800/80">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                    <span className="font-medium text-white text-xs">VoIP / Audio</span>
-                  </div>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="text-amber-300 font-semibold">4%</span>
-                    <span className="text-zinc-500">| 91.0% conf</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between bg-[#0c0e11] px-4 py-2.5 rounded border border-zinc-800/80">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-zinc-500"></span>
-                    <span className="font-medium text-white text-xs">Other / Control</span>
-                  </div>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="text-zinc-400 font-semibold">3%</span>
-                    <span className="text-zinc-500">| 96.1% conf</span>
-                  </div>
-                </div>
+                ))}
+                {mixEntries.length === 0 && <span className="text-xs font-mono text-zinc-500">No windows yet.</span>}
               </div>
             </div>
           </section>
@@ -178,7 +179,7 @@ export default function TrafficIntelligencePage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs text-zinc-500">Active Window:</span>
-                <span className="font-mono text-xs text-teal-400 font-semibold">{selectedWindow} [{activeRange}]</span>
+                <span className="font-mono text-xs text-teal-400 font-semibold">{activeId}</span>
               </div>
             </div>
 
@@ -194,33 +195,34 @@ export default function TrafficIntelligencePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/60">
-                  {WINDOWS.map((win) => {
-                    const isSelected = selectedWindow === win.id;
-                    const isVideo = win.sec.includes("VIDEO") || win.id !== "W-03";
+                  {windows.map((win) => {
+                    const id = winLabel(win.window_id);
+                    const isSelected = win.window_id === (active?.window_id ?? selected);
+                    const conf = win.traffic_confidence !== null && win.traffic_confidence !== undefined ? `${Math.round(win.traffic_confidence * 100)}%` : "—";
                     return (
                       <tr
-                        key={win.id}
+                        key={win.window_id}
                         className={`cursor-pointer transition-colors ${isSelected ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
-                        onClick={() => selectWindow(win.id)}
+                        onClick={() => setSelected(win.window_id)}
                       >
                         <td className={`py-2.5 px-4 font-semibold ${isSelected ? "text-teal-300" : "text-zinc-200"}`}>
-                          {win.id}
+                          {id}
                         </td>
-                        <td className="py-2.5 px-4 text-zinc-400">{win.range}</td>
+                        <td className="py-2.5 px-4 text-zinc-400">{win.window_start ?? "—"}s – {win.window_end ?? "—"}s</td>
                         <td className="py-2.5 px-4">
-                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium ${isVideo ? "bg-teal-500/10 text-teal-300 border border-teal-500/20" : "bg-sky-500/10 text-sky-300 border border-sky-500/20"}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${isVideo ? "bg-teal-400" : "bg-sky-400"}`}></span>
-                            {isVideo ? `VIDEO (${win.conf})` : `WEB / TLS (${win.conf})`}
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-teal-500/10 text-teal-300 border border-teal-500/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+                            {(win.traffic_label ?? "unknown").toUpperCase()} ({conf})
                           </span>
                         </td>
-                        <td className="py-2.5 px-4 text-right text-zinc-200 tabular-nums">{win.rate}</td>
+                        <td className="py-2.5 px-4 text-right text-zinc-200 tabular-nums">{win.packet_count?.toLocaleString() ?? "—"} pkts</td>
                         <td className="py-2.5 px-4 text-center">
                           {isSelected ? (
                             <span className="px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30 font-semibold text-[11px]">Selected</span>
                           ) : (
                             <button
                               className="px-2 py-0.5 rounded text-zinc-400 hover:text-zinc-200 text-[11px] hover:bg-zinc-800"
-                              onClick={(e) => { e.stopPropagation(); selectWindow(win.id); }}
+                              onClick={(e) => { e.stopPropagation(); setSelected(win.window_id); }}
                             >
                               Inspect →
                             </button>
@@ -248,7 +250,7 @@ export default function TrafficIntelligencePage() {
                   </div>
                 </div>
                 <span className="font-mono text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
-                  Window {activeNum} · 5.000s
+                  Window {activeId} · 10.000s
                 </span>
               </div>
 

@@ -1,13 +1,19 @@
 "use client";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/mock/toast";
 import { executiveReportJSON, findingsCSV } from "@/lib/mock/analysis";
 import { AppShell } from "@/components/layout/AppShell";
+import { useAnalysisBundle } from "@/components/analysis/useAnalysisBundle";
 export default function AnalysisResultsPage() {
   const router = useRouter();
+  const params = useSearchParams();
+  const analysisId = params.get("analysis_id");
   const toast = useToast();
+  const { data, loading, error } = useAnalysisBundle(analysisId);
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedFinding, setSelectedFinding] = useState("dh2");
   function toggleDrawer() {
@@ -17,6 +23,38 @@ export default function AnalysisResultsPage() {
     setSelectedFinding(id);
     setDrawerOpen(true);
   }
+  if (!analysisId) {
+    return (
+      <div className="bg-background font-body-md text-body-md text-on-surface antialiased">
+        <AppShell active="">
+          <div className="p-8 text-sm">No analysis selected. <Link className="underline" href="/analyze">Upload a capture</Link>.</div>
+        </AppShell>
+      </div>
+    );
+  }
+  if (loading) {
+    return (
+      <div className="bg-background font-body-md text-body-md text-on-surface antialiased">
+        <AppShell active="">
+          <div className="p-8 text-sm font-mono">Loading analysis…</div>
+        </AppShell>
+      </div>
+    );
+  }
+  if (error || !data) {
+    return (
+      <div className="bg-background font-body-md text-body-md text-on-surface antialiased">
+        <AppShell active="">
+          <div className="p-8 text-sm font-mono">Analysis unavailable: {error ?? "not found"}.</div>
+        </AppShell>
+      </div>
+    );
+  }
+  const { analysis, findings, traffic } = data;
+  const score = analysis.security_score ?? 47;
+  const risk = analysis.risk_level ?? "HIGH";
+  const crypto = analysis.config_json?.ipsec_config?.cryptography ?? {};
+  const sa = analysis.config_json?.ipsec_config?.sa_config ?? {};
   return (
     <div className="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
 <AppShell active="">
@@ -28,7 +66,7 @@ export default function AnalysisResultsPage() {
 <div className="flex items-center gap-space-xs font-code-sm text-code-sm text-outline">
 <span className="hover:text-on-surface cursor-pointer">Captures</span>
 <span>/</span>
-<span className="text-primary font-medium">weak-vpn-07.pcap</span>
+<span className="text-primary font-medium">{analysis.filename}</span>
 <span>/</span>
 <span className="text-on-surface">Forensic Analysis Results</span>
 </div>
@@ -51,11 +89,11 @@ export default function AnalysisResultsPage() {
 </div>
 {/* Global Actions Group */}
 <div className="flex items-center gap-space-xs shrink-0">
-<button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button" onClick={() => { downloadFile("tunnelsight-report.json", executiveReportJSON()); toast({ title: "Report exported", body: "tunnelsight-report.json downloaded.", kind: "ok" }); }}>
+<button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button" onClick={() => { downloadFile(`${analysis.filename}-report.json`, JSON.stringify({ capture: analysis.filename, risk, security_score: score, traffic_label: analysis.traffic_label, traffic_confidence: analysis.traffic_confidence, anomaly_score: analysis.anomaly_score, findings: findings.findings }, null, 2)); toast({ title: "Report exported", body: `${analysis.filename}-report.json downloaded.`, kind: "ok" }); }}>
 <span className="material-symbols-outlined text-[15px] text-primary">download</span>
         Export Report (STIX/PDF)
       </button>
-<button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button" onClick={() => { toast({ title: "Re-analysis queued", body: "Pipeline restart requested (mock).", kind: "info" }); router.push("/analysis/progress"); }}>
+<button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button" onClick={() => { toast({ title: "Re-analysis queued", body: "Re-upload the capture to re-analyze.", kind: "info" }); router.push("/analyze"); }}>
 <span className="material-symbols-outlined text-[15px]">autorenew</span>
         Re-analyze
       </button>
@@ -76,14 +114,14 @@ export default function AnalysisResultsPage() {
 <circle className="text-error fill-none transition-all duration-700 ease-out" cx="36" cy="36" r="30" stroke="currentColor" strokeDasharray="188.5" strokeDashoffset="99.9" strokeLinecap="round" strokeWidth="5"></circle>
 </svg>
 <div className="absolute flex flex-col items-center justify-center">
-<span className="font-display-serif text-3xl text-on-surface font-semibold tracking-tight">47</span>
+<span className="font-display-serif text-3xl text-on-surface font-semibold tracking-tight">{score}</span>
 <span className="font-mono text-[10px] text-outline -mt-1">/ 100</span>
 </div>
 </div>
 <div className="flex flex-col gap-space-2xs min-w-0">
 <div className="flex items-center gap-space-xs">
 <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Risk Classification</span>
-<span className="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-code-sm text-code-sm font-semibold">HIGH</span>
+<span className="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-code-sm text-code-sm font-semibold">{risk}</span>
 </div>
 <div className="font-headline-sm text-headline-sm text-on-surface">Sub-optimal Cryptographic Margin</div>
 <div className="font-code-sm text-code-sm text-on-surface-variant flex items-center gap-space-xs">
