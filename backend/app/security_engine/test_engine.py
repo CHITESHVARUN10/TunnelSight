@@ -1,6 +1,6 @@
 import json
-from schema import IPsecConfig
-from engine import SecurityRuleEngine
+from app.security_engine.schema import IPsecConfig
+from app.security_engine.engine import SecurityRuleEngine
 
 def test_engine():
     engine = SecurityRuleEngine()

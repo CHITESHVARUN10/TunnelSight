@@ -4,6 +4,7 @@
 --   users          <- app/models/user.py
 --   sessions       <- app/models/session.py
 --   analyses       <- app/models/analysis.py
+--   analysis_windows <- app/models/analysis_window.py
 --   password_resets<- app/models/password_reset.py
 --   profiles       <- app/models/profile.py
 -- If you change a model, update this file too (and vice versa).
@@ -62,6 +63,23 @@ ALTER TABLE analyses ADD COLUMN IF NOT EXISTS traffic_confidence DOUBLE PRECISIO
 ALTER TABLE analyses ADD COLUMN IF NOT EXISTS security_score INTEGER NULL;
 ALTER TABLE analyses ADD COLUMN IF NOT EXISTS risk_level VARCHAR(32) NULL;
 ALTER TABLE analyses ADD COLUMN IF NOT EXISTS findings_json JSONB NULL;
+
+-- ----------------------------------------------------- analysis_windows ---
+-- Per-window ML output for one analysis (mock: 3-8 seeded windows; real parser later).
+CREATE TABLE IF NOT EXISTS analysis_windows (
+    id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    analysis_id   UUID         NOT NULL REFERENCES analyses (id) ON DELETE CASCADE,
+    window_id     INTEGER      NOT NULL,
+    window_start  DOUBLE PRECISION NULL,
+    window_end    DOUBLE PRECISION NULL,
+    packet_count  INTEGER      NULL,
+    traffic_label VARCHAR(32)  NULL,
+    traffic_confidence DOUBLE PRECISION NULL,
+    anomaly_score DOUBLE PRECISION NULL,
+    is_anomaly    BOOLEAN      NULL,
+    created_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ix_analysis_windows_analysis_id ON analysis_windows (analysis_id);
 
 -- ------------------------------------------------------ password_resets ---
 -- Single-use reset tokens. Only token_hash is stored; the raw token goes
