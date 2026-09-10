@@ -359,9 +359,9 @@ export default function OverviewPage() {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
-  const selCfg = getIpsecConfig(selected);
-  const selScore = getScore(selected);
-  const selRisk = getRisk(selected);
+  const selCfg = selected ? getIpsecConfig(selected) : null;
+  const selScore = selected ? getScore(selected) : null;
+  const selRisk = selected ? getRisk(selected) : null;
   const selFindings = selected ? getFindings(selected) : [];
   const selTraffic = selected ? getTrafficLabel(selected) : null;
   const selTrafficConf = selected ? getTrafficConfidence(selected) : null;
@@ -819,6 +819,8 @@ export default function OverviewPage() {
           id="detail-drawer"
           aria-hidden={!drawerOpen}
         >
+          {selected ? (
+          <>
           <div className="p-4 bg-surface-container border-b border-hairline flex items-start justify-between">
             <div className="flex flex-col gap-1 min-w-0">
               <span className="text-[10px] font-mono text-outline uppercase tracking-wider">
@@ -984,6 +986,18 @@ export default function OverviewPage() {
               </pre>
             </details>
           </div>
+          </>
+          ) : (
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-center gap-2 text-center">
+            <span className="material-symbols-outlined text-[28px] text-outline">inbox</span>
+            <p className="text-[12px] font-mono text-on-surface-variant">
+              No analysis selected.
+            </p>
+            <p className="text-[11px] font-mono text-outline">
+              Upload a capture or run a simulation to populate this view.
+            </p>
+          </div>
+          )}
 
           <div className="p-3.5 bg-surface-container border-t border-hairline flex items-center justify-between gap-2.5">
             <button
