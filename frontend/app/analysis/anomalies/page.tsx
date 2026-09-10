@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
-import { getAnalysis, getAnomalies, type Analysis, type Window } from "@/lib/analysis";
+import { getAnalysis, getAnomalies, downloadReportPdf, type Analysis, type Window } from "@/lib/analysis";
 
 export default function AnomaliesPage() {
   const [activeTab, setActiveTab] = useState("all");
@@ -41,6 +41,15 @@ export default function AnomaliesPage() {
   }, [analysisId, toast]);
 
   const adjustThreshold = () => toast({ title: "Threshold", body: "Use ?threshold= on the API to filter raw IF scores (lower = more anomalous).", kind: "info" });
+  const exportPdf = async () => {
+    if (!analysis) return;
+    try {
+      await downloadReportPdf(analysis.id, analysis.filename);
+      toast({ title: "PDF report downloaded", body: `${analysis.filename} report saved.`, kind: "ok" });
+    } catch (err) {
+      toast({ title: "PDF export failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
+  };
   const exportVectors = () => {
     downloadFile(
       `${analysis?.filename ?? "anomaly"}-vectors.json`,
@@ -206,6 +215,15 @@ export default function AnomaliesPage() {
               </div>
               <div className="h-10 w-px bg-zinc-800"></div>
               <div className="flex flex-col gap-1.5">
+                <button
+                  className="px-3 py-1.5 rounded bg-teal-500 text-zinc-950 hover:bg-teal-400 font-mono text-xs font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  type="button"
+                  disabled={!analysis}
+                  onClick={exportPdf}
+                >
+                  <span className="material-symbols-outlined text-[15px]">picture_as_pdf</span>
+                  Export PDF
+                </button>
                 <button
                   className="px-3 py-1.5 rounded bg-teal-500/10 border border-teal-500/30 text-teal-300 hover:bg-teal-500/20 font-mono text-xs font-semibold transition-colors flex items-center gap-1.5"
                   type="button"

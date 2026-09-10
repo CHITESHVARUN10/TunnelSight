@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAnalysisBundle } from "@/components/analysis/useAnalysisBundle";
+import { downloadReportPdf } from "@/lib/analysis";
 import { capturePackets, captureVolume, formatClock, suiteString } from "@/lib/format";
 
 const SEVERITY_TONE: Record<string, string> = {
@@ -106,6 +107,21 @@ export default function AnalysisResultsPage() {
             </div>
           </div>
           <div className="flex items-center gap-space-xs shrink-0">
+            <button
+              className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md"
+              type="button"
+              onClick={async () => {
+                try {
+                  await downloadReportPdf(analysis.id, analysis.filename);
+                  toast({ title: "PDF report downloaded", body: `${analysis.filename} report saved.`, kind: "ok" });
+                } catch (err) {
+                  toast({ title: "PDF export failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+                }
+              }}
+            >
+              <span className="material-symbols-outlined text-[15px] text-primary">picture_as_pdf</span>
+              Export PDF Report
+            </button>
             <button
               className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md"
               type="button"

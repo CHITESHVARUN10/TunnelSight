@@ -22,3 +22,20 @@ export async function apiForm(path: string, form: FormData) {
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json().catch(() => ({}));
 }
+
+/** Fetch a binary payload (PDF export). Surfaces JSON error details readably. */
+export async function apiBlob(path: string, init: RequestInit = {}): Promise<Blob> {
+  const res = await fetch(`${BASE}${path}`, { credentials: "include", ...init });
+  if (!res.ok) {
+    const raw = await res.text().catch(() => "");
+    let detail = raw;
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.detail === "string") detail = parsed.detail;
+    } catch {
+      // keep the raw body
+    }
+    throw new Error(`${res.status} ${res.statusText}${detail ? ` — ${detail}` : ""}`.trim());
+  }
+  return res.blob();
+}

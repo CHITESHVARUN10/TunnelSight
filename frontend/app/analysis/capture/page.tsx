@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/toast";
-import { getAnalysis } from "@/lib/analysis";
+import { downloadReportPdf, getAnalysis } from "@/lib/analysis";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default function CaptureDrawerPage() {
@@ -35,15 +35,18 @@ export default function CaptureDrawerPage() {
     router.push(analysisId ? `/analysis/results?analysis_id=${analysisId}` : "/analysis/results");
 
   const generateReport = async () => {
-    try {
-      const payload = analysisId
-        ? await getAnalysis(analysisId)
-        : { capture: filename, generated: new Date().toISOString() };
-      downloadFile(`${filename.replace(/\.pcap\w*$/, "")}-report.json`, JSON.stringify(payload, null, 2), "application/json");
-      toast({ title: "Report generated", body: `${filename} report downloaded.`, kind: "ok" });
-    } catch (err) {
-      toast({ title: "Report failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    if (analysisId) {
+      try {
+        await downloadReportPdf(analysisId, filename);
+        toast({ title: "Report generated", body: `${filename} PDF report downloaded.`, kind: "ok" });
+        return;
+      } catch (err) {
+        toast({ title: "Report failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+        return;
+      }
     }
+    downloadFile("capture-metadata.json", JSON.stringify({ capture: filename, generated: new Date().toISOString() }, null, 2), "application/json");
+    toast({ title: "No capture selected", body: "Exported capture metadata instead.", kind: "info" });
   };
 
   return (

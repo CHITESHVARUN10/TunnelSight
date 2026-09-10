@@ -2,37 +2,21 @@
 
 export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/toast";
-import { getAnalysis, type Analysis } from "@/lib/analysis";
+import { downloadReportPdf } from "@/lib/analysis";
 import { AppShell } from "@/components/layout/AppShell";
+import { useResolvedAnalysis } from "@/components/analysis/useResolvedAnalysis";
 import { ReportGenerationModal } from "@/components/modals/ReportGenerationModal";
 
 export default function ReportsPage() {
   const params = useSearchParams();
-  const analysisId = params.get("analysis_id");
+  const { analysis, analysisId } = useResolvedAnalysis(params.get("analysis_id"));
   const [reportTab, setReportTab] = useState<"exec" | "tech">("exec");
   const [hexVisible, setHexVisible] = useState(true);
   const [reportModalOpen, setReportModalOpen] = useState(false);
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const toast = useToast();
-
-  useEffect(() => {
-    if (!analysisId) return;
-    let dead = false;
-    (async () => {
-      try {
-        const a = await getAnalysis(analysisId);
-        if (!dead) setAnalysis(a);
-      } catch (err) {
-        if (!dead) toast({ title: "Report unavailable", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
-      }
-    })();
-    return () => {
-      dead = true;
-    };
-  }, [analysisId, toast]);
 
   const filename = analysis?.filename ?? "—";
   const score = analysis?.security_score ?? null;
@@ -46,6 +30,20 @@ export default function ReportsPage() {
     setHexVisible((v) => !v);
   }
 
+  /** Every PDF-labelled action now serves a real, server-rendered PDF. */
+  const downloadPdf = async () => {
+    if (!analysis) {
+      toast({ title: "Nothing to export", body: "Load a capture first.", kind: "warn" });
+      return;
+    }
+    try {
+      await downloadReportPdf(analysis.id, analysis.filename);
+      toast({ title: "PDF report downloaded", body: `${analysis.filename} report saved.`, kind: "ok" });
+    } catch (err) {
+      toast({ title: "PDF export failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
+  };
+
   const downloadExec = (name: string) => {
     if (!analysis) {
       toast({ title: "Nothing to export", body: "Load a capture first.", kind: "warn" });
@@ -55,7 +53,7 @@ export default function ReportsPage() {
     toast({ title: "Report Generated", body: `${name} downloaded.`, kind: "ok" });
   };
 
-  const sendToCiso = () => toast({ title: "Executive briefing", body: "Export the report JSON and share it.", kind: "info" });
+  const sendToCiso = () => toast({ title: "Executive briefing", body: "Export the PDF report and share it.", kind: "info" });
   const disasmPayload = () => toast({ title: "Payload disassembly", body: "ESP payloads are encrypted; header-only analysis applies.", kind: "info" });
   const refreshArchive = () => toast({ title: "Archive", body: "Reports are generated from stored analyses on demand.", kind: "info" });
   const reportConfig = () => toast({ title: "Report Configuration", body: "Report engine settings preset.", kind: "info" });
@@ -132,10 +130,10 @@ export default function ReportsPage() {
             <button
               className="h-8 px-3 bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-mono text-[12px] rounded flex items-center gap-1.5 transition-colors"
               type="button"
-              onClick={() => downloadExec("tunnelsight-reports-batch.json")}
+              onClick={downloadPdf}
             >
-              <span className="material-symbols-outlined text-[16px]">archive</span>
-              <span>Batch Export (.zip)</span>
+              <span className="material-symbols-outlined text-[16px]">file_download</span>
+              <span>Batch Export (.pdf)</span>
             </button>
             <button
               className="h-8 w-8 bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface rounded flex items-center justify-center transition-colors"
@@ -198,7 +196,7 @@ export default function ReportsPage() {
                   className="p-1.5 rounded bg-surface-container-low hover:bg-surface-container text-primary transition-colors"
                   title="Download Signed PDF"
                   type="button"
-                  onClick={() => downloadExec("tunnelsight-signed-report.json")}
+                  onClick={downloadPdf}
                 >
                   <span className="material-symbols-outlined text-[16px]">file_download</span>
                 </button>
@@ -266,7 +264,7 @@ export default function ReportsPage() {
                     <button
                       className="px-4 py-1.5 bg-primary-container hover:bg-tertiary-container text-on-primary-container font-headline-sm text-[13px] font-semibold rounded flex items-center gap-1.5 transition-colors shadow-sm"
                       type="button"
-                      onClick={() => downloadExec("tunnelsight-signed-report.json")}
+                      onClick={downloadPdf}
                     >
                       <span className="material-symbols-outlined text-[16px]">verified_user</span>
                       <span>Download Signed PDF</span>

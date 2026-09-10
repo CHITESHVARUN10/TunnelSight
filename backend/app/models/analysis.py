@@ -25,4 +25,5 @@ class Analysis(Base):
     security_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     risk_level: Mapped[str | None] = mapped_column(String(32), nullable=True)
     findings_json: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    explanation_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

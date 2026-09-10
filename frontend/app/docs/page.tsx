@@ -332,6 +332,20 @@ export default function DocumentationPage() {
               filename) when the bytes could not be parsed. No Zeek/tshark, no background worker, no live
               capture yet.
             </p>
+            <p>
+              Two derived artifacts sit on top of that record.{" "}
+              <span className="text-[#f7f4ee] font-mono text-xs">GET /api/history/&#123;id&#125;/report.pdf</span>{" "}
+              renders a light, print-friendly PDF (ReportLab) covering the negotiated suite, findings, capture
+              statistics and ML windows — this backs every “Export PDF” button in the UI.{" "}
+              <span className="text-[#f7f4ee] font-mono text-xs">
+                POST /api/history/&#123;id&#125;/explanation
+              </span>{" "}
+              asks an OpenRouter model to explain the deterministic findings, grounded strictly in the stored
+              evidence (no packet payloads are sent) and cached in{" "}
+              <span className="text-[#f7f4ee] font-mono text-xs">analyses.explanation_json</span>. With no{" "}
+              <span className="text-[#f7f4ee] font-mono text-xs">OPENROUTER_API_KEY</span> the AI routes answer
+              503 and the deterministic results still work.
+            </p>
           </div>
         </div>
 

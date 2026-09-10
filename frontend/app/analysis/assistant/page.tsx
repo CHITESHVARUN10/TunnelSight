@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
-import { getAnalysis, listHistory, type Analysis } from "@/lib/analysis";
+import { getAnalysis, listHistory, downloadReportPdf, type Analysis } from "@/lib/analysis";
 import { capturePackets, captureVolume, formatClock, suiteString } from "@/lib/format";
 
 const SEVERITY_TONE: Record<string, string> = {
@@ -95,6 +95,23 @@ export default function AssistantPage() {
                 generative model is involved.
               </p>
             </div>
+            <button
+              className="flex items-center gap-1.5 bg-teal-500 hover:bg-teal-400 text-zinc-950 px-3 py-1.5 rounded text-xs font-mono font-semibold transition-colors disabled:opacity-50"
+              type="button"
+              disabled={!analysis}
+              onClick={async () => {
+                if (!analysis) return;
+                try {
+                  await downloadReportPdf(analysis.id, analysis.filename);
+                  toast({ title: "PDF report downloaded", body: `${analysis.filename} report saved.`, kind: "ok" });
+                } catch (err) {
+                  toast({ title: "PDF export failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+                }
+              }}
+            >
+              <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span>
+              <span>Export PDF</span>
+            </button>
             <button
               className="flex items-center gap-1.5 bg-[#14171c] hover:bg-zinc-800 text-zinc-300 border border-zinc-800/80 px-3 py-1.5 rounded text-xs font-mono transition-colors disabled:opacity-50"
               type="button"

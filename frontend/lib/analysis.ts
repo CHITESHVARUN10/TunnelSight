@@ -1,4 +1,15 @@
-import { api, apiForm } from "./api";
+import { api, apiBlob, apiForm } from "./api";
+
+export type PreviewPacket = {
+  index: number;
+  offset: number;
+  length: number;
+  src: string | null;
+  dst: string | null;
+  proto: string;
+  hex: string;
+  hex_truncated: boolean;
+};
 
 export type CaptureStats = {
   packet_count: number | null;
@@ -6,6 +17,7 @@ export type CaptureStats = {
   flow_duration: number | null;
   file_bytes: number | null;
   started_at: string | null;
+  packets_preview?: PreviewPacket[] | null;
 };
 
 export type Analysis = {
@@ -103,3 +115,37 @@ export const listHistory = (
 
 export const deleteAnalysis = (id: string) =>
   api(`/api/history/${id}`, { method: "DELETE" });
+
+export type Explanation = {
+  summary: string;
+  per_finding: { severity: string; category: string; why: string; remediation: string }[];
+  model: string | null;
+  generated_at: string | null;
+};
+
+/** Cached explanation, or null when it has not been generated yet (404). */
+export const getExplanation = async (id: string): Promise<Explanation | null> => {
+  try {
+    return (await api(`/api/history/${id}/explanation`)) as Explanation;
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith("404")) return null;
+    throw err;
+  }
+};
+
+/** Generate (or regenerate) the explanation. Throws on 503 when the AI layer is off. */
+export const generateExplanation = (id: string, regenerate = false): Promise<Explanation> =>
+  api(`/api/history/${id}/explanation${regenerate ? "?regenerate=true" : ""}`, { method: "POST" });
+
+/** Download the server-rendered PDF report for an analysis. */
+export async function downloadReportPdf(id: string, filename: string): Promise<void> {
+  const blob = await apiBlob(`/api/history/${id}/report.pdf`);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filename.replace(/\.(pcapng|pcap|cap|erf)$/i, "")}-report.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+}

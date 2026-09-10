@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast, downloadFile } from "@/lib/toast";
+import { useToast } from "@/lib/toast";
 import Stat from "@/components/motion/Stat";
 import { AppShell } from "@/components/layout/AppShell";
 import { ArchiveDeleteModal } from "@/components/modals/ArchiveDeleteModal";
-import { deleteAnalysis, getAnalysis, listHistory, type Analysis } from "@/lib/analysis";
+import { deleteAnalysis, downloadReportPdf, getAnalysis, listHistory, type Analysis } from "@/lib/analysis";
 
 const RISK_OPTIONS = ["All", "CRITICAL", "HIGH", "MEDIUM", "LOW"];
 
@@ -507,12 +507,13 @@ export default function HistoryPage() {
                     </button>
                     <div className="grid grid-cols-2 gap-2">
                       <button
-                        onClick={() => {
-                          downloadFile(
-                            `${selected.filename}-report.json`,
-                            JSON.stringify({ capture: selected.filename, risk: selected.risk_level, security_score: selected.security_score, traffic_label: selected.traffic_label, findings: selected.findings_json }, null, 2)
-                          );
-                          toast({ title: "Report generated", body: `${selected.filename}-report.json downloaded.`, kind: "ok" });
+                        onClick={async () => {
+                          try {
+                            await downloadReportPdf(selected.id, selected.filename);
+                            toast({ title: "PDF report downloaded", body: `${selected.filename} report saved.`, kind: "ok" });
+                          } catch (err) {
+                            toast({ title: "PDF export failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+                          }
                         }}
                         className="py-1.5 bg-[#0c0e11] hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded flex items-center justify-center gap-1 transition-colors"
                         type="button"

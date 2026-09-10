@@ -5,7 +5,7 @@ import io
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -52,15 +52,26 @@ def list_reports(analysis_id: uuid.UUID, user: User = Depends(get_current_user),
 
 
 @router.get("/reports/{report_id}/download")
-def download_report_placeholder(report_id: uuid.UUID, user: User = Depends(get_current_user)):
-    body = {
-        "report_id": str(report_id),
-        "note": "JSON-only stub; PDF lands in a later phase",
-        "generated": datetime.now(timezone.utc).isoformat(),
-    }
-    import json
+def download_report_placeholder(report_id: uuid.UUID, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Legacy report id route — an analysis id is required to build a real PDF."""
+    row = db.query(Analysis).filter(Analysis.id == report_id, Analysis.user_id == user.id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="not found")
 
-    return Response(content=json.dumps(body, indent=2), media_type="application/json")
+    from app.services import pdf_report
+
+    windows = (
+        db.query(AnalysisWindow)
+        .filter(AnalysisWindow.analysis_id == row.id)
+        .order_by(AnalysisWindow.window_id)
+        .all()
+    )
+    pdf = pdf_report.build_report(row, windows, row.explanation_json)
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{row.id}-report.pdf"'},
+    )
 
 
 @router.get("/history/{analysis_id}/export")

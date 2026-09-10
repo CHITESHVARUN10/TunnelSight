@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS analyses (
     security_score INTEGER     NULL,              -- rule-engine total 0..100
     risk_level    VARCHAR(32)  NULL,              -- LOW/MEDIUM/HIGH/CRITICAL
     findings_json JSONB        NULL,              -- rule-engine findings list [{severity, category, description}]
+    explanation_json JSONB     NULL,              -- cached OpenRouter AI explanation (nullable)
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS ix_analyses_user_id ON analyses (user_id);
@@ -63,6 +64,7 @@ ALTER TABLE analyses ADD COLUMN IF NOT EXISTS traffic_confidence DOUBLE PRECISIO
 ALTER TABLE analyses ADD COLUMN IF NOT EXISTS security_score INTEGER NULL;
 ALTER TABLE analyses ADD COLUMN IF NOT EXISTS risk_level VARCHAR(32) NULL;
 ALTER TABLE analyses ADD COLUMN IF NOT EXISTS findings_json JSONB NULL;
+ALTER TABLE analyses ADD COLUMN IF NOT EXISTS explanation_json JSONB NULL;
 
 -- ----------------------------------------------------- analysis_windows ---
 -- Per-window ML output for one analysis (mock: 3-8 seeded windows; real parser later).

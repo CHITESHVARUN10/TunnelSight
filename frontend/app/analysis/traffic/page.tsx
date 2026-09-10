@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
-import { getAnalysis, getTraffic, getWindows, type Analysis, type Window } from "@/lib/analysis";
+import { useResolvedAnalysis } from "@/components/analysis/useResolvedAnalysis";
+import { downloadReportPdf, getTraffic, getWindows, type Window } from "@/lib/analysis";
 import { capturePackets, captureVolume, formatBytes, formatDuration } from "@/lib/format";
 
 function winLabel(id: number) {
@@ -33,8 +34,7 @@ function winPps(w: Window) {
 export default function TrafficIntelligencePage() {
   const toast = useToast();
   const params = useSearchParams();
-  const analysisId = params.get("analysis_id");
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const { analysis, analysisId, loading, error, empty } = useResolvedAnalysis(params.get("analysis_id"));
   const [windows, setWindows] = useState<Window[]>([]);
   const [mix, setMix] = useState<Record<string, number>>({});
   const [selected, setSelected] = useState(0);
@@ -44,9 +44,8 @@ export default function TrafficIntelligencePage() {
     let dead = false;
     (async () => {
       try {
-        const [a, t, w] = await Promise.all([getAnalysis(analysisId), getTraffic(analysisId), getWindows(analysisId)]);
+        const [t, w] = await Promise.all([getTraffic(analysisId), getWindows(analysisId)]);
         if (!dead) {
-          setAnalysis(a);
           setMix(t.mix);
           setWindows(w);
           if (w.length > 0) setSelected(w[w.length - 1].window_id);
@@ -75,11 +74,27 @@ export default function TrafficIntelligencePage() {
   const captureStart = windows.length ? Math.min(...windows.map((w) => w.window_start ?? 0)) : null;
   const captureEnd = windows.length ? Math.max(...windows.map((w) => w.window_end ?? 0)) : null;
 
-  if (!analysisId) {
+  const exportPdf = async () => {
+    if (!analysis) return;
+    try {
+      await downloadReportPdf(analysis.id, analysis.filename);
+      toast({ title: "PDF report downloaded", body: `${analysis.filename} report saved.`, kind: "ok" });
+    } catch (err) {
+      toast({ title: "PDF export failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
+  };
+
+  if (!analysisId && !loading && (empty || error)) {
     return (
       <div className="traffic-scope bg-background font-sans text-sm text-on-surface antialiased min-h-screen">
         <AppShell active="/analysis/traffic">
-          <div className="p-8 text-sm">No analysis selected. <Link className="underline" href="/analyze">Upload a capture</Link>.</div>
+          <div className="p-8 text-sm">
+            {error ? `Traffic unavailable: ${error}` : "No captures yet."}{" "}
+            <Link className="underline text-primary" href="/analyze">
+              Upload a capture
+            </Link>
+            .
+          </div>
         </AppShell>
       </div>
     );
@@ -131,9 +146,18 @@ export default function TrafficIntelligencePage() {
                 <span className="material-symbols-outlined text-outline text-[16px]">dataset</span>
                 <span className="font-mono text-[12px] text-on-surface-variant">Record:</span>
                 <span className="font-mono text-[12px] text-on-surface font-medium">
-                  {analysisId.slice(0, 8).toUpperCase()}
+                  {analysisId?.slice(0, 8).toUpperCase() ?? "—"}
                 </span>
               </div>
+              <button
+                className="flex items-center gap-1.5 bg-surface-container px-3 py-1.5 rounded text-on-surface hover:bg-surface-container-high transition-colors font-mono text-[12px] disabled:opacity-50"
+                type="button"
+                disabled={!analysis}
+                onClick={exportPdf}
+              >
+                <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                <span>Export PDF</span>
+              </button>
               <button
                 className="flex items-center gap-1.5 bg-primary-container px-3 py-1.5 rounded text-on-primary-container hover:bg-primary hover:text-on-primary transition-colors font-mono text-[12px] font-medium"
                 type="button"

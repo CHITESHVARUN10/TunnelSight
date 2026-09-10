@@ -52,6 +52,9 @@ PARSER_NOTE = "ipsec_config and window ML features derived from capture bytes vi
 MIN_PACKETS_PER_WINDOW = 5
 MAX_WINDOWS = 8
 
+# Bounded raw-byte preview persisted for the config page's packet inspector.
+PACKET_PREVIEW_MAX = 25
+
 
 class AnalyzerService:
     def __init__(self):
@@ -119,6 +122,7 @@ class AnalyzerService:
             "flow_duration": float(window_count * 10),
             "file_bytes": None,
             "started_at": None,
+            "packets_preview": [],
         }
 
     def parse_pcap_mock(self, filename: str) -> List[Dict[str, Any]]:
@@ -230,16 +234,34 @@ class AnalyzerService:
 
     def _capture_stats(self, packets: List[Dict[str, Any]], pcap_path: str) -> Dict[str, Any]:
         stamps = [p["ts"] for p in packets]
+        origin_ts = stamps[0] if stamps else 0.0
         try:
             file_bytes = os.path.getsize(pcap_path)
         except OSError:
             file_bytes = None
+
+        preview = []
+        for index, p in enumerate(packets[:PACKET_PREVIEW_MAX]):
+            preview.append(
+                {
+                    "index": index,
+                    "offset": round(p["ts"] - origin_ts, 6),
+                    "length": p["length"],
+                    "src": p.get("src"),
+                    "dst": p.get("dst"),
+                    "proto": p["proto"],
+                    "hex": p.get("hex", ""),
+                    "hex_truncated": p.get("hex_truncated", False),
+                }
+            )
+
         return {
             "packet_count": len(packets),
             "total_bytes": sum(p["length"] for p in packets),
-            "flow_duration": round(max(stamps) - min(stamps), 3) if stamps else 0.0,
+            "flow_duration": round(max(stamps) - min(stamps), 6) if stamps else 0.0,
             "file_bytes": file_bytes,
             "started_at": datetime.fromtimestamp(min(stamps), tz=timezone.utc).isoformat() if stamps else None,
+            "packets_preview": preview,
         }
 
     def analyze(self, filename: str, pcap_path: str | None = None) -> Dict[str, Any]:

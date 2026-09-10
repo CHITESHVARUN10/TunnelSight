@@ -146,13 +146,19 @@ def _iter_transforms(sa_payload: Any):
         depth += 1
 
 
-def extract_packets(pcap_path: str) -> List[Dict[str, Any]]:
-    """Per-packet measurements (timestamp, length, endpoints, protocol class)."""
+def extract_packets(
+    pcap_path: str, *, hex_bytes: int = 64, hex_max: int = 25
+) -> List[Dict[str, Any]]:
+    """Per-packet measurements (timestamp, length, endpoints, protocol class).
+
+    The first ``hex_max`` packets also carry a bounded raw ``hex`` preview so the
+    UI can show real bytes instead of a fabricated dump.
+    """
     if not os.path.exists(pcap_path):
         raise FileNotFoundError(f"PCAP file not found: {pcap_path}")
 
     packets = []
-    for pkt in rdpcap(pcap_path):
+    for index, pkt in enumerate(rdpcap(pcap_path)):
         if pkt.haslayer(IP):
             src, dst = pkt[IP].src, pkt[IP].dst
         elif pkt.haslayer(IPv6):
@@ -171,9 +177,18 @@ def extract_packets(pcap_path: str) -> List[Dict[str, Any]]:
         else:
             proto = "other"
 
-        packets.append(
-            {"ts": float(pkt.time), "length": int(len(pkt)), "src": src, "dst": dst, "proto": proto}
-        )
+        record: Dict[str, Any] = {
+            "ts": float(pkt.time),
+            "length": int(len(pkt)),
+            "src": src,
+            "dst": dst,
+            "proto": proto,
+        }
+        if index < hex_max:
+            raw = bytes(pkt)[:hex_bytes]
+            record["hex"] = " ".join(f"{b:02x}" for b in raw)
+            record["hex_truncated"] = len(pkt) > len(raw)
+        packets.append(record)
     return packets
 
 
