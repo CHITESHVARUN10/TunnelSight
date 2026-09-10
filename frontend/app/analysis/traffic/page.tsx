@@ -1,10 +1,22 @@
 "use client";
+
 import Link from "next/link";
 import { useState } from "react";
 import { downloadFile, useToast } from "@/lib/mock/toast";
 import { TRAFFIC_MIX } from "@/lib/mock/analysis";
 import { AppShell } from "@/components/layout/AppShell";
-type WindowInfo = { id: string; range: string; conf: string; sec: string; rate: string; pkts: string; meanSize: string; jitter: string };
+
+type WindowInfo = {
+  id: string;
+  range: string;
+  conf: string;
+  sec: string;
+  rate: string;
+  pkts: string;
+  meanSize: string;
+  jitter: string;
+};
+
 const WINDOWS: WindowInfo[] = [
   { id: "W-01", range: "00:00 - 00:05", conf: "91.8%", sec: "WEB (6.2%)", rate: "1.12 MB/s", pkts: "4,210", meanSize: "1,328 B", jitter: "0.120 ms" },
   { id: "W-02", range: "00:05 - 00:10", conf: "78.4%", sec: "VOIP (14.2%)", rate: "2.40 MB/s", pkts: "8,904", meanSize: "1,348 B", jitter: "0.082 ms" },
@@ -16,152 +28,222 @@ const WINDOWS: WindowInfo[] = [
   { id: "W-08", range: "00:35 - 00:40", conf: "87.4%", sec: "WEB (9.1%)", rate: "6.84 MB/s", pkts: "24,190", meanSize: "1,384 B", jitter: "0.041 ms" },
 ];
 
+const SHAP = [
+  {
+    icon: "download",
+    title: "High Sustained Downstream Asymmetry",
+    weight: "+38% Weight",
+    width: "38%",
+    desc: "94.8% egress bytes at 18.4:1 ratio matching multi-megabyte media segment delivery.",
+  },
+  {
+    icon: "view_stream",
+    title: "Near-MTU Sized Packet Clustering",
+    weight: "+29% Weight",
+    width: "29%",
+    desc: "89.2% packets between 1,360–1,420 bytes indicating path MTU-saturating media chunks.",
+  },
+  {
+    icon: "pace",
+    title: "Low-Jitter Paced Burst Intervals",
+    weight: "+19% Weight",
+    width: "19%",
+    desc: "200–250ms burst cadence correlating with automated ABR buffer replenishment.",
+  },
+  {
+    icon: "sync_alt",
+    title: "TCP/ESP ACK Framing Absence of Loss",
+    weight: "+8% Weight",
+    width: "8%",
+    desc: "Consistent 52–64 byte reverse-path cluster confirming regular ACK cadence without retransmits.",
+  },
+];
+
 export default function TrafficIntelligencePage() {
   const toast = useToast();
   const [selectedWindow, setSelectedWindow] = useState("W-08");
   function selectWindow(id: string) {
     setSelectedWindow(id);
   }
-  const activeRange = WINDOWS.find((w) => w.id === selectedWindow)?.range ?? "00:35 - 00:40";
+  const active = WINDOWS.find((w) => w.id === selectedWindow) ?? WINDOWS[WINDOWS.length - 1];
   const activeNum = selectedWindow.split("-")[1];
-  return (
-    <div className="bg-[#0c0e11] font-sans text-sm text-zinc-300 antialiased selection:bg-teal-500/20 selection:text-teal-200">
-      <AppShell active="/analysis/traffic">
 
+  return (
+    <div className="traffic-scope bg-background font-sans text-sm text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+      {/* Scoped CSS — traffic page only. No globals / theme touched. */}
+      <style>{`
+        .traffic-scope .traffic-mix > div { transition: opacity .18s ease, filter .18s ease; }
+        .traffic-scope .traffic-mix > div:hover { opacity: .92; filter: brightness(1.08); }
+        .traffic-scope .traffic-row { transition: background-color .15s ease; }
+        .traffic-scope .traffic-row.is-selected { background-color: var(--color-surface-container); }
+        .traffic-scope .traffic-card { transition: background-color .15s ease, transform .15s ease; }
+        .traffic-scope .traffic-card:hover { transform: translateY(-1px); }
+        .traffic-scope .traffic-bar > div { transition: width .5s ease; }
+        .traffic-scope .traffic-table-wrap { scrollbar-width: thin; scrollbar-color: rgba(127,135,130,.35) transparent; }
+        @media (prefers-reduced-motion: reduce) {
+          .traffic-scope .traffic-mix > div, .traffic-scope .traffic-bar > div { transition: none !important; }
+        }
+      `}</style>
+
+      <AppShell active="/analysis/traffic">
         {/* Sub-Header / Breadcrumb & Telemetry Context Bar */}
-        <div className="flex flex-col gap-3 bg-[#111317] px-6 py-3.5 border-b border-zinc-800/80 select-none">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2 font-mono text-xs text-zinc-400">
-              <Link href="/history" className="text-zinc-500 hover:text-zinc-300 transition-colors">Captures</Link>
-              <span className="text-zinc-700">/</span>
-              <span className="text-teal-400 font-medium">weak-vpn-07.pcap</span>
-              <span className="text-zinc-700">/</span>
-              <span className="text-zinc-200 font-medium">Encrypted Traffic Intelligence &amp; Flow ML</span>
+        <div className="flex flex-col gap-space-md bg-surface-container-lowest px-space-xl py-space-md select-none border-b border-hairline">
+          <div className="flex flex-wrap items-center justify-between gap-space-md">
+            <div className="flex items-center gap-2 font-mono text-[12px]">
+              <Link href="/history" className="text-outline hover:text-on-surface transition-colors">
+                Captures
+              </Link>
+              <span className="text-outline-variant">/</span>
+              <span className="text-primary font-medium">weak-vpn-07.pcap</span>
+              <span className="text-outline-variant">/</span>
+              <span className="text-on-surface font-semibold tracking-tight">
+                Encrypted Traffic Intelligence &amp; Flow ML
+              </span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded">
-                <span className="material-symbols-outlined text-zinc-500 text-[14px]">schedule</span>
-                <span className="font-mono text-xs text-zinc-400">Capture:</span>
-                <span className="font-mono text-xs text-zinc-200 font-medium">00:00:00 - 00:04:12</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 bg-surface-container-low px-3 py-1.5 rounded">
+                <span className="material-symbols-outlined text-outline text-[16px]">schedule</span>
+                <span className="font-mono text-[12px] text-on-surface-variant">Capture:</span>
+                <span className="font-mono text-[12px] text-on-surface font-medium">00:00:00 - 00:04:12</span>
               </div>
               <button
-                className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-xs font-mono"
+                className="flex items-center gap-1.5 bg-surface-container px-3 py-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-mono text-[12px]"
                 type="button"
-                onClick={() => toast({ title: "SPI 0xC3E8019A", body: "ESP flow · 24 SAs tracked · DPDK RX online.", kind: "info" })}
+                onClick={() =>
+                  toast({ title: "SPI 0xC3E8019A", body: "ESP flow · 24 SAs tracked · DPDK RX online.", kind: "info" })
+                }
               >
-                <span className="material-symbols-outlined text-[14px] text-teal-400">tune</span>
+                <span className="material-symbols-outlined text-[16px]">tune</span>
                 <span>SPI: 0xC3E8019A</span>
               </button>
               <button
-                className="flex items-center gap-1.5 bg-teal-500/10 border border-teal-500/30 px-3 py-1 rounded text-teal-300 hover:bg-teal-500/20 transition-colors text-xs font-mono font-medium"
+                className="flex items-center gap-1.5 bg-primary-container px-3 py-1.5 rounded text-on-primary-container hover:bg-primary hover:text-on-primary transition-colors font-mono text-[12px] font-medium"
                 type="button"
-                onClick={() => { downloadFile("traffic-intelligence.json", JSON.stringify({ capture: "weak-vpn-07.pcap", spi: "0xC3E8019A", mix: TRAFFIC_MIX, window: selectedWindow }, null, 2)); toast({ title: "Traffic intel exported", body: "traffic-intelligence.json downloaded.", kind: "ok" }); }}
+                onClick={() => {
+                  downloadFile(
+                    "traffic-intelligence.json",
+                    JSON.stringify(
+                      { capture: "weak-vpn-07.pcap", spi: "0xC3E8019A", mix: TRAFFIC_MIX, window: selectedWindow },
+                      null,
+                      2
+                    )
+                  );
+                  toast({ title: "Traffic intel exported", body: "traffic-intelligence.json downloaded.", kind: "ok" });
+                }}
               >
-                <span className="material-symbols-outlined text-[14px]">file_download</span>
+                <span className="material-symbols-outlined text-[16px]">file_download</span>
                 <span>Export JSON</span>
               </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 font-mono text-xs text-zinc-400">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>FLOWS: <span className="font-semibold text-teal-300 ml-1">24 CONCURRENT</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 font-mono text-[12px]">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface">
+                <span className="w-1.5 h-1.5 rounded-full bg-tertiary" />
+                FLOWS: <span className="font-semibold text-primary ml-1">24 CONCURRENT</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
-                WINDOW: <span className="text-zinc-200 font-medium ml-1">5.0s</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface-variant">
+                WINDOW: <span className="text-on-surface font-medium ml-1">5.0s</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
-                MODEL: <span className="text-zinc-200 font-medium ml-1">RF+GB Ensemble v2.4</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface-variant">
+                MODEL: <span className="text-on-surface font-medium ml-1">RF+GB Ensemble v2.4</span>
               </span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-zinc-900/80 border border-zinc-800 text-zinc-400 text-[11px]">
-              <span className="material-symbols-outlined text-zinc-500 text-[14px]">lock</span>
-              <span className="uppercase tracking-wider">[ZERO PAYLOAD DECRYPTION]</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-on-surface-variant text-[11px]">
+              <span className="material-symbols-outlined text-outline text-[14px]">lock</span>
+              <span className="uppercase tracking-wider font-mono text-[10px] font-semibold">[ZERO PAYLOAD DECRYPTION]</span>
             </div>
           </div>
         </div>
 
         {/* Content Workspace */}
-        <div className="flex flex-col gap-6 p-6">
-
+        <div className="flex flex-col gap-space-md p-space-base bg-surface-dim">
           {/* LEVEL 1: OVERALL CLASSIFICATION & SUMMARY */}
-          <section className="flex flex-col gap-5 bg-[#111317] p-5 rounded-lg border border-zinc-800/90">
+          <section className="flex flex-col gap-space-md bg-surface-container-low p-space-lg rounded border border-hairline">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] uppercase text-zinc-500 tracking-wider">Level 1 • Global Behavioral Mixture</span>
-                  <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 font-mono text-xs text-teal-400">SPI: 0xC3E8019A (ESP)</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-[10px] uppercase text-outline tracking-wider">
+                    Level 1 • Global Behavioral Mixture
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-surface-container-high font-mono text-[12px] text-primary">
+                    SPI: 0xC3E8019A (ESP)
+                  </span>
                 </div>
-                <h1 className="text-xl font-semibold text-white tracking-tight mt-1">Macro Behavioral Profile &amp; Traffic Mixture</h1>
+                <h1 className="font-headline-md text-on-surface mt-1 text-[16px] font-semibold tracking-tight">
+                  Macro Behavioral Profile &amp; Traffic Mixture
+                </h1>
               </div>
 
               <div className="flex items-center gap-6 text-right">
                 <div>
-                  <span className="block font-mono text-[10px] text-zinc-500 uppercase">Anomaly Score</span>
-                  <span className="font-display-serif text-lg text-teal-400 font-bold tabular-nums">0.12 (NOMINAL)</span>
+                  <span className="block font-mono text-[10px] text-outline uppercase">Anomaly Score</span>
+                  <span className="font-mono text-[13px] text-tertiary font-semibold tabular-nums">0.12 (NOMINAL)</span>
                 </div>
-                <div className="h-8 w-px bg-zinc-800"></div>
+                <div className="h-6 w-px bg-surface-container-highest" />
                 <div>
-                  <span className="block font-mono text-[10px] text-zinc-500 uppercase">Mean Rate</span>
-                  <span className="font-display-serif text-lg text-white font-bold tabular-nums">4.52 MB/s</span>
+                  <span className="block font-mono text-[10px] text-outline uppercase">Mean Rate</span>
+                  <span className="font-mono text-[13px] text-on-surface font-semibold tabular-nums">4.52 MB/s</span>
                 </div>
-                <div className="h-8 w-px bg-zinc-800"></div>
+                <div className="h-6 w-px bg-surface-container-highest" />
                 <div>
-                  <span className="block font-mono text-[10px] text-zinc-500 uppercase">Tunnel Volume</span>
-                  <span className="font-display-serif text-lg text-white font-bold tabular-nums">1.42 GB <span className="text-zinc-500 text-xs font-normal">/ 842k pkts</span></span>
+                  <span className="block font-mono text-[10px] text-outline uppercase">Tunnel Volume</span>
+                  <span className="font-mono text-[13px] text-on-surface font-semibold tabular-nums">
+                    1.42 GB <span className="text-on-surface-variant font-normal">/ 842k pkts</span>
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col gap-3">
               {/* Multi-segment Mixture Bar */}
-              <div className="h-3 w-full rounded-md bg-zinc-950 flex overflow-hidden border border-zinc-800/80">
-                <div className="h-full bg-teal-500 relative cursor-pointer transition-opacity hover:opacity-90" style={{width: '83%'}} title="Video: 83%"></div>
-                <div className="h-full bg-sky-500 relative cursor-pointer transition-opacity hover:opacity-90" style={{width: '10%'}} title="Web: 10%"></div>
-                <div className="h-full bg-amber-500 relative cursor-pointer transition-opacity hover:opacity-90" style={{width: '4%'}} title="VoIP: 4%"></div>
-                <div className="h-full bg-zinc-700 relative cursor-pointer transition-opacity hover:opacity-90" style={{width: '3%'}} title="Control: 3%"></div>
+              <div className="traffic-mix h-2.5 w-full rounded bg-surface-container-lowest flex overflow-hidden">
+                <div className="h-full bg-primary cursor-pointer" style={{ width: "83%" }} title="Video: 83%" />
+                <div className="h-full bg-secondary cursor-pointer" style={{ width: "10%" }} title="Web: 10%" />
+                <div className="h-full bg-tertiary-container cursor-pointer" style={{ width: "4%" }} title="VoIP: 4%" />
+                <div className="h-full bg-surface-variant cursor-pointer" style={{ width: "3%" }} title="Control: 3%" />
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="flex items-center justify-between bg-[#0c0e11] px-4 py-2.5 rounded border border-zinc-800/80">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="flex items-center justify-between bg-surface-container px-4 py-2 rounded">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-                    <span className="font-medium text-white text-xs">Video Stream</span>
+                    <span className="w-2 h-2 rounded bg-primary" />
+                    <span className="font-headline-sm text-on-surface font-medium text-[13px]">Video Stream</span>
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="text-teal-300 font-semibold">83%</span>
-                    <span className="text-zinc-500">| 94.2% conf</span>
+                  <div className="flex items-center gap-2 font-mono text-[12px]">
+                    <span className="text-primary font-semibold">83%</span>
+                    <span className="text-outline">| 94.2% conf</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between bg-[#0c0e11] px-4 py-2.5 rounded border border-zinc-800/80">
+                <div className="flex items-center justify-between bg-surface-container px-4 py-2 rounded">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-sky-400"></span>
-                    <span className="font-medium text-white text-xs">Web / TLS</span>
+                    <span className="w-2 h-2 rounded bg-secondary" />
+                    <span className="font-headline-sm text-on-surface font-medium text-[13px]">Web / TLS</span>
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="text-sky-300 font-semibold">10%</span>
-                    <span className="text-zinc-500">| 88.5% conf</span>
+                  <div className="flex items-center gap-2 font-mono text-[12px]">
+                    <span className="text-secondary font-semibold">10%</span>
+                    <span className="text-outline">| 88.5% conf</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between bg-[#0c0e11] px-4 py-2.5 rounded border border-zinc-800/80">
+                <div className="flex items-center justify-between bg-surface-container px-4 py-2 rounded">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                    <span className="font-medium text-white text-xs">VoIP / Audio</span>
+                    <span className="w-2 h-2 rounded bg-tertiary-container" />
+                    <span className="font-headline-sm text-on-surface font-medium text-[13px]">VoIP / Audio</span>
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="text-amber-300 font-semibold">4%</span>
-                    <span className="text-zinc-500">| 91.0% conf</span>
+                  <div className="flex items-center gap-2 font-mono text-[12px]">
+                    <span className="text-tertiary font-semibold">4%</span>
+                    <span className="text-outline">| 91.0% conf</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between bg-[#0c0e11] px-4 py-2.5 rounded border border-zinc-800/80">
+                <div className="flex items-center justify-between bg-surface-container px-4 py-2 rounded">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-zinc-500"></span>
-                    <span className="font-medium text-white text-xs">Other / Control</span>
+                    <span className="w-2 h-2 rounded bg-surface-variant" />
+                    <span className="font-headline-sm text-on-surface font-medium text-[13px]">Other / Control</span>
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="text-zinc-400 font-semibold">3%</span>
-                    <span className="text-zinc-500">| 96.1% conf</span>
+                  <div className="flex items-center gap-2 font-mono text-[12px]">
+                    <span className="text-outline font-semibold">3%</span>
+                    <span className="text-outline">| 96.1% conf</span>
                   </div>
                 </div>
               </div>
@@ -169,58 +251,94 @@ export default function TrafficIntelligencePage() {
           </section>
 
           {/* LEVEL 2: 5-SECOND INFERENCE WINDOW TIMELINE */}
-          <section className="flex flex-col bg-[#111317] rounded-lg border border-zinc-800/90 overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between px-5 py-3 bg-zinc-900/80 border-b border-zinc-800">
+          <section className="flex flex-col bg-surface-container-low rounded border border-hairline overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between px-space-base py-space-sm bg-surface-container gap-2">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-[11px] uppercase text-zinc-500 tracking-wider">Level 2 • Temporal Sequence</span>
-                <span className="h-3 w-px bg-zinc-800"></span>
-                <span className="text-sm font-semibold text-white">5.0-Second Observation Windows</span>
+                <span className="font-mono text-[11px] uppercase text-outline tracking-wider">Level 2 • Temporal Sequence</span>
+                <span className="h-4 w-px bg-surface-container-highest" />
+                <span className="text-[13px] font-semibold text-on-surface">5.0-Second Observation Windows</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-zinc-500">Active Window:</span>
-                <span className="font-mono text-xs text-teal-400 font-semibold">{selectedWindow} [{activeRange}]</span>
+                <span className="font-mono text-[11px] uppercase text-outline">Active Window:</span>
+                <span className="font-mono text-[12px] text-primary font-semibold">
+                  {selectedWindow} [{active.range}]
+                </span>
               </div>
             </div>
 
-            <div className="w-full overflow-x-auto">
-              <table className="w-full text-left font-mono text-xs border-collapse">
+            <div className="traffic-table-wrap w-full overflow-x-auto">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-zinc-900/50 font-mono text-[11px] text-zinc-400 uppercase tracking-wider border-b border-zinc-800 select-none">
-                    <th className="py-2.5 px-4 font-semibold">Window</th>
-                    <th className="py-2.5 px-4 font-semibold">Time Offset</th>
-                    <th className="py-2.5 px-4 font-semibold">Primary Inferred Behavior</th>
-                    <th className="py-2.5 px-4 font-semibold text-right">Throughput</th>
-                    <th className="py-2.5 px-4 font-semibold text-center">Action</th>
+                  <tr className="bg-surface-container-high font-mono text-[11px] text-outline uppercase tracking-wider select-none">
+                    <th className="py-2 px-4 font-semibold">Window</th>
+                    <th className="py-2 px-4 font-semibold">Time Offset</th>
+                    <th className="py-2 px-4 font-semibold">Primary Inferred Behavior</th>
+                    <th className="py-2 px-4 font-semibold text-right">Throughput</th>
+                    <th className="py-2 px-4 font-semibold text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/60">
+                <tbody className="font-mono text-[12px]">
                   {WINDOWS.map((win) => {
                     const isSelected = selectedWindow === win.id;
-                    const isVideo = win.sec.includes("VIDEO") || win.id !== "W-03";
+                    const isVideo = win.id !== "W-03";
                     return (
                       <tr
                         key={win.id}
-                        className={`cursor-pointer transition-colors ${isSelected ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
                         onClick={() => selectWindow(win.id)}
+                        className={`traffic-row cursor-pointer hover:bg-surface-container ${
+                          isSelected ? "is-selected select-none" : ""
+                        }`}
                       >
-                        <td className={`py-2.5 px-4 font-semibold ${isSelected ? "text-teal-300" : "text-zinc-200"}`}>
-                          {win.id}
-                        </td>
-                        <td className="py-2.5 px-4 text-zinc-400">{win.range}</td>
-                        <td className="py-2.5 px-4">
-                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium ${isVideo ? "bg-teal-500/10 text-teal-300 border border-teal-500/20" : "bg-sky-500/10 text-sky-300 border border-sky-500/20"}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${isVideo ? "bg-teal-400" : "bg-sky-400"}`}></span>
-                            {isVideo ? `VIDEO (${win.conf})` : `WEB / TLS (${win.conf})`}
+                        <td
+                          className={`py-2 px-4 ${
+                            isSelected ? "text-primary font-semibold" : "text-on-surface font-medium"
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            {isSelected && <span className="w-1 h-3 bg-primary rounded-sm inline-block" />}
+                            {win.id}
                           </span>
                         </td>
-                        <td className="py-2.5 px-4 text-right text-zinc-200 tabular-nums">{win.rate}</td>
-                        <td className="py-2.5 px-4 text-center">
+                        <td className={`py-2 px-4 ${isSelected ? "text-on-surface font-medium" : "text-outline"}`}>
+                          {win.range}
+                        </td>
+                        <td className="py-2 px-4">
                           {isSelected ? (
-                            <span className="px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30 font-semibold text-[11px]">Selected</span>
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-primary text-on-primary font-semibold">
+                              <span className="material-symbols-outlined text-[12px]">check_circle</span>
+                              {isVideo ? `VIDEO (${win.conf})` : `WEB / TLS (${win.conf})`}
+                            </span>
+                          ) : isVideo ? (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-primary/10 text-primary">
+                              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                              VIDEO ({win.conf})
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-secondary/10 text-secondary">
+                              <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                              WEB / TLS ({win.conf})
+                            </span>
+                          )}
+                        </td>
+                        <td
+                          className={`py-2 px-4 text-right tabular-nums ${
+                            isSelected ? "text-primary font-semibold" : "text-on-surface"
+                          }`}
+                        >
+                          {win.rate}
+                        </td>
+                        <td className="py-2 px-4 text-center">
+                          {isSelected ? (
+                            <span className="px-2 py-0.5 rounded bg-primary-container text-on-primary-container font-semibold text-[12px]">
+                              Selected
+                            </span>
                           ) : (
                             <button
-                              className="px-2 py-0.5 rounded text-zinc-400 hover:text-zinc-200 text-[11px] hover:bg-zinc-800"
-                              onClick={(e) => { e.stopPropagation(); selectWindow(win.id); }}
+                              className="px-2 py-0.5 rounded text-outline hover:text-on-surface text-[12px]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                selectWindow(win.id);
+                              }}
                             >
                               Inspect →
                             </button>
@@ -234,192 +352,176 @@ export default function TrafficIntelligencePage() {
             </div>
           </section>
 
-          {/* LEVEL 3: DUAL-PANE DRILLDOWN (STATISTICAL FEATURE VECTOR + SHAP EXPLAINABILITY) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
+          {/* LEVEL 3: DUAL-PANE DRILLDOWN */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
             {/* PANE A: STATISTICAL FEATURE VECTOR */}
-            <section className="lg:col-span-5 flex flex-col bg-[#111317] rounded-lg border border-zinc-800/90 p-5">
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
+            <section className="lg:col-span-5 flex flex-col bg-surface-container-low rounded border border-hairline p-space-md">
+              <div className="flex items-center justify-between pb-2 mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-teal-400 text-[18px]">query_stats</span>
+                  <span className="material-symbols-outlined text-primary text-[18px]">query_stats</span>
                   <div>
-                    <span className="block font-mono text-[10px] text-zinc-500 uppercase tracking-wider">Level 3 • Monitored Feature Vector</span>
-                    <h2 className="text-sm font-semibold text-white">L3/L4 ESP Timing &amp; Size Vector</h2>
+                    <span className="block font-mono text-[10px] text-outline uppercase tracking-wider">
+                      Level 3 • Monitored Feature Vector
+                    </span>
+                    <h2 className="text-[13px] font-semibold text-on-surface">L3/L4 ESP Timing &amp; Size Vector</h2>
                   </div>
                 </div>
-                <span className="font-mono text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
-                  Window {activeNum} · 5.000s
+                <span className="font-mono text-[12px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">
+                  Window {activeNum} • 5.000s
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-[#0c0e11] border border-zinc-800/80 font-mono text-xs text-zinc-400 mb-3">
-                <span className="material-symbols-outlined text-zinc-500 text-[14px]">info</span>
+              <div className="flex items-center gap-2 px-3 py-2 rounded bg-surface-container-lowest font-mono text-[12px] text-outline mb-3">
+                <span className="material-symbols-outlined text-outline text-[14px]">info</span>
                 <span>Attributes extracted strictly from encrypted frame lengths &amp; microsecond arrival deltas.</span>
               </div>
 
-              {/* 2-Column Monospace Technical Matrix */}
-              <div className="grid grid-cols-2 gap-2.5 font-mono text-xs">
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">Packet Count</span>
-                  <span className="text-white font-semibold text-sm mt-1 tabular-nums">24,190 pkts</span>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[12px]">
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">Packet Count</span>
+                  <span className="text-on-surface font-semibold text-[13px] mt-0.5 tabular-nums">
+                    {active.pkts} pkts
+                  </span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">Window Ingress/Egress</span>
-                  <span className="text-white font-semibold text-sm mt-1 tabular-nums">33.48 MB</span>
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">Window Ingress/Egress</span>
+                  <span className="text-on-surface font-semibold text-[13px] mt-0.5 tabular-nums">33.48 MB</span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">Mean Packet Size</span>
-                  <span className="text-teal-400 font-semibold text-sm mt-1 tabular-nums">1,384.2 Bytes</span>
-                  <span className="text-zinc-500 text-[10px]">MTU Saturation: 97.4%</span>
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">Mean Packet Size</span>
+                  <span className="text-primary font-semibold text-[13px] mt-0.5 tabular-nums">
+                    {active.id === "W-08" ? "1,384.2 Bytes" : `${active.meanSize}`}
+                  </span>
+                  <span className="text-outline text-[10px]">MTU Saturation: 97.4%</span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">Packet-Size Variance (σ²)</span>
-                  <span className="text-white font-semibold text-sm mt-1 tabular-nums">24,120</span>
-                  <span className="text-zinc-500 text-[10px]">Bimodal Distribution</span>
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">Packet-Size Variance (σ²)</span>
+                  <span className="text-on-surface font-semibold text-[13px] mt-0.5 tabular-nums">24,120</span>
+                  <span className="text-outline text-[10px]">Bimodal Distribution</span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">Packets / Second</span>
-                  <span className="text-white font-semibold text-sm mt-1 tabular-nums">4,838 pkts/sec</span>
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">Packets / Second</span>
+                  <span className="text-on-surface font-semibold text-[13px] mt-0.5 tabular-nums">4,838 pkts/sec</span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">Throughput Rate</span>
-                  <span className="text-teal-400 font-semibold text-sm mt-1 tabular-nums">6.70 MB/sec</span>
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">Throughput Rate</span>
+                  <span className="text-primary font-semibold text-[13px] mt-0.5 tabular-nums">
+                    {active.id === "W-08" ? "6.70 MB/sec" : active.rate.replace("MB/s", "MB/sec")}
+                  </span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">Mean IAT (Δt)</span>
-                  <span className="text-white font-semibold text-sm mt-1 tabular-nums">0.207 ms</span>
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">Mean IAT (Δt)</span>
+                  <span className="text-on-surface font-semibold text-[13px] mt-0.5 tabular-nums">0.207 ms</span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">IAT Jitter (StdDev)</span>
-                  <span className="text-sky-400 font-semibold text-sm mt-1 tabular-nums">0.041 ms</span>
-                  <span className="text-zinc-500 text-[10px]">Highly Periodic</span>
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">IAT Jitter (StdDev)</span>
+                  <span className="text-tertiary font-semibold text-[13px] mt-0.5 tabular-nums">{active.jitter}</span>
+                  <span className="text-outline text-[10px]">Highly Periodic</span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">Burstiness Index</span>
-                  <span className="text-white font-semibold text-sm mt-1 tabular-nums">0.34</span>
-                  <span className="text-zinc-500 text-[10px]">Paced Packet Trains</span>
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">Burstiness Index</span>
+                  <span className="text-on-surface font-semibold text-[13px] mt-0.5 tabular-nums">0.34</span>
+                  <span className="text-outline text-[10px]">Paced Packet Trains</span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80">
-                  <span className="text-zinc-500 text-[10px] uppercase">Upload / Download Ratio</span>
-                  <span className="text-teal-400 font-semibold text-sm mt-1 tabular-nums">1 : 18.4</span>
-                  <span className="text-zinc-500 text-[10px]">Strong Downstream Bias</span>
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded">
+                  <span className="text-outline text-[10px] uppercase">Upload / Download Ratio</span>
+                  <span className="text-primary font-semibold text-[13px] mt-0.5 tabular-nums">1 : 18.4</span>
+                  <span className="text-outline text-[10px]">Strong Downstream Bias</span>
                 </div>
-                <div className="flex flex-col p-2.5 bg-[#0c0e11] rounded border border-zinc-800/80 col-span-2">
-                  <div className="flex items-center justify-between">
+                <div className="traffic-card flex flex-col py-1.5 bg-surface-container px-3 rounded col-span-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div>
-                      <span className="text-zinc-500 text-[10px] uppercase">Shannon Byte Entropy</span>
-                      <span className="text-white font-semibold block text-sm mt-1 tabular-nums">7.994 bits/byte</span>
+                      <span className="text-outline text-[10px] uppercase">Shannon Byte Entropy</span>
+                      <span className="text-on-surface font-semibold block text-[13px] mt-0.5 tabular-nums">
+                        7.994 bits/byte
+                      </span>
                     </div>
                     <div className="text-right">
-                      <span className="px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/20 text-[10px]">HIGH RANDOMNESS</span>
-                      <span className="block font-mono text-[10px] text-zinc-500 mt-1">Theoretical Max: 8.000</span>
+                      <span className="px-2 py-0.5 rounded bg-surface-container-high font-mono text-[10px] font-semibold text-tertiary">
+                        HIGH CIPHERTEXT RANDOMNESS
+                      </span>
+                      <span className="block font-mono text-[12px] text-outline mt-0.5">Theoretical Max: 8.000</span>
                     </div>
                   </div>
                 </div>
               </div>
             </section>
 
-            {/* PANE B: "WHY THIS PREDICTION?" EXPLAINABILITY */}
-            <section className="lg:col-span-7 flex flex-col bg-[#111317] rounded-lg border border-zinc-800/90 p-5">
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
+            {/* PANE B: EXPLAINABILITY */}
+            <section className="lg:col-span-7 flex flex-col bg-surface-container-low rounded border border-hairline p-space-md">
+              <div className="flex items-center justify-between pb-2 mb-3">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] uppercase text-zinc-500 tracking-wider">Level 3 • Feature Attribution</span>
-                    <span className="px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 font-mono text-xs font-semibold border border-teal-500/20">ML EXPLAINABILITY</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-[10px] uppercase text-outline tracking-wider">
+                      Level 3 • Feature Attribution
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[12px] font-semibold">
+                      ML EXPLAINABILITY
+                    </span>
                   </div>
-                  <h2 className="text-sm font-semibold text-white mt-1">Evidence-Grounded ML Rationale</h2>
+                  <h2 className="text-[13px] font-semibold text-on-surface mt-1">Evidence-Grounded ML Rationale</h2>
                 </div>
-                <div className="hidden sm:flex flex-col items-end font-mono">
-                  <span className="text-[10px] text-zinc-500 uppercase">Confidence Margin</span>
-                  <span className="text-sm text-teal-400 font-semibold tabular-nums">Δ +78.3%</span>
+                <div className="hidden sm:flex flex-col items-end">
+                  <span className="font-mono text-[10px] text-outline uppercase">Confidence Margin</span>
+                  <span className="font-mono text-[13px] text-primary font-semibold tabular-nums">Δ +78.3%</span>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2.5">
-                <div className="p-3 rounded bg-[#0c0e11] border border-zinc-800/80 hover:bg-zinc-800/30 transition-colors">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-white font-medium flex items-center gap-2">
-                      <span className="material-symbols-outlined text-teal-400 text-[16px]">download</span>
-                      High Sustained Downstream Asymmetry
-                    </span>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30 font-semibold">+38% Weight</span>
+              <div className="flex flex-col gap-2">
+                {SHAP.map((s) => (
+                  <div
+                    key={s.title}
+                    className="traffic-card p-3 rounded bg-surface-container hover:bg-surface-container-high"
+                  >
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-on-surface font-semibold flex items-center gap-2 text-[13px]">
+                        <span className="material-symbols-outlined text-primary text-[18px]">{s.icon}</span>
+                        {s.title}
+                      </span>
+                      <span className="font-mono text-[12px] px-2 py-0.5 rounded bg-primary-container text-on-primary-container font-semibold">
+                        {s.weight}
+                      </span>
+                    </div>
+                    <p className="font-sans text-[12px] text-on-surface-variant mt-1 truncate">{s.desc}</p>
+                    <div className="traffic-bar mt-2 w-full bg-surface-container-lowest h-1.5 rounded overflow-hidden">
+                      <div className="bg-primary h-full rounded" style={{ width: s.width }} />
+                    </div>
                   </div>
-                  <p className="text-xs text-zinc-400 mt-1 truncate">94.8% egress bytes at 18.4:1 ratio matching multi-megabyte media segment delivery.</p>
-                  <div className="mt-2 w-full bg-zinc-800 h-1 rounded overflow-hidden">
-                    <div className="bg-teal-400 h-full rounded" style={{width: '38%'}}></div>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded bg-[#0c0e11] border border-zinc-800/80 hover:bg-zinc-800/30 transition-colors">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-white font-medium flex items-center gap-2">
-                      <span className="material-symbols-outlined text-teal-400 text-[16px]">view_stream</span>
-                      Near-MTU Sized Packet Clustering
-                    </span>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30 font-semibold">+29% Weight</span>
-                  </div>
-                  <p className="text-xs text-zinc-400 mt-1 truncate">89.2% packets between 1,360–1,420 bytes indicating path MTU-saturating media chunks.</p>
-                  <div className="mt-2 w-full bg-zinc-800 h-1 rounded overflow-hidden">
-                    <div className="bg-teal-400 h-full rounded" style={{width: '29%'}}></div>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded bg-[#0c0e11] border border-zinc-800/80 hover:bg-zinc-800/30 transition-colors">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-white font-medium flex items-center gap-2">
-                      <span className="material-symbols-outlined text-teal-400 text-[16px]">pace</span>
-                      Low-Jitter Paced Burst Intervals
-                    </span>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30 font-semibold">+19% Weight</span>
-                  </div>
-                  <p className="text-xs text-zinc-400 mt-1 truncate">200–250ms burst cadence correlating with automated ABR buffer replenishment.</p>
-                  <div className="mt-2 w-full bg-zinc-800 h-1 rounded overflow-hidden">
-                    <div className="bg-teal-400 h-full rounded" style={{width: '19%'}}></div>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded bg-[#0c0e11] border border-zinc-800/80 hover:bg-zinc-800/30 transition-colors">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-white font-medium flex items-center gap-2">
-                      <span className="material-symbols-outlined text-teal-400 text-[16px]">sync_alt</span>
-                      TCP/ESP ACK Framing Absence of Loss
-                    </span>
-                    <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30 font-semibold">+8% Weight</span>
-                  </div>
-                  <p className="text-xs text-zinc-400 mt-1 truncate">Consistent 52–64 byte reverse-path cluster confirming regular ACK cadence without retransmits.</p>
-                  <div className="mt-2 w-full bg-zinc-800 h-1 rounded overflow-hidden">
-                    <div className="bg-teal-400 h-full rounded" style={{width: '8%'}}></div>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              <div className="mt-3 px-3 py-2 rounded bg-[#0c0e11] border border-zinc-800/80 flex items-center gap-2">
-                <span className="material-symbols-outlined text-teal-400 text-[16px] shrink-0">verified_user</span>
-                <p className="text-xs text-zinc-400 truncate">
-                  <span className="text-zinc-200 font-medium">Forensic Guarantee:</span> Statistical inference from frame lengths and IAT timing. IPsec payload remains fully encrypted.
+              <div className="mt-3 px-3 py-2 rounded bg-surface-container-lowest flex items-center gap-2">
+                <span className="material-symbols-outlined text-tertiary text-[16px] shrink-0">verified_user</span>
+                <p className="font-sans text-[12px] text-outline truncate">
+                  <span className="text-on-surface font-medium">Forensic Guarantee:</span> Statistical inference from
+                  frame lengths and IAT timing. IPsec payload remains fully encrypted.
                 </p>
               </div>
             </section>
           </div>
 
           {/* PIPELINE STATUS & TELEMETRY FOOTER */}
-          <footer className="flex flex-wrap items-center justify-between gap-4 bg-[#111317] p-3 rounded-lg border border-zinc-800/90 font-mono text-xs text-zinc-400 select-none">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-                <span className="text-zinc-200 font-medium">PIPELINE DPDK RX:</span>
-                <span className="text-teal-300 font-semibold">ONLINE (0.02ms jitter)</span>
+          <footer className="flex flex-wrap items-center justify-between gap-2 bg-surface-container-lowest p-3 rounded border border-hairline font-mono text-[12px] text-on-surface-variant select-none">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-tertiary" />
+                <span className="text-on-surface font-medium">PIPELINE DPDK RX:</span>
+                <span className="text-tertiary font-semibold">ONLINE (0.02ms jitter)</span>
               </div>
-              <span className="text-zinc-700">|</span>
-              <div className="flex items-center gap-2">
-                <span className="text-zinc-200 font-medium">FLOW EXTRACTION:</span>
-                <span className="text-zinc-300">ACTIVE (24/24 SAs tracked)</span>
+              <span className="text-outline-variant">|</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-on-surface font-medium">FLOW EXTRACTION:</span>
+                <span className="text-on-surface">ACTIVE (24/24 SAs tracked)</span>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <span>INSPECTION LATENCY: <span className="text-white font-semibold">1.4ms</span></span>
-              <span className="text-zinc-700">|</span>
-              <span>ENGINE CLOCK: <span className="text-zinc-500">DPDK TSC SYNC</span></span>
+            <div className="flex items-center gap-4 flex-wrap">
+              <span>
+                INSPECTION LATENCY: <span className="text-on-surface font-semibold">1.4ms</span>
+              </span>
+              <span className="text-outline-variant">|</span>
+              <span>
+                ENGINE CLOCK: <span className="text-outline">DPDK TSC SYNC</span>
+              </span>
             </div>
           </footer>
         </div>
@@ -427,4 +529,3 @@ export default function TrafficIntelligencePage() {
     </div>
   );
 }
-
