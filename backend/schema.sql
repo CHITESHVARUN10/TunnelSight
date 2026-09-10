@@ -38,18 +38,30 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS ix_sessions_user_id ON sessions (user_id);
 
 -- ------------------------------------------------------------- analyses ---
--- Per-user analysis history. Phase 1: status is 'pending'; config_json and
--- anomaly_score are filled by later pipeline phases.
+-- Per-user analysis history. status 'pending' on upload; pipeline fills
+-- config_json + ML/rule-engine columns. Mirrors app/models/analysis.py.
 CREATE TABLE IF NOT EXISTS analyses (
     id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id       UUID         NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     filename      VARCHAR(255) NOT NULL,          -- uploaded capture name
     status        VARCHAR(32)  NOT NULL DEFAULT 'pending',
     config_json   JSONB        NULL,              -- normalized IPsec evidence (roadmap S9)
-    anomaly_score DOUBLE PRECISION NULL,         -- Isolation Forest 0..1
+    anomaly_score DOUBLE PRECISION NULL,         -- Isolation Forest score
+    traffic_label VARCHAR(32)  NULL,              -- RF classifier: video/web/voip/icmp/email
+    traffic_confidence DOUBLE PRECISION NULL,    -- max class probability 0..1
+    security_score INTEGER     NULL,              -- rule-engine total 0..100
+    risk_level    VARCHAR(32)  NULL,              -- LOW/MEDIUM/HIGH/CRITICAL
+    findings_json JSONB        NULL,              -- rule-engine findings list [{severity, category, description}]
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS ix_analyses_user_id ON analyses (user_id);
+-- Upgrade path for databases created before these columns existed (idempotent):
+ALTER TABLE analyses ADD COLUMN IF NOT EXISTS anomaly_score DOUBLE PRECISION NULL;
+ALTER TABLE analyses ADD COLUMN IF NOT EXISTS traffic_label VARCHAR(32) NULL;
+ALTER TABLE analyses ADD COLUMN IF NOT EXISTS traffic_confidence DOUBLE PRECISION NULL;
+ALTER TABLE analyses ADD COLUMN IF NOT EXISTS security_score INTEGER NULL;
+ALTER TABLE analyses ADD COLUMN IF NOT EXISTS risk_level VARCHAR(32) NULL;
+ALTER TABLE analyses ADD COLUMN IF NOT EXISTS findings_json JSONB NULL;
 
 -- ------------------------------------------------------ password_resets ---
 -- Single-use reset tokens. Only token_hash is stored; the raw token goes
