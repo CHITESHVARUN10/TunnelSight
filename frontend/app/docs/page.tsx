@@ -340,10 +340,10 @@ export default function DocumentationPage() {
               <span className="text-[#f7f4ee] font-mono text-xs">
                 POST /api/history/&#123;id&#125;/explanation
               </span>{" "}
-              asks an OpenRouter model to explain the deterministic findings, grounded strictly in the stored
+              asks a Groq model (openai/gpt-oss-120b) to explain the deterministic findings, grounded strictly in the stored
               evidence (no packet payloads are sent) and cached in{" "}
               <span className="text-[#f7f4ee] font-mono text-xs">analyses.explanation_json</span>. With no{" "}
-              <span className="text-[#f7f4ee] font-mono text-xs">OPENROUTER_API_KEY</span> the AI routes answer
+              <span className="text-[#f7f4ee] font-mono text-xs">GROQ_API_KEY</span> the AI routes answer
               503 and the deterministic results still work.
             </p>
           </div>

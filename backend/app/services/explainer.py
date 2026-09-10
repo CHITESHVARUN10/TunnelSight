@@ -1,4 +1,4 @@
-"""AI explanation layer backed by OpenRouter.
+"""AI explanation layer backed by Groq (OpenAI-compatible chat completions).
 
 Design constraints:
 - The model only ever sees deterministic, derived evidence (SA parameters, rule-engine
@@ -39,7 +39,7 @@ class ExplainerUnavailable(RuntimeError):
 
 
 def available() -> bool:
-    return bool(settings.OPENROUTER_API_KEY)
+    return bool(settings.GROQ_API_KEY)
 
 
 def build_evidence(row, windows: list) -> dict:
@@ -87,15 +87,40 @@ def build_evidence(row, windows: list) -> dict:
     }
 
 
+def _extract_json(text: str) -> Any:
+    """Parse model output, tolerating prose around the JSON object."""
+    try:
+        return json.loads(text)
+    except (TypeError, ValueError):
+        pass
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return json.loads(text[start : end + 1])
+    raise ValueError("no JSON object found")
+
+
+def _post_chat(payload: dict, headers: dict) -> httpx.Response:
+    try:
+        with httpx.Client(timeout=settings.GROQ_TIMEOUT_SECONDS) as client:
+            return client.post(
+                f"{settings.GROQ_BASE_URL.rstrip('/')}/chat/completions",
+                json=payload,
+                headers=headers,
+            )
+    except httpx.HTTPError as exc:
+        raise ExplainerUnavailable(f"Groq request failed: {exc}") from exc
+
+
 def generate(evidence: dict) -> dict:
-    """Call OpenRouter and return a validated explanation payload."""
+    """Call Groq and return a validated explanation payload."""
     if not available():
         raise ExplainerUnavailable(
-            "OPENROUTER_API_KEY is not configured; the AI explanation layer is disabled."
+            "GROQ_API_KEY is not configured; the AI explanation layer is disabled."
         )
 
     payload = {
-        "model": settings.OPENROUTER_MODEL,
+        "model": settings.GROQ_MODEL,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {
@@ -105,42 +130,39 @@ def generate(evidence: dict) -> dict:
             },
         ],
         "response_format": {"type": "json_object"},
-        "max_tokens": settings.OPENROUTER_MAX_TOKENS,
+        "max_tokens": settings.GROQ_MAX_TOKENS,
         "temperature": 0.2,
     }
     headers = {
-        "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {settings.GROQ_API_KEY}",
         "Content-Type": "application/json",
     }
 
-    try:
-        with httpx.Client(timeout=settings.OPENROUTER_TIMEOUT_SECONDS) as client:
-            response = client.post(
-                f"{settings.OPENROUTER_BASE_URL.rstrip('/')}/chat/completions",
-                json=payload,
-                headers=headers,
-            )
-    except httpx.HTTPError as exc:
-        raise ExplainerUnavailable(f"OpenRouter request failed: {exc}") from exc
+    response = _post_chat(payload, headers)
+    if response.status_code == 400:
+        # Some models reject response_format; retry without it and extract
+        # the JSON object from the raw text instead.
+        payload = {k: v for k, v in payload.items() if k != "response_format"}
+        response = _post_chat(payload, headers)
 
     if response.status_code >= 400:
         detail = response.text[:300].replace("\n", " ")
         raise ExplainerUnavailable(
-            f"OpenRouter returned {response.status_code} for model "
-            f"'{settings.OPENROUTER_MODEL}': {detail}"
+            f"Groq returned {response.status_code} for model "
+            f"'{settings.GROQ_MODEL}': {detail}"
         )
 
     try:
         body = response.json()
         content = body["choices"][0]["message"]["content"]
     except (ValueError, KeyError, IndexError, TypeError) as exc:
-        raise ExplainerUnavailable("OpenRouter returned an unexpected response shape.") from exc
+        raise ExplainerUnavailable("Groq returned an unexpected response shape.") from exc
 
     if isinstance(content, list):
         content = "".join(part.get("text", "") for part in content if isinstance(part, dict))
 
     try:
-        parsed: Any = json.loads(content)
+        parsed = _extract_json(content)
     except (TypeError, ValueError) as exc:
         raise ExplainerUnavailable("The model did not return valid JSON.") from exc
     if not isinstance(parsed, dict):
@@ -154,6 +176,6 @@ def generate(evidence: dict) -> dict:
     return {
         "summary": result.summary,
         "per_finding": [item.model_dump() for item in result.per_finding],
-        "model": settings.OPENROUTER_MODEL,
+        "model": settings.GROQ_MODEL,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }

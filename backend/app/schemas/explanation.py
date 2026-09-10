@@ -1,4 +1,4 @@
-"""Schemas for the OpenRouter-backed AI explanation layer.
+"""Schemas for the Groq-backed AI explanation layer.
 
 The LLM response is validated against `ExplanationOut` before it is persisted, so a
 malformed or non-grounded reply never reaches the database or the UI.

@@ -62,8 +62,8 @@ def test_pdf_report_requires_auth():
 
 @pytest.fixture()
 def fake_model(monkeypatch):
-    """Pretend OPENROUTER_API_KEY is set and stub the upstream call."""
-    monkeypatch.setattr(explainer.settings, "OPENROUTER_API_KEY", "test-key")
+    """Pretend GROQ_API_KEY is set and stub the upstream call."""
+    monkeypatch.setattr(explainer.settings, "GROQ_API_KEY", "test-key")
 
     calls = {"count": 0}
 
@@ -80,7 +80,7 @@ def fake_model(monkeypatch):
                 }
                 for f in evidence["findings"]
             ],
-            "model": explainer.settings.OPENROUTER_MODEL,
+            "model": explainer.settings.GROQ_MODEL,
             "generated_at": "2026-09-10T00:00:00+00:00",
         }
 
@@ -125,13 +125,13 @@ def test_explanation_scoped_to_owner(fake_model):
 
 
 def test_explanation_returns_503_without_api_key(monkeypatch):
-    monkeypatch.setattr(explainer.settings, "OPENROUTER_API_KEY", "")
+    monkeypatch.setattr(explainer.settings, "GROQ_API_KEY", "")
     c = _client()
     row = _upload(c)
 
     r = c.post(f"/api/history/{row['id']}/explanation")
     assert r.status_code == 503
-    assert "OPENROUTER_API_KEY" in r.json()["detail"]
+    assert "GROQ_API_KEY" in r.json()["detail"]
 
     # The deterministic findings stay available when the AI layer is off.
     assert c.get(f"/api/history/{row['id']}/findings").status_code == 200

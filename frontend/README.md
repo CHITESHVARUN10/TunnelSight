@@ -38,7 +38,7 @@ Converted 1:1 from `../stitch_screen/*.html` (Stitch designs). Reference renders
 - `lib/api.ts` / `lib/auth.ts` are the backend clients (session cookie, `credentials: "include"`). `api()` returns JSON; `apiBlob()` streams binary downloads such as the PDF report.
 - Pages that render a single capture (`/analysis/findings`, `/analysis/configuration`, `/analysis/traffic`, `/analysis/results`, `/analysis/assistant`, …) resolve it through `components/analysis/useResolvedAnalysis.ts`: `?analysis_id=` first, then the most recent capture. This is why those pages still work when opened from the sidebar without a query string.
 - **PDF export** is server-rendered: every "Export PDF" button calls `GET /api/history/{id}/report.pdf` (ReportLab, light print-friendly theme) via `downloadReportPdf()`.
-- **AI explanation** on the Findings page calls `POST /api/history/{id}/explanation` (OpenRouter, cached in `analyses.explanation_json`). When `OPENROUTER_API_KEY` is unset the endpoint answers 503 and the page shows "AI layer unavailable" — the deterministic findings are unaffected.
+- **AI explanation** on the Findings page calls `POST /api/history/{id}/explanation` (Groq `openai/gpt-oss-120b`, cached in `analyses.explanation_json`). When `GROQ_API_KEY` is unset the endpoint answers 503 and the page shows "AI layer unavailable" — the deterministic findings are unaffected.
 - **pnpm only.** Never add `package-lock.json`.
 
 ```bash
