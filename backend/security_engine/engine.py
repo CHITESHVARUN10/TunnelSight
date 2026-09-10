@@ -1,4 +1,4 @@
-from schema import IPsecConfig, SecurityFinding, SecurityAssessmentResult
+from .schema import IPsecConfig, SecurityFinding, SecurityAssessmentResult
 
 class SecurityRuleEngine:
     def __init__(self):
