@@ -121,22 +121,162 @@ def export_analysis(
     return Response(content=json.dumps(body, indent=2), media_type="application/json")
 
 
+SCOPES = ("all", "captures", "findings", "spis", "reports", "vpns", "docs")
+
+# Static docs index (curated anchors into /docs); filtered by the query.
+DOCS_INDEX = [
+    {"title": "End-to-End Operational Workflow", "desc": "PCAP Ingestion → Pre-flight → SA Extraction → Remediation", "href": "/docs#workflow", "tags": "workflow ingestion pipeline sa extraction remediation guide"},
+    {"title": "RFC Compliance & Regulatory Standards Matrix", "desc": "NIST SP 800-77 Rev. 1 · CNSA 1.0 · FIPS 140-3 mandates", "href": "/docs#standards", "tags": "rfc 7296 8247 nist cnsa fips compliance standards regulatory gavel"},
+    {"title": "Operational Page Catalog & Metric Telemetry", "desc": "Indicator breakdown across every operational view", "href": "/docs#pages", "tags": "pages catalog telemetry metrics views guide"},
+    {"title": "Cryptographic Foundations & Protocol Theory", "desc": "IKEv1 vs IKEv2 · DH group deprecation · anti-replay · Sweet32", "href": "/docs#concepts", "tags": "cryptography theory ike diffie-hellman dh deprecation replay sweet32 des 3des md5 sha concepts"},
+    {"title": "IKE Handshake Sequence", "desc": "SA_INIT / AUTH exchange walkthrough with cookie defense", "href": "/docs#chapter-2", "tags": "ike handshake sa_init auth cookie sequence diagram"},
+    {"title": "Decapsulation Pipeline", "desc": "ESP decapsulation stages from wire to plaintext", "href": "/docs#chapter-1", "tags": "decapsulation esp pipeline diagram"},
+    {"title": "Diffie-Hellman Lattice", "desc": "Group strength comparison across MODP and ECP groups", "href": "/docs#chapter-2", "tags": "diffie-hellman lattice groups modp ecp pfs"},
+    {"title": "AI Explanation Layer", "desc": "Groq-backed finding explanations, evidence grounding, 503 fallback", "href": "/docs#chapter-3", "tags": "ai explanation groq model findings evidence"},
+]
+
+SEARCH_LIMIT = 8  # per-group cap
+
+
+def _suite_of(row: Analysis) -> str:
+    crypto = ((row.config_json or {}).get("ipsec_config") or {}).get("cryptography") or {}
+    enc = crypto.get("encryption_algorithm") or "UNKNOWN"
+    integ = crypto.get("integrity_algorithm") or ""
+    dh = crypto.get("dh_group")
+    suite = str(enc)
+    if integ and integ != "AEAD (Built-in)":
+        suite += f"/{integ}"
+    if dh is not None:
+        suite += f"/DH{dh}"
+    return suite
+
+
+def _norm_hex(s: str) -> str:
+    return "".join(c for c in s.lower() if c in "0123456789abcdef")
+
+
 @router.get("/search")
-def search(q: str = "", scope: str = "all", user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    rows = db.query(Analysis).filter(Analysis.user_id == user.id)
-    if q:
-        rows = rows.filter(Analysis.filename.ilike(f"%{q}%"))
-    rows = rows.order_by(Analysis.created_at.desc()).limit(20).all()
+def search(
+    q: str = "",
+    scope: str = "all",
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Dynamic global search over the caller's own analyses.
+
+    Scopes: all | captures | findings | spis | reports | vpns | docs.
+    Empty `q` returns the most recent items per group.
+    """
+    scope = (scope or "all").lower()
+    if scope not in SCOPES:
+        raise HTTPException(status_code=400, detail=f"unknown scope: {scope}. Use one of {', '.join(SCOPES)}.")
+    needle = q.strip().lower()
+
+    rows = (
+        db.query(Analysis)
+        .filter(Analysis.user_id == user.id)
+        .order_by(Analysis.created_at.desc())
+        .limit(100)
+        .all()
+    )
+
+    # ── Captures ──
     captures = [
-        {"id": str(r.id), "filename": r.filename, "score": r.security_score, "risk": r.risk_level}
+        {
+            "id": str(r.id),
+            "filename": r.filename,
+            "score": r.security_score,
+            "risk": r.risk_level,
+            "suite": _suite_of(r),
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
         for r in rows
+        if not needle or needle in r.filename.lower()
     ]
+
+    # ── Findings (match category / severity / description) ──
     findings = []
     for r in rows:
         for f in r.findings_json or []:
-            if not q or q.lower() in f.get("description", "").lower():
-                findings.append({"title": f.get("category"), "severity": f.get("severity"), "capture": r.filename})
-    return {"total": len(captures) + len(findings), "groups": {"captures": captures, "findings": findings, "spis": [], "reports": []}}
+            hay = f"{f.get('category', '')} {f.get('severity', '')} {f.get('description', '')}".lower()
+            if needle and needle not in hay:
+                continue
+            findings.append(
+                {
+                    "severity": f.get("severity"),
+                    "category": f.get("category"),
+                    "description": f.get("description"),
+                    "capture": r.filename,
+                    "analysis_id": str(r.id),
+                }
+            )
+
+    # ── SPIs: hex-substring matches inside stored packet previews ──
+    spis = []
+    hex_needle = _norm_hex(needle)
+    if len(hex_needle) >= 4:
+        for r in rows:
+            preview = ((r.config_json or {}).get("capture") or {}).get("packets_preview") or []
+            for p in preview:
+                if hex_needle in _norm_hex(p.get("hex", "")):
+                    spis.append(
+                        {
+                            "match": f"0x{hex_needle[:8]}…",
+                            "capture": r.filename,
+                            "analysis_id": str(r.id),
+                            "packet_index": p.get("index"),
+                            "peer": f"{p.get('src')} ↔ {p.get('dst')}",
+                        }
+                    )
+                    break
+
+    # ── Reports: completed analyses with a downloadable PDF ──
+    reports = [
+        {
+            "id": str(r.id),
+            "filename": r.filename,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in rows
+        if r.status == "completed" and (not needle or needle in r.filename.lower())
+    ]
+
+    # ── VPNs: distinct negotiated suites across the caller's captures ──
+    suites: dict[str, dict] = {}
+    for r in rows:
+        suite = _suite_of(r)
+        if needle and needle not in suite.lower() and needle not in r.filename.lower():
+            continue
+        entry = suites.setdefault(suite, {"suite": suite, "captures": 0, "analysis_id": str(r.id)})
+        entry["captures"] += 1
+    vpns = sorted(suites.values(), key=lambda e: -e["captures"])
+
+    # ── Docs: curated index filtered by the query ──
+    docs = [
+        d
+        for d in DOCS_INDEX
+        if not needle or any(t in f"{d['title']} {d['desc']} {d['tags']}".lower() for t in needle.split())
+    ]
+
+    groups = {
+        "captures": captures[:SEARCH_LIMIT],
+        "findings": findings[:SEARCH_LIMIT],
+        "spis": spis[:SEARCH_LIMIT],
+        "reports": reports[:SEARCH_LIMIT],
+        "vpns": vpns[:SEARCH_LIMIT],
+        "docs": docs[:SEARCH_LIMIT],
+    }
+    counts = {
+        "captures": len(captures),
+        "findings": len(findings),
+        "spis": len(spis),
+        "reports": len(reports),
+        "vpns": len(vpns),
+        "docs": len(docs),
+    }
+    if scope != "all":
+        groups = {k: (v if k == scope else []) for k, v in groups.items()}
+    return {"q": q, "total": sum(counts.values()), "counts": counts, "groups": groups}
 
 
 @router.get("/datasets/summary")

@@ -98,6 +98,25 @@ export const getAnomalies = (
 export const assessConfig = (config: object) =>
   api("/api/assess/config", { method: "POST", body: JSON.stringify(config) });
 
+export type SimulateOptions = {
+  encryption: Record<string, string>;
+  integrity: Record<string, string>;
+  dh_group: Record<string, string>;
+};
+
+export type SimulateInput = {
+  encryption: string;
+  integrity: string;
+  dh_group: string;
+};
+
+/** Option labels for the interactive simulation UI. */
+export const getSimulateOptions = (): Promise<SimulateOptions> => api("/api/simulate/options");
+
+/** Generate a synthetic capture from the chosen suite and run the full pipeline. */
+export const runSimulation = (input: SimulateInput): Promise<Analysis> =>
+  api("/api/simulate", { method: "POST", body: JSON.stringify(input) });
+
 export const compareAnalyses = (alpha: string, beta: string) =>
   api(`/api/compare?alpha=${alpha}&beta=${beta}`);
 

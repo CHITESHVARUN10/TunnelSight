@@ -46,7 +46,7 @@
   --color-on-secondary-fixed: #171c24;
   --color-tertiary-container: #00aa76;
   --color-on-secondary-container: #b1b5c0;
-  --color-outline: #869490;
+  --color-outline: #9aa7a3;
   --color-on-primary-fixed: #00201c;
   --color-on-secondary-fixed-variant: #424750;
   --color-on-primary: #003731;
@@ -176,7 +176,7 @@
   --text-label-md: 11px;
   --text-label-md--line-height: 14px;
   --text-label-md--letter-spacing: 0.02em;
-  --text-label-md--font-weight: 500;
+  --text-label-md--font-weight: 600;
   --text-label-sm: 10px;
   --text-label-sm--line-height: 12px;
   --text-label-sm--letter-spacing: 0.05em;
@@ -186,7 +186,7 @@
   --text-code-md--font-weight: 500;
   --text-code-sm: 11px;
   --text-code-sm--line-height: 14px;
-  --text-code-sm--font-weight: 400;
+  --text-code-sm--font-weight: 500;
 }
 
 /* Screen 01 (/overview) uses IBM Plex instead of Geist/Inter */
@@ -216,8 +216,14 @@
   body {
     margin: 0;
     padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Never fake a weight: synthesized bolds render blurry. */
+    font-synthesis-weight: none;
   }
   body {
+    font-family: var(--font-sans);
     overscroll-behavior: none;
   }
   main > :first-child {

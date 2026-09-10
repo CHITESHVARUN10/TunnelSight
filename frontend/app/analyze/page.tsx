@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UploadBehavior } from "@/components/upload/UploadBehavior";
 import { useToast } from "@/lib/toast";
@@ -123,6 +124,13 @@ export default function AnalyzePage() {
               </p>
             </div>
             <div className="flex items-center gap-space-sm">
+              <Link
+                href="/simulate"
+                className="flex items-center gap-1.5 bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-hairline px-3 py-1.5 rounded transition-colors font-code-sm text-code-sm"
+              >
+                <span className="material-symbols-outlined text-[16px] text-primary">science</span>
+                <span>No capture handy? Simulate a suite</span>
+              </Link>
               <span className="font-code-sm text-code-sm text-outline">
                 Captures are parsed and scored on upload — no sample traces.
               </span>

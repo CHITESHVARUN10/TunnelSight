@@ -26,6 +26,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/overview", icon: "dashboard", label: "Overview" },
       { href: "/analyze", icon: "file_open", label: "Analyze PCAP" },
+      { href: "/simulate", icon: "science", label: "Simulate" },
       { href: "/analysis/live", icon: "pulse_alert", label: "Live Analysis", badge: "LIVE", badgeType: "live" },
       { href: "/history", icon: "history", label: "History" },
     ],
