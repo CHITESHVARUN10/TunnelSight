@@ -1,16 +1,42 @@
 "use client";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { useState } from "react";
-import { downloadFile, useToast } from "@/lib/mock/toast";
-import { executiveReportJSON } from "@/lib/mock/analysis";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { downloadFile, useToast } from "@/lib/toast";
+import { getAnalysis, type Analysis } from "@/lib/analysis";
 import { AppShell } from "@/components/layout/AppShell";
 import { ReportGenerationModal } from "@/components/modals/ReportGenerationModal";
 
 export default function ReportsPage() {
+  const params = useSearchParams();
+  const analysisId = params.get("analysis_id");
   const [reportTab, setReportTab] = useState<"exec" | "tech">("exec");
   const [hexVisible, setHexVisible] = useState(true);
   const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const toast = useToast();
+
+  useEffect(() => {
+    if (!analysisId) return;
+    let dead = false;
+    (async () => {
+      try {
+        const a = await getAnalysis(analysisId);
+        if (!dead) setAnalysis(a);
+      } catch (err) {
+        if (!dead) toast({ title: "Report unavailable", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+      }
+    })();
+    return () => {
+      dead = true;
+    };
+  }, [analysisId, toast]);
+
+  const filename = analysis?.filename ?? "—";
+  const score = analysis?.security_score ?? null;
+  const risk = analysis?.risk_level ?? "—";
 
   function switchReportTab(type: "exec" | "tech") {
     setReportTab(type);
@@ -20,14 +46,18 @@ export default function ReportsPage() {
     setHexVisible((v) => !v);
   }
 
-  const downloadExec = (filename: string) => {
-    downloadFile(filename, executiveReportJSON(), "application/json");
-    toast({ title: "Report Generated", body: `${filename} downloaded.`, kind: "ok" });
+  const downloadExec = (name: string) => {
+    if (!analysis) {
+      toast({ title: "Nothing to export", body: "Load a capture first.", kind: "warn" });
+      return;
+    }
+    downloadFile(name, JSON.stringify({ ...analysis, generated: new Date().toISOString() }, null, 2), "application/json");
+    toast({ title: "Report Generated", body: `${name} downloaded.`, kind: "ok" });
   };
 
-  const sendToCiso = () => toast({ title: "Sent to CISO", body: "Executive briefing link shared.", kind: "ok" });
-  const disasmPayload = () => toast({ title: "Disassembly Queued", body: "Payload disassembly scheduled.", kind: "info" });
-  const refreshArchive = () => toast({ title: "Archive Refreshed", body: "4 records synchronized.", kind: "info" });
+  const sendToCiso = () => toast({ title: "Executive briefing", body: "Export the report JSON and share it.", kind: "info" });
+  const disasmPayload = () => toast({ title: "Payload disassembly", body: "ESP payloads are encrypted; header-only analysis applies.", kind: "info" });
+  const refreshArchive = () => toast({ title: "Archive", body: "Reports are generated from stored analyses on demand.", kind: "info" });
   const reportConfig = () => toast({ title: "Report Configuration", body: "Report engine settings preset.", kind: "info" });
   const previewDoc = () => toast({ title: "Full Preview", body: "Preview mode active.", kind: "info" });
   const inspectDoc = () => toast({ title: "Document Inspection", body: "Viewing document metadata.", kind: "info" });
@@ -57,7 +87,7 @@ export default function ReportsPage() {
                 Captures
               </Link>
               <span>/</span>
-              <span className="text-on-surface font-medium">weak-vpn-07.pcap</span>
+              <span className="text-on-surface font-medium">{filename}</span>
               <span>/</span>
               <span className="text-primary">Reports &amp; Compliance Export</span>
             </div>
@@ -214,17 +244,17 @@ export default function ReportsPage() {
                       </span>
                       <span className="px-1.5 py-0.5 rounded bg-error-container text-error font-mono text-[10px] uppercase font-bold inline-flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px]">error</span>
-                        <span>HIGH RISK</span>
+                        <span>{risk} RISK</span>
                       </span>
                       <span className="font-mono text-[12px] text-outline">
-                        Score: <span className="text-error font-bold">47</span> / 100
+                        Score: <span className="text-error font-bold">{score ?? "—"}</span> / 100
                       </span>
                     </div>
                     <h2 className="font-headline-lg text-on-surface text-[20px] font-semibold tracking-tight">
                       IPsec Security Posture Executive Briefing
                     </h2>
                     <div className="flex items-center gap-3 flex-wrap text-on-surface-variant font-mono text-[12px] mt-1">
-                      <span>Target Capture: <strong className="text-on-surface">weak-vpn-07.pcap</strong></span>
+                      <span>Target Capture: <strong className="text-on-surface">{filename}</strong></span>
                       <span className="text-outline-variant">•</span>
                       <span>Evaluated: <span className="text-on-surface">2024-05-18 14:28:19 UTC</span></span>
                       <span className="text-outline-variant">•</span>
@@ -806,7 +836,7 @@ export default function ReportsPage() {
               <div className="flex items-center gap-2 font-mono text-[12px] reports-no-print">
                 <div className="flex items-center gap-1.5 bg-surface-container px-3 py-1 rounded text-on-surface-variant">
                   <span className="material-symbols-outlined text-[16px] text-outline">filter_list</span>
-                  <span>Filter by Source: weak-vpn-07.pcap</span>
+                  <span>Filter by Source: {filename}</span>
                 </div>
                 <button
                   className="px-3 py-1 bg-surface-container-low hover:bg-surface-container text-on-surface rounded flex items-center gap-1 transition-colors"
@@ -1025,7 +1055,8 @@ export default function ReportsPage() {
         <ReportGenerationModal
           isOpen={reportModalOpen}
           onClose={() => setReportModalOpen(false)}
-          targetCapture="weak-vpn-07.pcap"
+          targetCapture={filename}
+          analysisId={analysisId}
         />
       </AppShell>
     </div>

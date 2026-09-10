@@ -1,7 +1,9 @@
 import hashlib
 import os
 import random
+import statistics
 from collections import Counter
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 import joblib
@@ -16,7 +18,7 @@ try:
     _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../"))
     if _REPO_ROOT not in sys.path:
         sys.path.insert(0, _REPO_ROOT)
-    from parser.pcap_parser import parse_pcap_to_json
+    from parser.pcap_parser import extract_packets, parse_pcap_to_json
 
     _PARSER_AVAILABLE = True
 except Exception:
@@ -43,8 +45,12 @@ FEATURES = [
     "total_bytes",
 ]
 
-MOCK_NOTE = "mock-seeded evidence (not packet-derived); real parser implements the same ParsedWindow interface"
-PARSER_NOTE = "ipsec_config parsed from capture bytes via parser/pcap_parser.py; window ML features remain seeded mock"
+MOCK_NOTE = "mock-seeded evidence (capture could not be parsed); deterministic per filename"
+PARSER_NOTE = "ipsec_config and window ML features derived from capture bytes via parser/pcap_parser.py"
+
+# Windows are cut so short lab captures still yield more than one ML sample.
+MIN_PACKETS_PER_WINDOW = 5
+MAX_WINDOWS = 8
 
 
 class AnalyzerService:
@@ -105,6 +111,16 @@ class AnalyzerService:
             },
         }
 
+    def _mock_capture(self, rng: random.Random, window_count: int) -> Dict[str, Any]:
+        total_packets = rng.randint(500, 50000)
+        return {
+            "packet_count": total_packets,
+            "total_bytes": total_packets * rng.randint(120, 1400),
+            "flow_duration": float(window_count * 10),
+            "file_bytes": None,
+            "started_at": None,
+        }
+
     def parse_pcap_mock(self, filename: str) -> List[Dict[str, Any]]:
         rng = self._seeded_rng(filename)
         config = self._mock_config(rng, filename)
@@ -149,22 +165,113 @@ class AnalyzerService:
             )
         return windows
 
+    def _window_features(
+        self, chunk: List[Dict[str, Any]], initiator: str | None, origin_ts: float
+    ) -> Dict[str, Any]:
+        sizes = [p["length"] for p in chunk]
+        stamps = [p["ts"] for p in chunk]
+        count = len(chunk)
+        total_bytes = sum(sizes)
+        duration = max(stamps[-1] - stamps[0], 1e-3)
+
+        gaps = [b - a for a, b in zip(stamps, stamps[1:])]
+        mean_iat = statistics.fmean(gaps) if gaps else 0.0
+        std_iat = statistics.pstdev(gaps, mu=mean_iat) if len(gaps) > 1 else 0.0
+        burstiness = std_iat / mean_iat if mean_iat > 0 else 0.0
+
+        burst_gaps = [g for g in gaps if mean_iat > 0 and g > 2 * mean_iat]
+        upload_bytes = float(sum(p["length"] for p in chunk if p["src"] == initiator))
+        download_bytes = float(total_bytes - upload_bytes)
+        ul_dl_ratio = upload_bytes / download_bytes if download_bytes > 0 else float(upload_bytes)
+
+        return {
+            "window_start": round(stamps[0] - origin_ts, 3),
+            "window_end": round(stamps[-1] - origin_ts, 3),
+            "packet_count": count,
+            "features": {
+                "mean_packet_size": statistics.fmean(sizes),
+                "median_packet_size": float(statistics.median(sizes)),
+                "std_packet_size": statistics.pstdev(sizes) if count > 1 else 0.0,
+                "min_packet_size": float(min(sizes)),
+                "max_packet_size": float(max(sizes)),
+                "packets_per_second": count / duration,
+                "bytes_per_second": total_bytes / duration,
+                "mean_iat": mean_iat,
+                "std_iat": std_iat,
+                "burstiness": burstiness,
+                "burst_count": float(len(burst_gaps)),
+                "burst_duration": float(sum(burst_gaps)),
+                "upload_bytes": upload_bytes,
+                "download_bytes": download_bytes,
+                "ul_dl_ratio": ul_dl_ratio,
+                "flow_duration": duration,
+                "total_packets": count,
+                "total_bytes": total_bytes,
+            },
+        }
+
+    def _windows_from_packets(self, packets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        count = len(packets)
+        n_windows = max(1, min(MAX_WINDOWS, count // MIN_PACKETS_PER_WINDOW))
+        initiator = packets[0].get("src")
+        origin_ts = packets[0]["ts"]
+
+        windows = []
+        for i in range(n_windows):
+            start = round(i * count / n_windows)
+            end = round((i + 1) * count / n_windows)
+            chunk = packets[start:end]
+            if not chunk:
+                continue
+            measured = self._window_features(chunk, initiator, origin_ts)
+            measured["window_id"] = len(windows)
+            windows.append(measured)
+        return windows
+
+    def _capture_stats(self, packets: List[Dict[str, Any]], pcap_path: str) -> Dict[str, Any]:
+        stamps = [p["ts"] for p in packets]
+        try:
+            file_bytes = os.path.getsize(pcap_path)
+        except OSError:
+            file_bytes = None
+        return {
+            "packet_count": len(packets),
+            "total_bytes": sum(p["length"] for p in packets),
+            "flow_duration": round(max(stamps) - min(stamps), 3) if stamps else 0.0,
+            "file_bytes": file_bytes,
+            "started_at": datetime.fromtimestamp(min(stamps), tz=timezone.utc).isoformat() if stamps else None,
+        }
+
     def analyze(self, filename: str, pcap_path: str | None = None) -> Dict[str, Any]:
         rng = self._seeded_rng(filename)
-        note = MOCK_NOTE
-        evidence_source = "mock"
+        config = None
+        windows = None
+        capture = None
+
         if pcap_path and _PARSER_AVAILABLE:
             try:
                 config = self._real_config(pcap_path, filename)
                 IPsecConfig(**config)
-                note = PARSER_NOTE
-                evidence_source = "parser"
+                packets = extract_packets(pcap_path)
+                if not packets:
+                    raise ValueError("capture contains no packets")
+                windows = self._windows_from_packets(packets)
+                capture = self._capture_stats(packets, pcap_path)
             except Exception:
-                config = self._mock_config(rng, filename)
-        else:
-            config = self._mock_config(rng, filename)
+                config = None
+                windows = None
+                capture = None
 
-        windows = self._build_windows(rng, filename, config)
+        if config is None or windows is None:
+            config = self._mock_config(rng, filename)
+            windows = self._build_windows(rng, filename, config)
+            capture = self._mock_capture(rng, len(windows))
+            note = MOCK_NOTE
+            evidence_source = "mock"
+        else:
+            note = PARSER_NOTE
+            evidence_source = "parser"
+
         rule_result = self.rule_engine.evaluate(IPsecConfig(**config))
         findings = [
             {"severity": f.severity, "category": f.category, "description": f.description}
@@ -201,6 +308,7 @@ class AnalyzerService:
         return {
             "ipsec_config": config,
             "windows": window_results,
+            "capture": capture,
             "security_score": rule_result.total_score,
             "risk_level": rule_result.risk_level,
             "findings": findings,

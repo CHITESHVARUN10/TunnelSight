@@ -1,338 +1,19 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { UploadBehavior } from "@/components/upload/UploadBehavior";
-import { useToast } from "@/lib/mock/toast";
+import { useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
-import { api } from "@/lib/api";
-
-export type SecurityFinding = {
-  severity: string;
-  category: string;
-  description: string;
-};
-
-export type IPsecConfigData = {
-  capture_name?: string;
-  cryptography?: {
-    encryption_algorithm?: string;
-    integrity_algorithm?: string;
-    dh_group?: number | null;
-    pfs_enabled?: boolean;
-  };
-  sa_config?: {
-    ike_version?: string;
-    mode?: string;
-    replay_protection?: boolean;
-    lifetime_seconds?: number | null;
-  };
-};
-
-export type AnalysisRecord = {
-  id: string;
-  filename: string;
-  status: string;
-  security_score?: number | null;
-  risk_level?: string | null;
-  anomaly_score?: number | null;
-  traffic_label?: string | null;
-  traffic_confidence?: number | null;
-  config_json?: {
-    capture_name?: string;
-    ipsec_config?: IPsecConfigData;
-    features?: {
-      total_packets?: number;
-      total_bytes?: number;
-      packets_per_second?: number;
-      flow_duration?: number;
-    };
-  } | null;
-  findings_json?: SecurityFinding[] | null;
-  created_at: string;
-  source?: string;
-  sha?: string;
-  suite?: string;
-};
-
-const BASELINE_CAPTURES: AnalysisRecord[] = [
-  {
-    id: "4f81a792-e091-bfa3-c678-1290bb34e91a",
-    filename: "core-dc-chicago-gw1.pcap",
-    status: "completed",
-    security_score: 38,
-    risk_level: "HIGH",
-    anomaly_score: -0.28,
-    traffic_label: "Video",
-    traffic_confidence: 0.94,
-    created_at: "2025-10-24T18:32:00Z",
-    source: "Edge TAP (SPAN 04)",
-    sha: "4f81a792e091bfa3c6781290bb34e91a784d12c82098b1a3c75d40192e5912a0",
-    suite: "IKEv1 Aggressive / ESP 3DES-CBC / DH Group 2",
-    config_json: {
-      ipsec_config: {
-        capture_name: "core-dc-chicago-gw1.pcap",
-        cryptography: {
-          encryption_algorithm: "3DES-CBC",
-          integrity_algorithm: "HMAC-MD5",
-          dh_group: 2,
-          pfs_enabled: false,
-        },
-        sa_config: {
-          ike_version: "IKEv1 Aggressive",
-          mode: "Tunnel",
-          replay_protection: true,
-          lifetime_seconds: 28800,
-        },
-      },
-      features: {
-        total_packets: 842109,
-        total_bytes: 1524699136, // 1.42 GB
-        flow_duration: 3600,
-      },
-    },
-    findings_json: [
-      {
-        severity: "CRITICAL",
-        category: "Cryptography",
-        description: "Weak cipher 3DES-CBC vulnerable to Sweet32 64-bit block collisions.",
-      },
-      {
-        severity: "CRITICAL",
-        category: "Key Exchange",
-        description: "Weak DH Group 2 (MODP-1024). Inadequate against modern cryptanalysis.",
-      },
-      {
-        severity: "HIGH",
-        category: "Key Exchange",
-        description: "Perfect Forward Secrecy (PFS) is disabled on Child SA rekeys.",
-      },
-    ],
-  },
-  {
-    id: "b1704e6c-9823-4ea7-f12a-90098bc91124",
-    filename: "live-tap-frankfurt-ixp.pcapng",
-    status: "completed",
-    security_score: 95,
-    risk_level: "LOW",
-    anomaly_score: 0.18,
-    traffic_label: "Web",
-    traffic_confidence: 0.97,
-    created_at: "2025-10-24T17:51:00Z",
-    source: "IXP Mirror (DPDK Ring)",
-    sha: "b1704e6c98234ea7f12a90098bc91124f4e75d0124b48d9a203f69b1834288dc",
-    suite: "IKEv2 (RFC 7296) / ESP AES-256-GCM / Curve25519",
-    config_json: {
-      ipsec_config: {
-        capture_name: "live-tap-frankfurt-ixp.pcapng",
-        cryptography: {
-          encryption_algorithm: "AES-256-GCM",
-          integrity_algorithm: "AEAD",
-          dh_group: 19,
-          pfs_enabled: true,
-        },
-        sa_config: {
-          ike_version: "IKEv2",
-          mode: "Tunnel",
-          replay_protection: true,
-          lifetime_seconds: 3600,
-        },
-      },
-      features: {
-        total_packets: 2190412,
-        total_bytes: 4080218931, // 3.80 GB
-        flow_duration: 1800,
-      },
-    },
-    findings_json: [],
-  },
-  {
-    id: "88fa2904-c601-9b88-23d0-4a9192b512c0",
-    filename: "site2site-failover.pcapng",
-    status: "completed",
-    security_score: 72,
-    risk_level: "MEDIUM",
-    anomaly_score: 0.04,
-    traffic_label: "VoIP",
-    traffic_confidence: 0.89,
-    created_at: "2025-10-24T15:04:00Z",
-    source: "Disaster Recovery Ingest",
-    sha: "88fa2904c6019b8823d04a9192b512c091f822a611c095e49021da66230192b5",
-    suite: "IKEv2 Transport / ChaCha20-Poly1305 / MODP-2048 (No PFS)",
-    config_json: {
-      ipsec_config: {
-        capture_name: "site2site-failover.pcapng",
-        cryptography: {
-          encryption_algorithm: "ChaCha20-Poly1305",
-          integrity_algorithm: "AEAD",
-          dh_group: 14,
-          pfs_enabled: false,
-        },
-        sa_config: {
-          ike_version: "IKEv2",
-          mode: "Transport",
-          replay_protection: true,
-          lifetime_seconds: 7200,
-        },
-      },
-      features: {
-        total_packets: 145820,
-        total_bytes: 220200960, // 210 MB
-        flow_duration: 900,
-      },
-    },
-    findings_json: [
-      {
-        severity: "HIGH",
-        category: "Key Exchange",
-        description: "Perfect Forward Secrecy (PFS) is disabled on Child SA rekeys.",
-      },
-      {
-        severity: "MEDIUM",
-        category: "Key Exchange",
-        description: "DH Group 14 (MODP-2048) baseline; upgrade to ECP Group 19 recommended.",
-      },
-    ],
-  },
-  {
-    id: "cc0210a4-8911-0db4-4199-c0182aa41049",
-    filename: "branch-emea-gw04.pcap",
-    status: "completed",
-    security_score: 61,
-    risk_level: "MEDIUM",
-    anomaly_score: -0.12,
-    traffic_label: "VoIP",
-    traffic_confidence: 0.91,
-    created_at: "2025-10-24T13:34:00Z",
-    source: "FortiGate Mirror Ingest",
-    sha: "cc0210a489110db44199c0182aa410499bcf812903ea770182bb1948cc02aa41",
-    suite: "IKEv2 Tunnel / AES-128-CBC / HMAC-SHA1-96",
-    config_json: {
-      ipsec_config: {
-        capture_name: "branch-emea-gw04.pcap",
-        cryptography: {
-          encryption_algorithm: "AES-128-CBC",
-          integrity_algorithm: "HMAC-SHA1-96",
-          dh_group: 14,
-          pfs_enabled: false,
-        },
-        sa_config: {
-          ike_version: "IKEv2",
-          mode: "Tunnel",
-          replay_protection: true,
-          lifetime_seconds: 3600,
-        },
-      },
-      features: {
-        total_packets: 412090,
-        total_bytes: 671088640, // 640 MB
-        flow_duration: 1200,
-      },
-    },
-    findings_json: [
-      {
-        severity: "HIGH",
-        category: "Cryptography",
-        description: "HMAC-SHA1-96 integrity verification algorithm is deprecated.",
-      },
-      {
-        severity: "HIGH",
-        category: "Key Exchange",
-        description: "Perfect Forward Secrecy (PFS) disabled on Child SA rekey.",
-      },
-    ],
-  },
-  {
-    id: "11e73990-812b-fa70-1934-bc8166f20918",
-    filename: "azure-expressroute-ipsec.pcap",
-    status: "completed",
-    security_score: 88,
-    risk_level: "LOW",
-    anomaly_score: 0.15,
-    traffic_label: "Web",
-    traffic_confidence: 0.95,
-    created_at: "2025-10-24T09:19:00Z",
-    source: "Cloud Ingress Collector",
-    sha: "11e73990812bfa701934bc8166f20918c55e90145b98aa1248c0812911e766f2",
-    suite: "IKEv2 Site-to-Site / AES-256-CBC / HMAC-SHA256",
-    config_json: {
-      ipsec_config: {
-        capture_name: "azure-expressroute-ipsec.pcap",
-        cryptography: {
-          encryption_algorithm: "AES-256-CBC",
-          integrity_algorithm: "HMAC-SHA256",
-          dh_group: 14,
-          pfs_enabled: true,
-        },
-        sa_config: {
-          ike_version: "IKEv2",
-          mode: "Tunnel",
-          replay_protection: true,
-          lifetime_seconds: 28800,
-        },
-      },
-      features: {
-        total_packets: 670119,
-        total_bytes: 933232640, // 890 MB
-        flow_duration: 2400,
-      },
-    },
-    findings_json: [
-      {
-        severity: "LOW",
-        category: "Cryptography",
-        description: "AES-256-CBC compliant with NIST SP 800-77r1. Upgrade to GCM recommended.",
-      },
-    ],
-  },
-];
-
-function getVolumeString(c: AnalysisRecord): string {
-  const bytes = c.config_json?.features?.total_bytes;
-  if (!bytes || bytes <= 0) return "1.42 GB";
-  if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + " GB";
-  if (bytes >= 1048576) return (bytes / 1048576).toFixed(0) + " MB";
-  if (bytes >= 1024) return (bytes / 1024).toFixed(0) + " KB";
-  return bytes + " B";
-}
-
-function getPacketsString(c: AnalysisRecord): string {
-  const pkts = c.config_json?.features?.total_packets;
-  if (!pkts || pkts <= 0) return "842,109";
-  return pkts.toLocaleString();
-}
-
-function getIngestedString(c: AnalysisRecord): string {
-  try {
-    const d = new Date(c.created_at);
-    if (isNaN(d.getTime())) return "18:32 UTC";
-    const hours = String(d.getUTCHours()).padStart(2, "0");
-    const mins = String(d.getUTCMinutes()).padStart(2, "0");
-    return `${hours}:${mins} UTC`;
-  } catch {
-    return "18:32 UTC";
-  }
-}
-
-function getSuiteString(c: AnalysisRecord): string {
-  if (c.suite) return c.suite;
-  const crypto = c.config_json?.ipsec_config?.cryptography;
-  const sa = c.config_json?.ipsec_config?.sa_config;
-  if (!crypto && !sa) return "IKEv1 Aggressive / ESP 3DES-CBC";
-  const ike = sa?.ike_version ?? "IKEv2";
-  const enc = crypto?.encryption_algorithm ?? "AES-256-GCM";
-  const integ = crypto?.integrity_algorithm ?? "AEAD";
-  const dh = crypto?.dh_group ? ` / DH Group ${crypto.dh_group}` : "";
-  return `${ike} / ESP ${enc} / ${integ}${dh}`;
-}
+import { listHistory, type Analysis } from "@/lib/analysis";
+import { capturePackets, captureVolume, formatClock, suiteString } from "@/lib/format";
 
 export default function AnalyzePage() {
   const router = useRouter();
   const toast = useToast();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [policyOpen, setPolicyOpen] = useState(false);
-  const [captures, setCaptures] = useState<AnalysisRecord[]>(BASELINE_CAPTURES);
-  const [selectedCapture, setSelectedCapture] = useState<AnalysisRecord>(BASELINE_CAPTURES[0]);
+  const [captures, setCaptures] = useState<Analysis[]>([]);
+  const [selectedCapture, setSelectedCapture] = useState<Analysis | null>(null);
   const [filterQuery, setFilterQuery] = useState("");
 
   const openPolicy = () => setPolicyOpen(true);
@@ -342,34 +23,32 @@ export default function AnalyzePage() {
   // Synchronize with database schema via /api/history
   const syncCaptures = async (showNotification = false) => {
     try {
-      const res = await api("/api/history");
-      if (Array.isArray(res) && res.length > 0) {
-        setCaptures(res);
-        if (showNotification) {
-          toast({ title: "Captures refreshed", body: `${res.length} records synchronized (database).`, kind: "info" });
-        }
-        return;
+      const res = await listHistory({ limit: 50 });
+      setCaptures(res.items);
+      setSelectedCapture((current) => current ?? res.items[0] ?? null);
+      if (showNotification) {
+        toast({ title: "Captures refreshed", body: `${res.total} record(s) synchronized.`, kind: "info" });
       }
-    } catch {
-      // Offline / unauthenticated fallback
-    }
-    if (showNotification) {
-      toast({ title: "Captures refreshed", body: `${BASELINE_CAPTURES.length} records synchronized (mock).`, kind: "info" });
+    } catch (err) {
+      if (showNotification) {
+        toast({ title: "Captures unavailable", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+      }
     }
   };
 
   useEffect(() => {
     syncCaptures(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const openInspectRow = (item: AnalysisRecord) => {
+  const openInspectRow = (item: Analysis) => {
     setSelectedCapture(item);
     setDrawerOpen(true);
   };
 
   const inspectConfig = (e: React.MouseEvent) => {
     const m = ((e.currentTarget as HTMLElement).closest("div")?.parentElement?.textContent ?? "").match(/MOD_\d{2}/);
-    toast({ title: m?.[0] ?? "Module", body: "Module config is preset-managed (mock).", kind: "info" });
+    toast({ title: m?.[0] ?? "Module", body: "Run a capture to populate this module's output.", kind: "info" });
   };
 
   const refreshCaptures = () => syncCaptures(true);
@@ -391,13 +70,17 @@ export default function AnalyzePage() {
     return captures.filter((c) => {
       const name = c.filename.toLowerCase();
       const risk = (c.risk_level ?? "").toLowerCase();
-      const suite = (c.suite ?? getSuiteString(c)).toLowerCase();
+      const suite = suiteString(c).toLowerCase();
       return name.includes(q) || risk.includes(q) || suite.includes(q);
     });
   }, [captures, filterQuery]);
 
-  const selCrypto = selectedCapture.config_json?.ipsec_config?.cryptography;
-  const selSa = selectedCapture.config_json?.ipsec_config?.sa_config;
+  const selCrypto = selectedCapture?.config_json?.ipsec_config?.cryptography as
+    | { dh_group?: number | null }
+    | undefined;
+  const selSa = selectedCapture?.config_json?.ipsec_config?.sa_config as
+    | { replay_protection?: boolean }
+    | undefined;
   const dhGroup = selCrypto?.dh_group;
   const replayProtection = selSa?.replay_protection;
 
@@ -432,7 +115,7 @@ export default function AnalyzePage() {
                   Analyze Capture
                 </h1>
                 <span className="px-space-xs py-0.5 rounded font-code-sm text-code-sm bg-surface-container-high text-on-surface-variant font-medium">
-                  SESSION #8820-A
+                  {captures.length} CAPTURE{captures.length === 1 ? "" : "S"} ON RECORD
                 </span>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
@@ -440,14 +123,9 @@ export default function AnalyzePage() {
               </p>
             </div>
             <div className="flex items-center gap-space-sm">
-              <button
-                className="flex items-center gap-space-xs bg-surface-container hover:bg-surface-container-high px-space-md py-space-xs rounded text-on-surface transition-colors font-code-sm text-code-sm border border-outline-variant/30"
-                id="load-sample-btn"
-                type="button"
-              >
-                <span className="material-symbols-outlined text-[16px] text-primary">play_arrow</span>
-                <span>Load sample trace: site2site-ikev2-anomalous.pcapng</span>
-              </button>
+              <span className="font-code-sm text-code-sm text-outline">
+                Captures are parsed and scored on upload — no sample traces.
+              </span>
             </div>
           </div>
 
@@ -679,70 +357,77 @@ export default function AnalyzePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-container-high/30 font-code-sm text-code-sm">
-                  {filteredCaptures.map((item) => {
-                    const isPass = item.risk_level === "LOW";
-                    const isHigh = item.risk_level === "HIGH" || item.risk_level === "CRITICAL";
+                  {filteredCaptures.length === 0 ? (
+                    <tr>
+                      <td className="py-space-lg px-space-md text-center text-on-surface-variant" colSpan={6}>
+                        No captures yet. Drop a .pcap above to run the parser and models.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCaptures.map((item) => {
+                      const isPass = item.risk_level === "LOW";
+                      const isHigh = item.risk_level === "HIGH" || item.risk_level === "CRITICAL";
 
-                    return (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-surface-container/50 transition-colors group cursor-pointer inspect-trigger-row"
-                        data-name={item.filename}
-                        data-packets={getPacketsString(item)}
-                        data-risk={item.risk_level ?? "HIGH"}
-                        data-sha={item.sha ?? item.id}
-                        data-source={item.source ?? "Edge TAP (SPAN 04)"}
-                        data-suite={getSuiteString(item)}
-                        data-time={getIngestedString(item)}
-                        data-vol={getVolumeString(item)}
-                        onClick={() => openInspectRow(item)}
-                      >
-                        <td className="py-space-sm px-space-md">
-                          <div className="flex items-center gap-space-xs">
-                            <span
-                              className={`w-2 h-2 rounded-full ${
-                                isPass ? "bg-tertiary" : isHigh ? "bg-error" : "bg-secondary"
-                              }`}
-                            ></span>
-                            <span className={`${isPass ? "text-tertiary" : "text-on-surface"} font-medium`}>
-                              {isPass ? "PASS" : "AUDITED"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-space-sm px-space-md font-medium text-on-surface">{item.filename}</td>
-                        <td className="py-space-sm px-space-md text-on-surface-variant">{getVolumeString(item)}</td>
-                        <td className="py-space-sm px-space-md">
-                          {isPass ? (
-                            <span className="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-tertiary-container/40 text-tertiary">
-                              LOW
-                            </span>
-                          ) : isHigh ? (
-                            <span className="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-error-container/60 text-error">
-                              {item.risk_level ?? "HIGH"}
-                            </span>
-                          ) : (
-                            <span className="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-secondary-container text-secondary-fixed">
-                              MEDIUM
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-space-sm px-space-md text-outline">{getIngestedString(item)}</td>
-                        <td className="py-space-sm px-space-md text-right">
-                          <button
-                            className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn"
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openInspectRow(item);
-                            }}
-                          >
-                            <span>Inspect</span>
-                            <span className="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                      return (
+                        <tr
+                          key={item.id}
+                          className="hover:bg-surface-container/50 transition-colors group cursor-pointer inspect-trigger-row"
+                          data-name={item.filename}
+                          data-packets={capturePackets(item)}
+                          data-risk={item.risk_level ?? "—"}
+                          data-id={item.id}
+                          data-suite={suiteString(item)}
+                          data-time={formatClock(item.created_at)}
+                          data-vol={captureVolume(item)}
+                          onClick={() => openInspectRow(item)}
+                        >
+                          <td className="py-space-sm px-space-md">
+                            <div className="flex items-center gap-space-xs">
+                              <span
+                                className={`w-2 h-2 rounded-full ${
+                                  isPass ? "bg-tertiary" : isHigh ? "bg-error" : "bg-secondary"
+                                }`}
+                              ></span>
+                              <span className={`${isPass ? "text-tertiary" : "text-on-surface"} font-medium`}>
+                                {isPass ? "PASS" : "AUDITED"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-space-sm px-space-md font-medium text-on-surface">{item.filename}</td>
+                          <td className="py-space-sm px-space-md text-on-surface-variant">{captureVolume(item)}</td>
+                          <td className="py-space-sm px-space-md">
+                            {isPass ? (
+                              <span className="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-tertiary-container/40 text-tertiary">
+                                LOW
+                              </span>
+                            ) : isHigh ? (
+                              <span className="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-error-container/60 text-error">
+                                {item.risk_level}
+                              </span>
+                            ) : (
+                              <span className="px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold bg-secondary-container text-secondary-fixed">
+                                {item.risk_level ?? "—"}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-space-sm px-space-md text-outline">{formatClock(item.created_at)}</td>
+                          <td className="py-space-sm px-space-md text-right">
+                            <button
+                              className="inspect-btn text-primary hover:text-primary-fixed font-medium inline-flex items-center gap-1 group/btn"
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openInspectRow(item);
+                              }}
+                            >
+                              <span>Inspect</span>
+                              <span className="text-[12px] group-hover/btn:translate-x-0.5 transition-transform">→</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -781,7 +466,7 @@ export default function AnalyzePage() {
                   Forensic Capture Detail
                 </div>
                 <div className="font-code-sm text-[11px] text-outline" id="drawer-header-subtitle">
-                  {selectedCapture.id ? `SESSION #${selectedCapture.id.slice(0, 8).toUpperCase()} • PROVENANCE VERIFIED` : "SESSION #8820-A • PROVENANCE VERIFIED"}
+                  {selectedCapture ? `SESSION #${selectedCapture.id.slice(0, 8).toUpperCase()}` : "NO CAPTURE SELECTED"}
                 </div>
               </div>
             </div>
@@ -801,30 +486,30 @@ export default function AnalyzePage() {
             <div className="bg-surface-container-lowest p-space-md rounded border border-surface-container-high/40 flex flex-col gap-space-xs">
               <div className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Capture Archive</div>
               <div className="font-headline-sm text-headline-sm text-on-surface font-semibold break-all" id="drawer-filename">
-                {selectedCapture.filename}
+                {selectedCapture?.filename ?? "—"}
               </div>
               <div className="flex items-center gap-space-md mt-1 font-code-sm text-code-sm">
                 <span className="text-on-surface-variant">
-                  Volume: <strong className="text-on-surface" id="drawer-volume">{getVolumeString(selectedCapture)}</strong>
+                  Volume: <strong className="text-on-surface" id="drawer-volume">{captureVolume(selectedCapture)}</strong>
                 </span>
                 <span className="text-outline-variant">•</span>
                 <span className="text-on-surface-variant">
-                  Packets: <strong className="text-on-surface" id="drawer-packets">{getPacketsString(selectedCapture)}</strong>
+                  Packets: <strong className="text-on-surface" id="drawer-packets">{capturePackets(selectedCapture)}</strong>
                 </span>
                 <span className="text-outline-variant">•</span>
                 <span className="text-on-surface-variant">
                   Risk:{" "}
                   <strong
                     className={
-                      selectedCapture.risk_level === "LOW"
+                      selectedCapture?.risk_level === "LOW"
                         ? "text-tertiary"
-                        : selectedCapture.risk_level === "MEDIUM"
+                        : selectedCapture?.risk_level === "MEDIUM"
                         ? "text-secondary-fixed"
                         : "text-error"
                     }
                     id="drawer-risk"
                   >
-                    {selectedCapture.risk_level ?? "HIGH"}
+                    {selectedCapture?.risk_level ?? "—"}
                   </strong>
                 </span>
               </div>
@@ -837,21 +522,21 @@ export default function AnalyzePage() {
               </div>
               <div className="bg-surface-container-lowest rounded border border-surface-container-high/40 divide-y divide-surface-container-high/30 font-code-sm text-code-sm">
                 <div className="p-space-sm flex flex-col gap-1">
-                  <span className="text-outline text-[11px]">Trace SHA-256</span>
-                  <span className="text-on-surface break-all select-all font-mono text-[11px]" id="drawer-sha">
-                    {selectedCapture.sha ?? selectedCapture.id}
+                  <span className="text-outline text-[11px]">Analysis Record ID</span>
+                  <span className="text-on-surface break-all select-all font-mono text-[11px]" id="drawer-id">
+                    {selectedCapture?.id ?? "—"}
                   </span>
                 </div>
                 <div className="p-space-sm flex items-center justify-between">
-                  <span className="text-outline">Capture Interface</span>
-                  <span className="text-on-surface font-medium" id="drawer-source">
-                    {selectedCapture.source ?? "Edge TAP (SPAN 04)"}
+                  <span className="text-outline">Ingested (UTC)</span>
+                  <span className="text-on-surface font-medium" id="drawer-time">
+                    {formatClock(selectedCapture?.created_at)}
                   </span>
                 </div>
                 <div className="p-space-sm flex flex-col gap-1">
                   <span className="text-outline text-[11px]">IKE / ESP Parameters</span>
                   <span className="text-on-surface font-medium" id="drawer-suite">
-                    {getSuiteString(selectedCapture)}
+                    {suiteString(selectedCapture)}
                   </span>
                 </div>
                 <div className="p-space-sm flex items-center justify-between">
@@ -868,9 +553,13 @@ export default function AnalyzePage() {
                     <span className="text-on-surface font-medium" id="drawer-dh">
                       MODP-2048 (Group 14)
                     </span>
+                  ) : dhGroup ? (
+                    <span className="text-on-surface font-medium" id="drawer-dh">
+                      Group {dhGroup}
+                    </span>
                   ) : (
-                    <span className="text-error font-medium" id="drawer-dh">
-                      MODP-1024 (Group 2 - Insecure)
+                    <span className="text-outline font-medium" id="drawer-dh">
+                      Not observed in capture
                     </span>
                   )}
                 </div>
@@ -892,7 +581,9 @@ export default function AnalyzePage() {
                 <span className="font-headline-sm text-[13px] font-semibold">Evidence Provenance</span>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                Deterministic rule justification confirms weak key exchange without requiring private payload disclosure. Findings are grounded strictly in packet header records.
+                {selectedCapture?.config_json?.evidence_source === "parser"
+                  ? "Deterministic rule justification confirms weak key exchange without requiring private payload disclosure. Findings are grounded strictly in packet header records."
+                  : "Parameters for this record came from the seeded fallback because the capture could not be parsed. Upload a valid .pcap to get packet-grounded findings."}
               </p>
               <div className="mt-space-xs flex items-center gap-space-sm text-[11px] font-code-sm text-outline">
                 <span>VALIDATION: DETERMINISTIC</span>
@@ -905,9 +596,14 @@ export default function AnalyzePage() {
           {/* Drawer Footer Action */}
           <div className="p-space-lg bg-surface-container-lowest border-t border-surface-container-high/60 flex flex-col gap-space-xs">
             <button
-              className="w-full py-space-sm px-space-md rounded bg-primary text-on-primary font-headline-sm text-headline-sm font-semibold hover:bg-primary-fixed transition-colors flex items-center justify-center gap-space-xs shadow-md"
+              className="w-full py-space-sm px-space-md rounded bg-primary text-on-primary font-headline-sm text-headline-sm font-semibold hover:bg-primary-fixed transition-colors flex items-center justify-center gap-space-xs shadow-md disabled:opacity-50 disabled:hover:bg-primary"
               type="button"
-              onClick={() => router.push("/analysis/results")}
+              disabled={!selectedCapture}
+              onClick={() => {
+                if (!selectedCapture) return;
+                closeDrawer();
+                router.push(`/analysis/results?analysis_id=${selectedCapture.id}`);
+              }}
             >
               <span>Proceed to Deep Inspection</span>
               <span className="material-symbols-outlined text-[18px]">arrow_forward</span>

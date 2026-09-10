@@ -4,9 +4,10 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { downloadFile, useToast } from "@/lib/mock/toast";
+import { downloadFile, useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
 import { getAnalysis, getTraffic, getWindows, type Analysis, type Window } from "@/lib/analysis";
+import { capturePackets, captureVolume, formatBytes, formatDuration } from "@/lib/format";
 
 function winLabel(id: number) {
   return `W-${String(id + 1).padStart(2, "0")}`;
@@ -15,39 +16,19 @@ function winLabel(id: number) {
 function winRange(w: Window) {
   const s = w.window_start ?? 0;
   const e = w.window_end ?? 0;
-  return `${s.toFixed(1)}s – ${e.toFixed(1)}s`;
+  return `${s.toFixed(2)}s – ${e.toFixed(2)}s`;
 }
 
-const SHAP = [
-  {
-    icon: "download",
-    title: "High Sustained Downstream Asymmetry",
-    weight: "+38% Weight",
-    width: "38%",
-    desc: "94.8% egress bytes at 18.4:1 ratio matching multi-megabyte media segment delivery.",
-  },
-  {
-    icon: "view_stream",
-    title: "Near-MTU Sized Packet Clustering",
-    weight: "+29% Weight",
-    width: "29%",
-    desc: "89.2% packets between 1,360–1,420 bytes indicating path MTU-saturating media chunks.",
-  },
-  {
-    icon: "pace",
-    title: "Low-Jitter Paced Burst Intervals",
-    weight: "+19% Weight",
-    width: "19%",
-    desc: "200–250ms burst cadence correlating with automated ABR buffer replenishment.",
-  },
-  {
-    icon: "sync_alt",
-    title: "TCP/ESP ACK Framing Absence of Loss",
-    weight: "+8% Weight",
-    width: "8%",
-    desc: "Consistent 52–64 byte reverse-path cluster confirming regular ACK cadence without retransmits.",
-  },
-];
+function winSpan(w: Window) {
+  const span = (w.window_end ?? 0) - (w.window_start ?? 0);
+  return span > 0 ? span : null;
+}
+
+function winPps(w: Window) {
+  const span = winSpan(w);
+  if (!span || !w.packet_count) return null;
+  return w.packet_count / span;
+}
 
 export default function TrafficIntelligencePage() {
   const toast = useToast();
@@ -84,6 +65,15 @@ export default function TrafficIntelligencePage() {
   const activeId = active ? winLabel(active.window_id) : "—";
   const mixEntries = Object.entries(mix).sort((a, b) => b[1] - a[1]);
   const colors = ["bg-primary", "bg-secondary", "bg-tertiary-container", "bg-surface-variant", "bg-tertiary"];
+  const capture = analysis?.config_json?.capture;
+  const meanRate =
+    capture?.total_bytes && capture?.flow_duration ? capture.total_bytes / capture.flow_duration : null;
+  const avgWindowSpan = windows.length
+    ? windows.reduce((acc, w) => acc + (winSpan(w) ?? 0), 0) / windows.length
+    : null;
+  const maxPps = Math.max(0, ...windows.map((w) => winPps(w) ?? 0));
+  const captureStart = windows.length ? Math.min(...windows.map((w) => w.window_start ?? 0)) : null;
+  const captureEnd = windows.length ? Math.max(...windows.map((w) => w.window_end ?? 0)) : null;
 
   if (!analysisId) {
     return (
@@ -130,19 +120,20 @@ export default function TrafficIntelligencePage() {
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1.5 bg-surface-container-low px-3 py-1.5 rounded">
                 <span className="material-symbols-outlined text-outline text-[16px]">schedule</span>
-                <span className="font-mono text-[12px] text-on-surface-variant">Capture:</span>
-                <span className="font-mono text-[12px] text-on-surface font-medium">00:00:00 - 00:04:12</span>
+                <span className="font-mono text-[12px] text-on-surface-variant">Capture span:</span>
+                <span className="font-mono text-[12px] text-on-surface font-medium">
+                  {captureStart !== null && captureEnd !== null
+                    ? `${captureStart.toFixed(2)}s – ${captureEnd.toFixed(2)}s`
+                    : "—"}
+                </span>
               </div>
-              <button
-                className="flex items-center gap-1.5 bg-surface-container px-3 py-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-mono text-[12px]"
-                type="button"
-                onClick={() =>
-                  toast({ title: "SPI 0xC3E8019A", body: "ESP flow · 24 SAs tracked · DPDK RX online.", kind: "info" })
-                }
-              >
-                <span className="material-symbols-outlined text-[16px]">tune</span>
-                <span>SPI: 0xC3E8019A</span>
-              </button>
+              <div className="flex items-center gap-1.5 bg-surface-container-low px-3 py-1.5 rounded">
+                <span className="material-symbols-outlined text-outline text-[16px]">dataset</span>
+                <span className="font-mono text-[12px] text-on-surface-variant">Record:</span>
+                <span className="font-mono text-[12px] text-on-surface font-medium">
+                  {analysisId.slice(0, 8).toUpperCase()}
+                </span>
+              </div>
               <button
                 className="flex items-center gap-1.5 bg-primary-container px-3 py-1.5 rounded text-on-primary-container hover:bg-primary hover:text-on-primary transition-colors font-mono text-[12px] font-medium"
                 type="button"
@@ -168,13 +159,13 @@ export default function TrafficIntelligencePage() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface">
                 <span className="w-1.5 h-1.5 rounded-full bg-tertiary" />
-                FLOWS: <span className="font-semibold text-primary ml-1">24 CONCURRENT</span>
+                WINDOWS: <span className="font-semibold text-primary ml-1">{windows.length}</span>
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface-variant">
-                WINDOW: <span className="text-on-surface font-medium ml-1">5.0s</span>
+                AVG WINDOW: <span className="text-on-surface font-medium ml-1">{formatDuration(avgWindowSpan)}</span>
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low text-on-surface-variant">
-                MODEL: <span className="text-on-surface font-medium ml-1">RF+GB Ensemble v2.4</span>
+                MODEL: <span className="text-on-surface font-medium ml-1">RandomForest traffic_classifier</span>
               </span>
             </div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-on-surface-variant text-[11px]">
@@ -195,7 +186,8 @@ export default function TrafficIntelligencePage() {
                     Level 1 • Global Behavioral Mixture
                   </span>
                   <span className="px-2 py-0.5 rounded bg-surface-container-high font-mono text-[12px] text-primary">
-                    SPI: 0xC3E8019A (ESP)
+                    {analysis?.config_json?.ipsec_config?.sa_config?.ike_version as string ?? "UNKNOWN"} ·{" "}
+                    {analysis?.config_json?.evidence_source ?? "unknown"} evidence
                   </span>
                 </div>
                 <h1 className="font-headline-md text-on-surface mt-1 text-[16px] font-semibold tracking-tight">
@@ -206,18 +198,23 @@ export default function TrafficIntelligencePage() {
               <div className="flex items-center gap-6 text-right">
                 <div>
                   <span className="block font-mono text-[10px] text-outline uppercase">Anomaly Score</span>
-                  <span className="font-mono text-[13px] text-tertiary font-semibold tabular-nums">0.12 (NOMINAL)</span>
+                  <span className="font-mono text-[13px] text-tertiary font-semibold tabular-nums">
+                    {analysis?.anomaly_score != null ? analysis.anomaly_score.toFixed(3) : "—"}
+                  </span>
                 </div>
                 <div className="h-6 w-px bg-surface-container-highest" />
                 <div>
                   <span className="block font-mono text-[10px] text-outline uppercase">Mean Rate</span>
-                  <span className="font-mono text-[13px] text-on-surface font-semibold tabular-nums">4.52 MB/s</span>
+                  <span className="font-mono text-[13px] text-on-surface font-semibold tabular-nums">
+                    {meanRate !== null ? `${formatBytes(meanRate)}/s` : "—"}
+                  </span>
                 </div>
                 <div className="h-6 w-px bg-surface-container-highest" />
                 <div>
                   <span className="block font-mono text-[10px] text-outline uppercase">Tunnel Volume</span>
                   <span className="font-mono text-[13px] text-on-surface font-semibold tabular-nums">
-                    1.42 GB <span className="text-on-surface-variant font-normal">/ 842k pkts</span>
+                    {captureVolume(analysis)}{" "}
+                    <span className="text-on-surface-variant font-normal">/ {capturePackets(analysis)} pkts</span>
                   </span>
                 </div>
               </div>
@@ -254,7 +251,9 @@ export default function TrafficIntelligencePage() {
               <div className="flex items-center gap-3">
                 <span className="font-mono text-[11px] uppercase text-outline tracking-wider">Level 2 • Temporal Sequence</span>
                 <span className="h-4 w-px bg-surface-container-highest" />
-                <span className="text-[13px] font-semibold text-on-surface">5.0-Second Observation Windows</span>
+                <span className="text-[13px] font-semibold text-on-surface">
+                  {windows.length} Observation Window{windows.length === 1 ? "" : "s"}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[11px] uppercase text-outline">Active Window:</span>
@@ -272,6 +271,7 @@ export default function TrafficIntelligencePage() {
                     <th className="py-2 px-4 font-semibold">Time Offset</th>
                     <th className="py-2 px-4 font-semibold">Primary Inferred Behavior</th>
                     <th className="py-2 px-4 font-semibold text-right">Throughput</th>
+                    <th className="py-2 px-4 font-semibold text-right">Anomaly</th>
                     <th className="py-2 px-4 font-semibold text-center">Action</th>
                   </tr>
                 </thead>
@@ -308,7 +308,10 @@ export default function TrafficIntelligencePage() {
                           </span>
                         </td>
                         <td className={`py-2 px-4 text-right tabular-nums ${isSelected ? "text-primary font-semibold" : "text-on-surface"}`}>
-                          {(win.packet_count ?? 0).toLocaleString()} pkts
+                          {winPps(win) !== null ? `${winPps(win)!.toFixed(1)} pkt/s` : "—"}
+                        </td>
+                        <td className={`py-2 px-4 text-right tabular-nums ${win.is_anomaly ? "text-rose-400 font-semibold" : "text-outline"}`}>
+                          {win.anomaly_score != null ? win.anomaly_score.toFixed(3) : "—"}
                         </td>
                         <td className="py-2 px-4 text-center">
                           {isSelected ? (
@@ -350,7 +353,7 @@ export default function TrafficIntelligencePage() {
                   </div>
                 </div>
                 <span className="font-mono text-[12px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">
-                  Window {activeId} • 10.000s
+                  Window {activeId} • {active ? formatDuration(winSpan(active)) : "—"}
                 </span>
               </div>
 
@@ -391,47 +394,60 @@ export default function TrafficIntelligencePage() {
               </div>
             </section>
 
-            {/* PANE B: EXPLAINABILITY */}
+            {/* PANE B: PER-WINDOW MEASUREMENTS */}
             <section className="lg:col-span-7 flex flex-col bg-surface-container-low rounded border border-hairline p-space-md">
               <div className="flex items-center justify-between pb-2 mb-3">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-[10px] uppercase text-outline tracking-wider">
-                      Level 3 • Feature Attribution
+                      Level 3 • Measured Characteristics
                     </span>
                     <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-mono text-[12px] font-semibold">
-                      ML EXPLAINABILITY
+                      PER WINDOW
                     </span>
                   </div>
-                  <h2 className="text-[13px] font-semibold text-on-surface mt-1">Evidence-Grounded ML Rationale</h2>
+                  <h2 className="text-[13px] font-semibold text-on-surface mt-1">Packet Rate &amp; Anomaly by Window</h2>
                 </div>
                 <div className="hidden sm:flex flex-col items-end">
-                  <span className="font-mono text-[10px] text-outline uppercase">Confidence Margin</span>
-                  <span className="font-mono text-[13px] text-primary font-semibold tabular-nums">Δ +78.3%</span>
+                  <span className="font-mono text-[10px] text-outline uppercase">Windows</span>
+                  <span className="font-mono text-[13px] text-primary font-semibold tabular-nums">{windows.length}</span>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
-                {SHAP.map((s) => (
-                  <div
-                    key={s.title}
-                    className="traffic-card p-3 rounded bg-surface-container hover:bg-surface-container-high"
-                  >
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className="text-on-surface font-semibold flex items-center gap-2 text-[13px]">
-                        <span className="material-symbols-outlined text-primary text-[18px]">{s.icon}</span>
-                        {s.title}
-                      </span>
-                      <span className="font-mono text-[12px] px-2 py-0.5 rounded bg-primary-container text-on-primary-container font-semibold">
-                        {s.weight}
-                      </span>
-                    </div>
-                    <p className="font-sans text-[12px] text-on-surface-variant mt-1 truncate">{s.desc}</p>
-                    <div className="traffic-bar mt-2 w-full bg-surface-container-lowest h-1.5 rounded overflow-hidden">
-                      <div className="bg-primary h-full rounded" style={{ width: s.width }} />
-                    </div>
-                  </div>
-                ))}
+                {windows.length === 0 ? (
+                  <span className="font-mono text-[12px] text-outline">No windows available.</span>
+                ) : (
+                  windows.map((win) => {
+                    const pps = winPps(win);
+                    const width = maxPps > 0 && pps !== null ? `${Math.max(2, (pps / maxPps) * 100)}%` : "2%";
+                    return (
+                      <div
+                        key={win.window_id}
+                        className="traffic-card p-3 rounded bg-surface-container hover:bg-surface-container-high"
+                      >
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="text-on-surface font-semibold flex items-center gap-2 text-[13px]">
+                            <span className="material-symbols-outlined text-primary text-[18px]">
+                              {win.is_anomaly ? "warning" : "check_circle"}
+                            </span>
+                            {winLabel(win.window_id)} · {(win.traffic_label ?? "unknown").toUpperCase()}
+                          </span>
+                          <span className="font-mono text-[12px] px-2 py-0.5 rounded bg-primary-container text-on-primary-container font-semibold">
+                            {pps !== null ? `${pps.toFixed(1)} pkt/s` : "—"}
+                          </span>
+                        </div>
+                        <p className="font-sans text-[12px] text-on-surface-variant mt-1">
+                          {winRange(win)} · {win.packet_count ?? 0} packets · confidence{" "}
+                          {win.traffic_confidence != null ? `${(win.traffic_confidence * 100).toFixed(1)}%` : "—"}
+                        </p>
+                        <div className="traffic-bar mt-2 w-full bg-surface-container-lowest h-1.5 rounded overflow-hidden">
+                          <div className={`${win.is_anomaly ? "bg-rose-400" : "bg-primary"} h-full rounded`} style={{ width }} />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
               <div className="mt-3 px-3 py-2 rounded bg-surface-container-lowest flex items-center gap-2">
@@ -449,22 +465,22 @@ export default function TrafficIntelligencePage() {
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-tertiary" />
-                <span className="text-on-surface font-medium">PIPELINE DPDK RX:</span>
-                <span className="text-tertiary font-semibold">ONLINE (0.02ms jitter)</span>
+                <span className="text-on-surface font-medium">EVIDENCE SOURCE:</span>
+                <span className="text-tertiary font-semibold uppercase">{analysis?.config_json?.evidence_source ?? "unknown"}</span>
               </div>
               <span className="text-outline-variant">|</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-on-surface font-medium">FLOW EXTRACTION:</span>
-                <span className="text-on-surface">ACTIVE (24/24 SAs tracked)</span>
+                <span className="text-on-surface font-medium">WINDOWS:</span>
+                <span className="text-on-surface">{windows.length}</span>
               </div>
             </div>
             <div className="flex items-center gap-4 flex-wrap">
               <span>
-                INSPECTION LATENCY: <span className="text-on-surface font-semibold">1.4ms</span>
+                CAPTURE SPAN: <span className="text-on-surface font-semibold">{formatDuration(capture?.flow_duration)}</span>
               </span>
               <span className="text-outline-variant">|</span>
               <span>
-                ENGINE CLOCK: <span className="text-outline">DPDK TSC SYNC</span>
+                BYTES: <span className="text-on-surface font-semibold">{formatBytes(capture?.total_bytes)}</span>
               </span>
             </div>
           </footer>

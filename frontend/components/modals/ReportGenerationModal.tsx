@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { downloadFile, useToast } from "@/lib/mock/toast";
-import { executiveReportJSON } from "@/lib/mock/analysis";
+import { downloadFile, useToast } from "@/lib/toast";
+import { getAnalysis } from "@/lib/analysis";
 
 interface ReportGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
   targetCapture?: string;
+  analysisId?: string | null;
 }
 
 export function ReportGenerationModal({
   isOpen,
   onClose,
   targetCapture = "branch-emea-gw04.pcap",
+  analysisId = null,
 }: ReportGenerationModalProps) {
   const [reportType, setReportType] = useState<"executive" | "technical">("executive");
   const [includeTraffic, setIncludeTraffic] = useState(true);
@@ -34,17 +36,27 @@ export function ReportGenerationModal({
 
   if (!isOpen) return null;
 
-  const handleGenerate = () => {
-    downloadFile(
-      `${targetCapture.replace(".pcap", "")}-${reportType}-report.json`,
-      executiveReportJSON(),
-      "application/json"
-    );
-    toast({
-      title: "Security Report Generated",
-      body: `${targetCapture.replace(".pcap", "")}-${reportType}-report.json exported.`,
-      kind: "ok",
-    });
+  const handleGenerate = async () => {
+    const base = targetCapture.replace(/\.pcap\w*$/, "");
+    const filename = `${base}-${reportType}-report.json`;
+    try {
+      const payload = analysisId
+        ? await getAnalysis(analysisId)
+        : {
+            capture: targetCapture,
+            report_type: reportType,
+            sections: {
+              traffic: includeTraffic,
+              anomalies: includeAnomalies,
+              evidence: includeEvidence,
+            },
+            generated: new Date().toISOString(),
+          };
+      downloadFile(filename, JSON.stringify(payload, null, 2), "application/json");
+      toast({ title: "Security Report Generated", body: `${filename} exported.`, kind: "ok" });
+    } catch (err) {
+      toast({ title: "Report failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
     onClose();
   };
 

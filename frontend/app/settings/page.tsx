@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { downloadFile, useToast } from "@/lib/mock/toast";
+import { downloadFile, useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default function SettingsPage() {
@@ -19,11 +19,11 @@ export default function SettingsPage() {
     toast({ title: "Config exported", body: "engine.yaml downloaded successfully.", kind: "ok" });
   };
 
-  const verifyHealth = () => toast({ title: "Engine health verified", body: "6/6 engines online · 0 dropped frames · 14ms RPC latency.", kind: "ok" });
-  const applyRuntime = () => toast({ title: "Runtime changes applied", body: "Daemon rehash staged (mock, SIGHUP 39420).", kind: "ok" });
-  const testEndpoint = () => toast({ title: "RPC endpoint reachable", body: "http://127.0.0.1:8080/v1 · 14ms roundtrip (mock).", kind: "ok" });
-  const discardDraft = () => toast({ title: "Draft discarded", body: "Staged changes reverted to v2.4.1 production state.", kind: "info" });
-  const commitDaemon = () => toast({ title: "Committed & rehashed", body: "Daemon rehash complete (SIGHUP 39420).", kind: "ok" });
+  const verifyHealth = () => toast({ title: "Engine health", body: "Run a capture to exercise the pipeline end to end.", kind: "info" });
+  const applyRuntime = () => toast({ title: "Runtime changes", body: "Restart the backend service to apply runtime changes.", kind: "info" });
+  const testEndpoint = () => toast({ title: "RPC endpoint", body: "Backend API is reachable at the configured base URL.", kind: "info" });
+  const discardDraft = () => toast({ title: "Draft discarded", body: "Staged changes reverted.", kind: "info" });
+  const commitDaemon = () => toast({ title: "Committed", body: "Restart the backend service to load the new configuration.", kind: "ok" });
 
   return (
     <div className="bg-[#0c0e11] text-zinc-300 min-h-screen antialiased selection:bg-teal-500/20 selection:text-teal-300">

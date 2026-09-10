@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { downloadFile, useToast } from "@/lib/mock/toast";
+import { downloadFile, useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
 import { compareAnalyses, listHistory, type Analysis } from "@/lib/analysis";
 

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Stat from "@/components/motion/Stat";
 import { AppShell } from "@/components/layout/AppShell";
-import { api } from "@/lib/api";
+import { listHistory } from "@/lib/analysis";
 
 /* ============================================================================
    TunnelSight Overview — schema-aligned
@@ -76,169 +76,6 @@ interface AnalysisOut {
   findings_json: SecurityFinding[] | null;
   created_at: string;
 }
-
-/* ---- Schema-conformant seed (used before API resolves / offline) ---- */
-const SEED: AnalysisOut[] = [
-  {
-    id: "11111111-1111-4111-8111-111111111111",
-    filename: "core-dc-chicago-gw1.pcap",
-    status: "completed",
-    config_json: {
-      ipsec_config: {
-        capture_name: "core-dc-chicago-gw1.pcap",
-        cryptography: {
-          encryption_algorithm: "3DES",
-          integrity_algorithm: "HMAC-MD5",
-          dh_group: 2,
-          pfs_enabled: false,
-        },
-        sa_config: {
-          ike_version: "IKEv1",
-          mode: "Tunnel",
-          replay_protection: true,
-          lifetime_seconds: 3600,
-        },
-      },
-      security_score: 34,
-      risk_level: "CRITICAL",
-      security_findings: [
-        { severity: "CRITICAL", category: "Key Exchange", description: "Weak Diffie-Hellman Group 2 (1024-bit MODP) — CVE-2015-4000 (Logjam)." },
-        { severity: "HIGH", category: "Cryptography", description: "Legacy 3DES-CBC cipher offered in SA proposal." },
-      ],
-      traffic_prediction: "video",
-      anomaly_score: 0.42,
-    },
-    anomaly_score: 0.42,
-    traffic_label: "video",
-    traffic_confidence: 0.81,
-    security_score: 34,
-    risk_level: "CRITICAL",
-    findings_json: [
-      { severity: "CRITICAL", category: "Key Exchange", description: "Weak Diffie-Hellman Group 2 (1024-bit MODP) — CVE-2015-4000 (Logjam)." },
-      { severity: "HIGH", category: "Cryptography", description: "Legacy 3DES-CBC cipher offered in SA proposal." },
-    ],
-    created_at: new Date(Date.now() - 14 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "22222222-2222-4222-8222-222222222222",
-    filename: "branch-emea-gw04.pcap",
-    status: "completed",
-    config_json: {
-      ipsec_config: {
-        capture_name: "branch-emea-gw04.pcap",
-        cryptography: {
-          encryption_algorithm: "AES-128-CBC",
-          integrity_algorithm: "HMAC-SHA256",
-          dh_group: 14,
-          pfs_enabled: false,
-        },
-        sa_config: {
-          ike_version: "IKEv2",
-          mode: "Tunnel",
-          replay_protection: true,
-          lifetime_seconds: 3600,
-        },
-      },
-      security_score: 68,
-      risk_level: "MEDIUM",
-      security_findings: [
-        { severity: "MEDIUM", category: "Configuration", description: "PFS disabled on Child SA rekey — ephemeral secret omitted." },
-      ],
-      traffic_prediction: "web",
-      anomaly_score: 0.12,
-    },
-    anomaly_score: 0.12,
-    traffic_label: "web",
-    traffic_confidence: 0.74,
-    security_score: 68,
-    risk_level: "MEDIUM",
-    findings_json: [
-      { severity: "MEDIUM", category: "Configuration", description: "PFS disabled on Child SA rekey — ephemeral secret omitted." },
-    ],
-    created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "33333333-3333-4333-8333-333333333333",
-    filename: "prod-frankfurt-core.pcap",
-    status: "completed",
-    config_json: {
-      ipsec_config: {
-        capture_name: "prod-frankfurt-core.pcap",
-        cryptography: {
-          encryption_algorithm: "AES-256-GCM",
-          integrity_algorithm: "AEAD",
-          dh_group: 19,
-          pfs_enabled: true,
-        },
-        sa_config: {
-          ike_version: "IKEv2",
-          mode: "Tunnel",
-          replay_protection: true,
-          lifetime_seconds: 3600,
-        },
-      },
-      security_score: 94,
-      risk_level: "LOW",
-      security_findings: [],
-      traffic_prediction: "video",
-      anomaly_score: -0.18,
-    },
-    anomaly_score: -0.18,
-    traffic_label: "video",
-    traffic_confidence: 0.96,
-    security_score: 94,
-    risk_level: "LOW",
-    findings_json: [],
-    created_at: new Date(Date.now() - 47 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "44444444-4444-4444-8444-444444444444",
-    filename: "aws-vpn-uswest2-gw.pcap",
-    status: "completed",
-    config_json: {
-      ipsec_config: {
-        capture_name: "aws-vpn-uswest2-gw.pcap",
-        cryptography: {
-          encryption_algorithm: "AES-256-GCM",
-          integrity_algorithm: "AEAD",
-          dh_group: 19,
-          pfs_enabled: true,
-        },
-        sa_config: {
-          ike_version: "IKEv2",
-          mode: "Transport",
-          replay_protection: true,
-          lifetime_seconds: 3600,
-        },
-      },
-      security_score: 96,
-      risk_level: "LOW",
-      security_findings: [],
-      traffic_prediction: "voip",
-      anomaly_score: -0.22,
-    },
-    anomaly_score: -0.22,
-    traffic_label: "voip",
-    traffic_confidence: 0.88,
-    security_score: 96,
-    risk_level: "LOW",
-    findings_json: [],
-    created_at: new Date(Date.now() - 122 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "55555555-5555-4555-8555-555555555555",
-    filename: "azure-expressroute-ipsec.pcap",
-    status: "pending",
-    config_json: null,
-    anomaly_score: null,
-    traffic_label: null,
-    traffic_confidence: null,
-    security_score: null,
-    risk_level: null,
-    findings_json: null,
-    created_at: new Date(Date.now() - 197 * 60 * 1000).toISOString(),
-  },
-];
 
 /* ---- Normalizers: prefer top-level columns, fall back to config_json bundle ---- */
 function getBundle(a: AnalysisOut): AnalyzerBundle {
@@ -337,31 +174,27 @@ const RISK_FILTERS = ["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW", "PENDING"] as 
 
 export default function OverviewPage() {
   const router = useRouter();
-  const [analyses, setAnalyses] = useState<AnalysisOut[]>(SEED);
+  const [analyses, setAnalyses] = useState<AnalysisOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string>(SEED[0].id);
+  const [selectedId, setSelectedId] = useState<string>("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filterQuery, setFilterQuery] = useState("");
   const [riskFilter, setRiskFilter] = useState<string>("ALL");
 
-  /* Live data: GET /api/history -> list[AnalysisOut]. Falls back to SEED. */
+  /* Live data: GET /api/history */
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const rows = (await api("/api/history")) as AnalysisOut[];
-        if (!cancelled && Array.isArray(rows) && rows.length > 0) {
-          setAnalyses(rows);
-          setSelectedId((prev) =>
-            rows.some((r) => r.id === prev) ? prev : rows[0].id
-          );
+        const res = await listHistory({ limit: 50 });
+        if (!cancelled) {
+          setAnalyses(res.items as unknown as AnalysisOut[]);
+          setSelectedId((prev) => (res.items.some((r) => r.id === prev) ? prev : res.items[0]?.id ?? ""));
         }
       } catch (e) {
         if (!cancelled) {
-          setLoadError(
-            e instanceof Error ? e.message : "history unavailable — showing local snapshot"
-          );
+          setLoadError(e instanceof Error ? e.message : "history unavailable");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -372,8 +205,8 @@ export default function OverviewPage() {
     };
   }, []);
 
-  const selected: AnalysisOut =
-    analyses.find((a) => a.id === selectedId) ?? analyses[0] ?? SEED[0];
+  const selected: AnalysisOut | null =
+    analyses.find((a) => a.id === selectedId) ?? analyses[0] ?? null;
 
   function openDrawer(a: AnalysisOut) {
     setSelectedId(a.id);

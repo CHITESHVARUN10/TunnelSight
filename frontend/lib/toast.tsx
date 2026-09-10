@@ -1,5 +1,5 @@
 "use client";
-// Global toaster + file-download helper for mock actions.
+// Global toaster + file-download helper.
 
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";

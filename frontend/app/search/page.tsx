@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/lib/mock/toast";
+import { useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default function SearchOverlayPage() {

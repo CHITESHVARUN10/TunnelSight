@@ -2,8 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { downloadFile, useToast } from "@/lib/mock/toast";
-import { executiveReportJSON } from "@/lib/mock/analysis";
+import { downloadFile, useToast } from "@/lib/toast";
 
 export default function ReportDialogsPage() {
   const router = useRouter();
@@ -30,7 +29,11 @@ export default function ReportDialogsPage() {
   };
 
   const generateReport = () => {
-    downloadFile("tunnelsight-executive-report.json", executiveReportJSON(), "application/json");
+    downloadFile(
+      "tunnelsight-executive-report.json",
+      JSON.stringify({ report_type: reportType, sections: { traffic: includeTraffic, anomalies: includeAnomalies, evidence: includeEvidence }, generated: new Date().toISOString() }, null, 2),
+      "application/json"
+    );
     toast({ title: "Report generated", body: "tunnelsight-executive-report.json downloaded.", kind: "ok" });
     setReportOpen(false);
     setTimeout(dismiss, 600);
@@ -64,7 +67,7 @@ export default function ReportDialogsPage() {
             <div className="w-2 h-2 rounded-full bg-teal-400"></div>
             <span className="font-mono text-xs text-zinc-400">TunnelSight / Forensic Engine v4.18</span>
           </div>
-          <div className="font-mono text-xs text-zinc-500">CAPTURE: weak-vpn-07.pcap (4.82 GB)</div>
+          <div className="font-mono text-xs text-zinc-500">CAPTURE: report-preview.pcap</div>
         </div>
         <div className="p-8 max-w-6xl mx-auto space-y-6">
           <div className="h-32 rounded-sm bg-[#111317] border border-zinc-800/80"></div>

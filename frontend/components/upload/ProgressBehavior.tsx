@@ -5,7 +5,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { api } from "@/lib/api";
-import { useToast } from "@/lib/mock/toast";
+import { useToast } from "@/lib/toast";
 
 export function ProgressBehavior({ pausedRef }: { pausedRef?: React.MutableRefObject<boolean> }) {
   const router = useRouter();

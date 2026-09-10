@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useToast } from "@/lib/mock/toast";
+import { useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
 import { api } from "@/lib/api";
 import { me } from "@/lib/auth";
@@ -66,7 +66,8 @@ export default function ProfilePage() {
       toast({ title: "Save failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
     }
   };
-  const changePreference = () => toast({ title: "Preference staged", body: "Workbench preference change staged (mock).", kind: "info" });
+  const changePreference = () =>
+    toast({ title: "Preference", body: "Workbench preferences are stored per session.", kind: "info" });
   const changePassword = async () => {
     if (!pw.old_password || !pw.new_password) {
       toast({ title: "Password change", body: "Enter current and new passphrase below.", kind: "info" });
@@ -83,8 +84,10 @@ export default function ProfilePage() {
       toast({ title: "Password change failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
     }
   };
-  const manageKeys = () => toast({ title: "Security keys", body: "2 FIDO2 tokens registered (mock).", kind: "info" });
-  const manageSessions = () => toast({ title: "Sessions", body: "3 active sessions reviewed (mock).", kind: "info" });
+  const manageKeys = () =>
+    toast({ title: "Security keys", body: "Password authentication is the only method enabled.", kind: "info" });
+  const manageSessions = () =>
+    toast({ title: "Sessions", body: "Sessions expire after the configured lifetime.", kind: "info" });
 
   return (
     <div className="bg-[#0c0e11] text-zinc-300 min-h-screen antialiased selection:bg-teal-500/20 selection:text-teal-300">
@@ -394,7 +397,7 @@ export default function ProfilePage() {
             <div className="flex justify-end pt-1">
               <button
                 type="button"
-                onClick={() => toast({ title: "Audit Trail", body: "Full immutable audit ledger loaded (mock).", kind: "info" })}
+                onClick={() => toast({ title: "Audit Trail", body: "Analysis history is stored per account and queryable via the API.", kind: "info" })}
                 className="text-xs font-mono text-teal-400 hover:text-teal-300 flex items-center gap-1.5 transition-colors"
               >
                 <span>View Full Audit Log</span>

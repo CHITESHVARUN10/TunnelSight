@@ -4,10 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { login, register } from "@/lib/auth";
-import { mockRegister } from "@/lib/mock/session";
-import { useToast } from "@/lib/mock/toast";
-
-const ALLOW_MOCK_FALLBACK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
+import { useToast } from "@/lib/toast";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,6 +21,8 @@ export default function RegisterPage() {
     score: 0,
   });
 
+  const [busy, setBusy] = useState(false);
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
@@ -31,9 +30,9 @@ export default function RegisterPage() {
       toast({ title: "Passphrases do not match", body: "Confirm passphrase must equal the passphrase.", kind: "warn" });
       return;
     }
-    const email = String(data.get("email") ?? "");
-    const displayName = String(data.get("full_name") ?? "");
+    setBusy(true);
     try {
+      const email = String(data.get("email") ?? "");
       await register(email, password);
       await login(email, password);
       try {
@@ -41,7 +40,7 @@ export default function RegisterPage() {
         await api("/api/profile", {
           method: "PATCH",
           body: JSON.stringify({
-            display_name: displayName || undefined,
+            display_name: String(data.get("full_name") ?? "") || undefined,
             organization: String(data.get("organization") ?? "") || undefined,
             role: String(data.get("assigned_role") ?? "") || undefined,
           }),
@@ -52,17 +51,9 @@ export default function RegisterPage() {
       toast({ title: "Workspace provisioned", body: `Signed in as ${email}.`, kind: "ok" });
       router.push("/overview");
     } catch (err) {
-      if (ALLOW_MOCK_FALLBACK && err instanceof Error && !/^4\d\d/.test(err.message)) {
-        try {
-          const user = mockRegister(email, password, displayName);
-          toast({ title: "Workspace provisioned", body: `Offline demo as ${user.email}.`, kind: "warn" });
-          router.push("/overview");
-          return;
-        } catch {
-          // fall through to real error toast
-        }
-      }
       toast({ title: "Registration failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -356,11 +347,12 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Primary Button */}
-                <button 
-                  className="w-full h-9 bg-teal-500 hover:bg-teal-400 text-black font-semibold text-xs font-mono rounded-sm flex items-center justify-center gap-2 transition-colors mt-2 shadow-sm" 
+                <button
+                  className="w-full h-9 bg-teal-500 hover:bg-teal-400 text-black font-semibold text-xs font-mono rounded-sm flex items-center justify-center gap-2 transition-colors mt-2 shadow-sm disabled:opacity-60"
                   type="submit"
+                  disabled={busy}
                 >
-                  <span>Create Analyst Account</span>
+                  <span>{busy ? "Provisioning…" : "Create Analyst Account"}</span>
                   <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </button>
 

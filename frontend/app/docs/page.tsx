@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useToast } from "@/lib/mock/toast";
+import { useToast } from "@/lib/toast";
 import { Footer } from "@/components/layout/Footer";
 import { ConstellationCanvas } from "@/components/docs/ConstellationCanvas";
 import { StarDrift } from "@/components/docs/StarDrift";
@@ -263,7 +263,7 @@ export default function DocumentationPage() {
 
           <p className="text-base sm:text-lg text-[#d8d4c7] leading-relaxed max-w-2xl mx-auto font-sans"
             style={{ textShadow: "0 1px 20px rgba(5,7,13,0.9)" }}>
-            Upload a capture, get a deterministic security score, per-window traffic labels from a RandomForest, anomaly scores from an IsolationForest, and a finding list — all behind session auth, all queryable through the API below. Mock-seeded where packet parsing is not yet wired; every stub says so.
+            Upload a capture, get a deterministic security score, per-window traffic labels from a RandomForest, anomaly scores from an IsolationForest, and a finding list — all behind session auth, all queryable through the API below. SA parameters are parsed from the capture bytes with scapy; a seeded fallback is used only when a file cannot be parsed, and every response says which path was taken.
           </p>
 
           {/* Anthropic Iconic Dotted Leader Table of Contents */}
@@ -316,17 +316,21 @@ export default function DocumentationPage() {
             <p>
               <span className="text-[#f7f4ee] font-mono text-xs">POST /api/analyze</span> accepts a capture
               (.pcap / .pcapng / .cap / .erf, 256 MB cap) and runs it synchronously through{" "}
-              <span className="text-[#f7f4ee] font-mono text-xs">AnalyzerService</span>: seeded-mock IPsec
-              config + 3–8 seeded 10 s windows of the 18 flow features → RandomForest traffic label
-              (+ confidence) and IsolationForest anomaly score per window → deterministic rule-engine
-              score. The row lands as <span className="text-[#f7f4ee] font-mono text-xs">completed</span> with
-              all typed columns filled; windows go to <span className="text-[#f7f4ee] font-mono text-xs">analysis_windows</span>.
-              Same filename always yields the same result (sha256-seeded), so compare and tests are stable.
+              <span className="text-[#f7f4ee] font-mono text-xs">AnalyzerService</span>:{" "}
+              <span className="text-[#f7f4ee] font-mono text-xs">parser/pcap_parser.py</span> dissects the IKE
+              handshake (IKEv1 and IKEv2, including text-embedded transform hints) to recover the IPsec SA
+              config, then packets are segmented into up to 8 windows whose 18 flow features → RandomForest
+              traffic label (+ confidence) and IsolationForest anomaly score per window → deterministic
+              rule-engine score. The row lands as{" "}
+              <span className="text-[#f7f4ee] font-mono text-xs">completed</span> with all typed columns filled;
+              windows go to <span className="text-[#f7f4ee] font-mono text-xs">analysis_windows</span>.
             </p>
             <p>
-              Honest limits: the “parser” is a mock — evidence is seeded, not packet-derived, and every
-              response carries that note. No Zeek/tshark, no background worker, no live capture yet.
-              The real parser later implements the same window interface without changing any route.
+              Every response carries <span className="text-[#f7f4ee] font-mono text-xs">evidence_source</span>:
+              <span className="text-[#f7f4ee] font-mono text-xs">parser</span> when the capture was parsed, or{" "}
+              <span className="text-[#f7f4ee] font-mono text-xs">mock</span> (sha256-seeded, deterministic per
+              filename) when the bytes could not be parsed. No Zeek/tshark, no background worker, no live
+              capture yet.
             </p>
           </div>
         </div>
@@ -424,8 +428,8 @@ export default function DocumentationPage() {
               Errors are bare <span className="text-[#f7f4ee] font-mono text-xs">{"{detail}"}</span>: 400 bad file,
               401 unauthenticated, 404 not-owned, 413 oversize, 422 validation. Frontend threads{" "}
               <span className="text-[#f7f4ee] font-mono text-xs">?analysis_id=</span> through
-              progress → results → traffic / anomalies / findings / compare, with mock fallback only when{" "}
-              <span className="text-[#f7f4ee] font-mono text-xs">NEXT_PUBLIC_USE_MOCK=true</span> and the network fails.
+              progress → results → traffic / anomalies / findings / compare. Auth is real-only;
+              without a session cookie every page redirects to login.
               Not built: live streaming, PDF reports, SMTP reset mail, background workers.
             </p>
           </div>

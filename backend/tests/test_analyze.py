@@ -1,7 +1,15 @@
+import os
+
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
 from app.services.analyzer import analyzer
+
+try:
+    from parser.pcap_parser import extract_packets, parse_pcap_to_json
+except ImportError:  # pragma: no cover - parser package not on path
+    extract_packets = parse_pcap_to_json = None
 
 _run = __import__("uuid").uuid4().hex[:8]
 
@@ -103,3 +111,66 @@ def test_analyzer_seeded():
     assert first["traffic_label"] == second["traffic_label"]
     assert first["security_score"] == second["security_score"]
     assert len(first["windows"]) == len(second["windows"])
+
+
+# --- Real capture fixtures (skipped when the repo samples are absent) ---
+
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
+_WEAK_CAPTURE = os.path.join(_REPO_ROOT, "frontend/public/demo/weak-vpn-07.pcap")
+_MODERN_CAPTURE = os.path.join(_REPO_ROOT, "testbed/pcaps/ipsec_modern.pcap")
+
+
+@pytest.mark.skipif(not os.path.exists(_WEAK_CAPTURE), reason="demo capture not present")
+def test_parser_recovers_weak_ikev1_suite():
+    config = parse_pcap_to_json(_WEAK_CAPTURE)
+    assert config["sa_config"]["ike_version"] == "IKEv1"
+    assert config["cryptography"]["encryption_algorithm"] == "3DES"
+    assert config["cryptography"]["integrity_algorithm"] == "HMAC-MD5"
+    assert config["cryptography"]["dh_group"] == 2
+    assert config["cryptography"]["pfs_enabled"] is False
+
+
+@pytest.mark.skipif(not os.path.exists(_MODERN_CAPTURE), reason="testbed capture not present")
+def test_parser_recovers_modern_ikev2_suite():
+    config = parse_pcap_to_json(_MODERN_CAPTURE)
+    assert config["sa_config"]["ike_version"] == "IKEv2"
+    assert config["cryptography"]["encryption_algorithm"] == "AES-GCM"
+    assert config["cryptography"]["dh_group"] == 19
+    assert config["cryptography"]["pfs_enabled"] is True
+
+
+@pytest.mark.skipif(not os.path.exists(_WEAK_CAPTURE), reason="demo capture not present")
+def test_windows_are_derived_from_packets():
+    packets = extract_packets(_WEAK_CAPTURE)
+    result = analyzer.analyze("uploaded-weak.pcap", pcap_path=_WEAK_CAPTURE)
+
+    assert result["evidence_source"] == "parser"
+    assert result["capture"]["packet_count"] == len(packets)
+    assert result["capture"]["total_bytes"] == sum(p["length"] for p in packets)
+    assert result["capture"]["file_bytes"] == os.path.getsize(_WEAK_CAPTURE)
+
+    assert 1 <= len(result["windows"]) <= 8
+    assert sum(w["packet_count"] for w in result["windows"]) == len(packets)
+
+    starts = [w["window_start"] for w in result["windows"]]
+    assert starts == sorted(starts)
+    assert starts[0] == 0.0
+
+    labels = {w["traffic_label"] for w in result["windows"]}
+    assert labels <= {"video", "web", "voip", "icmp", "email"}
+
+
+@pytest.mark.skipif(not os.path.exists(_WEAK_CAPTURE), reason="demo capture not present")
+def test_real_upload_flows_through_api():
+    c = _client()
+    with open(_WEAK_CAPTURE, "rb") as fh:
+        r = c.post("/api/analyze", files={"file": ("weak-vpn-07.pcap", fh.read())})
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["status"] == "completed"
+    assert body["config_json"]["evidence_source"] == "parser"
+    assert body["config_json"]["ipsec_config"]["cryptography"]["encryption_algorithm"] == "3DES"
+    assert body["config_json"]["capture"]["packet_count"] > 0
+
+    windows = c.get(f"/api/history/{body['id']}/windows").json()
+    assert len(windows) == body["config_json"]["windows_count"]

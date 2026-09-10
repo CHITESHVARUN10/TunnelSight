@@ -62,6 +62,7 @@ async def analyze(
     row.config_json = {
         "ipsec_config": results["ipsec_config"],
         "windows_count": len(results["windows"]),
+        "capture": results.get("capture"),
         "note": results.get("note", ""),
         "evidence_source": results.get("evidence_source", "mock"),
     }

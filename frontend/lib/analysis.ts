@@ -1,5 +1,13 @@
 import { api, apiForm } from "./api";
 
+export type CaptureStats = {
+  packet_count: number | null;
+  total_bytes: number | null;
+  flow_duration: number | null;
+  file_bytes: number | null;
+  started_at: string | null;
+};
+
 export type Analysis = {
   id: string;
   filename: string;
@@ -10,8 +18,10 @@ export type Analysis = {
       cryptography?: Record<string, unknown>;
       sa_config?: Record<string, unknown>;
     };
+    capture?: CaptureStats | null;
     windows_count?: number;
     note?: string;
+    evidence_source?: string;
     error?: string;
   } | null;
   anomaly_score: number | null;

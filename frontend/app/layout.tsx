@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ToastProvider } from "@/lib/mock/toast";
+import { ToastProvider } from "@/lib/toast";
 import { HeaderBehavior } from "@/components/layout/HeaderBehavior";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";

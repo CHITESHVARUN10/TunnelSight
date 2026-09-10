@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/lib/mock/toast";
+import { useToast } from "@/lib/toast";
 
 export function GlobalSearchModal() {
   const [isOpen, setIsOpen] = useState(false);

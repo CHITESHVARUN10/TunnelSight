@@ -4,37 +4,26 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/auth";
-import { mockLogin } from "@/lib/mock/session";
-import { useToast } from "@/lib/mock/toast";
-
-const ALLOW_MOCK_FALLBACK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
+import { useToast } from "@/lib/toast";
 
 export default function LoginPage() {
   const router = useRouter();
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const email = String(data.get("email") ?? "");
-    const password = String(data.get("password") ?? "");
+    setBusy(true);
     try {
-      const user = await login(email, password);
+      const user = await login(String(data.get("email") ?? ""), String(data.get("password") ?? ""));
       toast({ title: `Welcome, ${user.email}`, body: "Forensic session initialized.", kind: "ok" });
       router.push("/overview");
     } catch (err) {
-      if (ALLOW_MOCK_FALLBACK && err instanceof Error && !/^4\d\d/.test(err.message)) {
-        try {
-          const user = mockLogin(email, password);
-          toast({ title: `Welcome, ${user.displayName}`, body: "Offline demo session.", kind: "warn" });
-          router.push("/overview");
-          return;
-        } catch {
-          // fall through to real error toast
-        }
-      }
       toast({ title: "Sign in failed", body: err instanceof Error ? err.message : "Invalid credentials.", kind: "warn" });
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -138,7 +127,7 @@ export default function LoginPage() {
                     name="email" 
                     placeholder="analyst@enterprise.internal"
                     required
-                    type="email"
+                    type="email" 
                   />
                 </div>
 
@@ -160,7 +149,7 @@ export default function LoginPage() {
                       name="password" 
                       placeholder="••••••••••••••••"
                       required
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? "text" : "password"} 
                     />
                     <button 
                       aria-label="Toggle password visibility" 
@@ -184,16 +173,17 @@ export default function LoginPage() {
                 </div>
 
                 {/* Primary Button */}
-                <button 
-                  className="w-full h-9 bg-teal-500 hover:bg-teal-400 text-black font-semibold text-xs font-mono rounded-sm flex items-center justify-center gap-2 transition-colors mt-2 shadow-sm" 
+                <button
+                  className="w-full h-9 bg-teal-500 hover:bg-teal-400 text-black font-semibold text-xs font-mono rounded-sm flex items-center justify-center gap-2 transition-colors mt-2 shadow-sm disabled:opacity-60"
                   type="submit"
+                  disabled={busy}
                 >
-                  <span>Sign In to Terminal</span>
+                  <span>{busy ? "Signing in…" : "Sign In to Terminal"}</span>
                   <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </button>
 
                 <p className="pt-2 text-center text-[11px] font-mono text-zinc-500">
-                  Authorized analysts only. Sessions expire after 7 days of inactivity.
+                  Protected by session cookies · passwords never leave the enclave
                 </p>
               </form>
 
@@ -207,7 +197,7 @@ export default function LoginPage() {
 
               {/* Enterprise SSO */}
               <button 
-                onClick={() => toast({ title: "Enterprise IdP", body: "SSO is routed to local enclave — use demo account.", kind: "info" })} 
+                onClick={() => toast({ title: "Enterprise IdP", body: "SSO is not configured — use analyst credentials.", kind: "info" })} 
                 className="w-full h-9 bg-[#14171c] hover:bg-zinc-800 text-zinc-200 border border-zinc-800 text-xs font-mono rounded-sm flex items-center justify-center gap-2 transition-colors" 
                 type="button"
               >

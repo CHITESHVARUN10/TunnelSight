@@ -20,7 +20,7 @@ Converted 1:1 from `../stitch_screen/*.html` (Stitch designs). Reference renders
 | `/analysis/findings` | 11 threat matrix |
 | `/analysis/reports` | 12 report center |
 | `/analysis/anomalies` | 13 anomaly detection |
-| `/analysis/assistant` | 14 AI explanation |
+| `/analysis/assistant` | 14 finding explanation |
 | `/profile` | 15 user profile |
 | `/login`, `/register`, `/forgot-password`, `/reset-password` | 17–20 auth |
 | `/history` | 21 analysis history |

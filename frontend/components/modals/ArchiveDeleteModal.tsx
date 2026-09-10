@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useToast } from "@/lib/mock/toast";
+import { useToast } from "@/lib/toast";
 
 interface ArchiveDeleteModalProps {
   isOpen: boolean;

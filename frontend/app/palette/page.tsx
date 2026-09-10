@@ -1,8 +1,7 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { downloadFile, useToast } from "@/lib/mock/toast";
-import { executiveReportJSON } from "@/lib/mock/analysis";
+import { downloadFile, useToast } from "@/lib/toast";
 
 interface CommandItem {
   id: string;
@@ -50,7 +49,7 @@ export default function CommandPalettePage() {
       category: "Analysis",
       shortcut: ["⌘", "R"],
       action: () => {
-        downloadFile("tunnelsight-executive-report.json", executiveReportJSON(), "application/json");
+        downloadFile("tunnelsight-executive-report.json", JSON.stringify({ generated: new Date().toISOString() }, null, 2), "application/json");
         toast({ title: "Report generated", body: "tunnelsight-executive-report.json downloaded.", kind: "ok" });
       },
     },

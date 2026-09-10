@@ -4,25 +4,29 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { downloadFile, useToast } from "@/lib/mock/toast";
-import { executiveReportJSON, findingsCSV } from "@/lib/mock/analysis";
+import { downloadFile, useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAnalysisBundle } from "@/components/analysis/useAnalysisBundle";
+import { capturePackets, captureVolume, formatClock, suiteString } from "@/lib/format";
+
+const SEVERITY_TONE: Record<string, string> = {
+  CRITICAL: "bg-error-container text-on-error-container",
+  HIGH: "bg-error-container text-on-error-container",
+  MEDIUM: "bg-secondary-container text-on-secondary-fixed",
+  LOW: "bg-tertiary/20 text-tertiary",
+  INFO: "bg-surface-container-highest text-on-surface-variant",
+};
+
+const MIX_COLORS = ["bg-primary", "bg-tertiary", "bg-secondary-container", "bg-surface-variant", "bg-tertiary-container"];
+
 export default function AnalysisResultsPage() {
   const router = useRouter();
   const params = useSearchParams();
   const analysisId = params.get("analysis_id");
   const toast = useToast();
   const { data, loading, error } = useAnalysisBundle(analysisId);
-  const [drawerOpen, setDrawerOpen] = useState(true);
-  const [selectedFinding, setSelectedFinding] = useState("dh2");
-  function toggleDrawer() {
-    setDrawerOpen((o) => !o);
-  }
-  function selectFinding(id: string) {
-    setSelectedFinding(id);
-    setDrawerOpen(true);
-  }
+  const [selected, setSelected] = useState(0);
+
   if (!analysisId) {
     return (
       <div className="bg-background font-body-md text-body-md text-on-surface antialiased">
@@ -50,452 +54,427 @@ export default function AnalysisResultsPage() {
       </div>
     );
   }
+
   const { analysis, findings, traffic } = data;
-  const score = analysis.security_score ?? 47;
-  const risk = analysis.risk_level ?? "HIGH";
-  const crypto = analysis.config_json?.ipsec_config?.cryptography ?? {};
-  const sa = analysis.config_json?.ipsec_config?.sa_config ?? {};
+  const findingList = findings.findings ?? [];
+  const score = analysis.security_score;
+  const risk = analysis.risk_level ?? "—";
+  const crypto = (analysis.config_json?.ipsec_config?.cryptography ?? {}) as Record<string, unknown>;
+  const sa = (analysis.config_json?.ipsec_config?.sa_config ?? {}) as Record<string, unknown>;
+  const mix = Object.entries(traffic.mix).sort((a, b) => b[1] - a[1]);
+  const active = findingList[selected];
+  const riskIsBad = risk === "HIGH" || risk === "CRITICAL";
+  const gaugeOffset = score === null ? 188.5 : 188.5 * (1 - Math.max(0, Math.min(100, score)) / 100);
+
+  function exportSlices() {
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = [
+      ["severity", "category", "description"],
+      ...findingList.map((f) => [f.severity, f.category, esc(f.description)]),
+    ];
+    downloadFile(`${analysis.filename}.findings.csv`, rows.map((r) => r.join(",")).join("\n"), "text/csv");
+    toast({ title: "Findings exported", body: `${analysis.filename}.findings.csv downloaded.`, kind: "ok" });
+  }
+
   return (
     <div className="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
-<AppShell active="">
+      <AppShell active="">
 
-{/* Top Command & Ingestion Meta Header */}
-<div className="w-full bg-surface-container-lowest px-space-xl py-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md">
-<div className="flex flex-col gap-space-2xs min-w-0">
-{/* Breadcrumb Hierarchy */}
-<div className="flex items-center gap-space-xs font-code-sm text-code-sm text-outline">
-<span className="hover:text-on-surface cursor-pointer">Captures</span>
-<span>/</span>
-<span className="text-primary font-medium">{analysis.filename}</span>
-<span>/</span>
-<span className="text-on-surface">Forensic Analysis Results</span>
-</div>
-{/* Ingestion Verification String */}
-<div className="flex flex-wrap items-center gap-space-sm font-code-sm text-code-sm text-on-surface-variant mt-space-2xs">
-<span className="inline-flex items-center gap-space-2xs">
-<span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-          Ingested 14:18:22 UTC
-        </span>
-<span className="text-outline-variant">•</span>
-<span>1.42 GB</span>
-<span className="text-outline-variant">•</span>
-<span>842,109 pkts</span>
-<span className="text-outline-variant">•</span>
-<span className="text-primary font-mono tracking-tight flex items-center gap-space-2xs">
-<span className="material-symbols-outlined text-[13px] text-tertiary">verified_user</span>
-          SHA-256: 8c3e...f49a
-        </span>
-</div>
-</div>
-{/* Global Actions Group */}
-<div className="flex items-center gap-space-xs shrink-0">
-<button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button" onClick={() => { downloadFile(`${analysis.filename}-report.json`, JSON.stringify({ capture: analysis.filename, risk, security_score: score, traffic_label: analysis.traffic_label, traffic_confidence: analysis.traffic_confidence, anomaly_score: analysis.anomaly_score, findings: findings.findings }, null, 2)); toast({ title: "Report exported", body: `${analysis.filename}-report.json downloaded.`, kind: "ok" }); }}>
-<span className="material-symbols-outlined text-[15px] text-primary">download</span>
-        Export Report (STIX/PDF)
-      </button>
-<button className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button" onClick={() => { toast({ title: "Re-analysis queued", body: "Re-upload the capture to re-analyze.", kind: "info" }); router.push("/analyze"); }}>
-<span className="material-symbols-outlined text-[15px]">autorenew</span>
-        Re-analyze
-      </button>
-<button className="flex items-center gap-space-xs bg-primary-container px-space-sm py-space-xs rounded text-on-primary-container hover:bg-primary transition-colors font-label-md text-label-md font-semibold" type="button" onClick={() => router.push("/analysis/capture")}>
-<span className="material-symbols-outlined text-[15px]">terminal</span>
-        Inspect Packets
-      </button>
-</div>
-</div>
-{/* Level 1: Hero Executive Posture Assessment (Clean, High Contrast, Non-Card Spammed) */}
-<div className="px-space-xl py-space-lg bg-surface-container-low">
-<div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-center">
-{/* Primary Posture Gauge & Metrics */}
-<div className="lg:col-span-4 flex items-center gap-space-lg">
-<div className="relative flex items-center justify-center shrink-0 w-24 h-24 bg-surface-container-lowest rounded-xl shadow-md">
-<svg className="w-20 h-20 -rotate-90" viewBox="0 0 72 72">
-<circle className="text-surface-container-highest fill-none" cx="36" cy="36" r="30" stroke="currentColor" strokeWidth="5"></circle>
-<circle className="text-error fill-none transition-all duration-700 ease-out" cx="36" cy="36" r="30" stroke="currentColor" strokeDasharray="188.5" strokeDashoffset="99.9" strokeLinecap="round" strokeWidth="5"></circle>
-</svg>
-<div className="absolute flex flex-col items-center justify-center">
-<span className="font-display-serif text-3xl text-on-surface font-semibold tracking-tight">{score}</span>
-<span className="font-mono text-[10px] text-outline -mt-1">/ 100</span>
-</div>
-</div>
-<div className="flex flex-col gap-space-2xs min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Risk Classification</span>
-<span className="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-code-sm text-code-sm font-semibold">{risk}</span>
-</div>
-<div className="font-headline-sm text-headline-sm text-on-surface">Sub-optimal Cryptographic Margin</div>
-<div className="font-code-sm text-code-sm text-on-surface-variant flex items-center gap-space-xs">
-<span className="text-tertiary">91%</span>
-<span>Packet Framing Evidence Coverage</span>
-</div>
-</div>
-</div>
-{/* Analytical Verdict Notice */}
-<div className="lg:col-span-8 bg-surface-container-lowest p-space-md rounded-xl flex items-start gap-space-md shadow-sm">
-<div className="w-8 h-8 rounded bg-error-container/30 flex items-center justify-center shrink-0 mt-0.5">
-<span className="material-symbols-outlined text-[18px] text-error">gpp_maybe</span>
-</div>
-<div className="flex flex-col gap-space-2xs flex-1">
-<div className="flex items-center justify-between">
-<span className="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">Primary Analytical Assessment</span>
-<span className="font-code-sm text-code-sm text-outline">NIST SP 800-77r1 Audit Target</span>
-</div>
-<p className="font-body-md text-body-md text-on-surface leading-relaxed">
-            Vulnerable to offline cryptanalysis and legacy key exchange downgrade. The capture exhibits single-proposal MODP-1024 without Ephemeral PFS across child exchanges, allowing retrospective bulk decryption if peer session state is acquired.
-          </p>
-</div>
-</div>
-</div>
-</div>
-{/* Main Multi-Pane Workbench Content (Level 1 Analysis + Drawer Ready) */}
-<div className="px-space-xl py-space-lg flex flex-col xl:flex-row gap-space-lg">
-{/* Wide Analytical Column (Left: Findings + Traffic ML) */}
-<div className="flex-1 flex flex-col gap-space-lg min-w-0">
-{/* Section: Key Security Findings */}
-<div className="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md shadow-sm">
-<div className="flex items-center justify-between">
-<div className="flex items-center gap-space-xs">
-<span className="font-headline-md text-headline-md text-on-surface">Key Cryptographic Findings</span>
-<span className="px-space-xs py-0.5 rounded font-code-sm text-code-sm bg-surface-container-highest text-on-surface-variant">4 Assertions</span>
-</div>
-<div className="flex items-center gap-space-sm font-label-sm text-label-sm text-outline">
-<span className="flex items-center gap-1">
-<span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-              [CONFIRMED] Protocol Dissection
-            </span>
-<span className="flex items-center gap-1">
-<span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              [INFERRED] Flow ML
-            </span>
-</div>
-</div>
-{/* Dense, Structured Findings List */}
-<div className="flex flex-col gap-space-xs font-body-sm text-body-sm">
-{/* Finding Item 1 (Active/Inspected) */}
-<div className="p-space-md rounded bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-space-md relative overflow-hidden group" id="finding-item-1" onClick={() => selectFinding('dh2')}>
-{selectedFinding === 'dh2' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>}
-<div className="flex items-start gap-space-md min-w-0">
-<span className="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-code-sm text-code-sm font-semibold shrink-0">HIGH</span>
-<div className="flex flex-col gap-space-2xs min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Weak DH Group (MODP-1024 / Group 2 in IKE_SA proposal)</span>
-<span className="font-label-sm text-label-sm px-space-xs py-0.2 rounded bg-tertiary/10 text-tertiary font-mono uppercase tracking-wide">[CONFIRMED]</span>
-</div>
-<p className="text-on-surface-variant truncate">IKE_SA_INIT frame payload negotiation offers Group 2 with known logjam vulnerability profile.</p>
-</div>
-</div>
-<div className={`flex items-center gap-space-xs shrink-0 font-code-sm text-code-sm transition-transform ${selectedFinding === 'dh2' ? "text-primary group-hover:translate-x-0.5" : "text-on-surface-variant group-hover:text-primary"}`}>
-<span>Inspect Evidence</span>
-<span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-</div>
-</div>
-{/* Finding Item 2 */}
-<div className="p-space-md rounded bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-space-md relative overflow-hidden group" onClick={() => selectFinding('legacy-crypto')}>
-{selectedFinding === 'legacy-crypto' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>}
-<div className="flex items-start gap-space-md min-w-0">
-<span className="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-code-sm text-code-sm font-semibold shrink-0">HIGH</span>
-<div className="flex flex-col gap-space-2xs min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Legacy Cryptographic Suite (AES-128-CBC + HMAC-SHA1)</span>
-<span className="font-label-sm text-label-sm px-space-xs py-0.2 rounded bg-tertiary/10 text-tertiary font-mono uppercase tracking-wide">[CONFIRMED]</span>
-</div>
-<p className="text-on-surface-variant truncate">Strictly deprecated per NIST SP 800-77r1. Susceptible to padding oracle vector if unauthenticated CBC is permitted.</p>
-</div>
-</div>
-<div className={`flex items-center gap-space-xs shrink-0 font-code-sm text-code-sm transition-colors ${selectedFinding === 'legacy-crypto' ? "text-primary group-hover:translate-x-0.5 transition-transform" : "text-on-surface-variant group-hover:text-primary"}`}>
-<span>Inspect Evidence</span>
-<span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-</div>
-</div>
-{/* Finding Item 3 */}
-<div className="p-space-md rounded bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-space-md relative overflow-hidden group" onClick={() => selectFinding('pfs-disabled')}>
-{selectedFinding === 'pfs-disabled' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>}
-<div className="flex items-start gap-space-md min-w-0">
-<span className="px-space-xs py-0.5 rounded bg-secondary-container text-on-secondary-fixed font-code-sm text-code-sm font-semibold shrink-0">MED</span>
-<div className="flex flex-col gap-space-2xs min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">Perfect Forward Secrecy (PFS) Disabled on Rekey</span>
-<span className="font-label-sm text-label-sm px-space-xs py-0.2 rounded bg-tertiary/10 text-tertiary font-mono uppercase tracking-wide">[CONFIRMED]</span>
-</div>
-<p className="text-on-surface-variant truncate">CREATE_CHILD_SA omits ephemeral Key Exchange (KEi) payload. Rekeyed SAs derive directly from original SKEYSEED.</p>
-</div>
-</div>
-<div className={`flex items-center gap-space-xs shrink-0 font-code-sm text-code-sm transition-colors ${selectedFinding === 'pfs-disabled' ? "text-primary group-hover:translate-x-0.5 transition-transform" : "text-on-surface-variant group-hover:text-primary"}`}>
-<span>Remediation</span>
-<span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-</div>
-</div>
-{/* Finding Item 4 */}
-<div className="p-space-md rounded bg-surface-container flex flex-col md:flex-row md:items-center justify-between gap-space-md relative overflow-hidden" onClick={() => toast({ title: "Verified compliant", body: "Anti-replay window: 0 drops across 842,109 frames.", kind: "ok" })}>
-<div className="flex items-start gap-space-md min-w-0">
-<span className="px-space-xs py-0.5 rounded bg-tertiary/20 text-tertiary font-code-sm text-code-sm font-semibold shrink-0">PASS</span>
-<div className="flex flex-col gap-space-2xs min-w-0">
-<div className="flex items-center gap-space-xs">
-<span className="font-headline-sm text-headline-sm text-on-surface">Anti-Replay Window Verification Monotonic</span>
-<span className="font-label-sm text-label-sm px-space-xs py-0.2 rounded bg-tertiary/10 text-tertiary font-mono uppercase tracking-wide">[CONFIRMED]</span>
-</div>
-<p className="text-on-surface-variant truncate">ESP sequence counters sequentially linear. 0 window drop anomalies across 842,109 analyzed ESP frames.</p>
-</div>
-</div>
-<div className="flex items-center gap-space-xs shrink-0 font-code-sm text-code-sm text-outline">
-<span>Verified Compliant</span>
-</div>
-</div>
-</div>
-</div>
-{/* Section: Encrypted Traffic Intelligence Snapshot (Level 1 Summary) */}
-<div className="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md shadow-sm">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
-<div className="flex items-center gap-space-xs">
-<span className="font-headline-md text-headline-md text-on-surface">Encrypted Flow Intelligence</span>
-<span className="px-space-xs py-0.2 rounded font-label-sm text-label-sm bg-primary/10 text-primary font-mono uppercase">[INFERRED VIA ML]</span>
-</div>
-<span className="font-code-sm text-code-sm text-outline">Classified via packet timing &amp; payload entropy distributions</span>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-12 gap-space-md items-center bg-surface-container-lowest p-space-md rounded">
-{/* Category Proportion Bar */}
-<div className="md:col-span-8 flex flex-col gap-space-xs">
-<div className="flex items-center justify-between font-label-sm text-label-sm">
-<span className="text-outline uppercase tracking-wider">Tunnel Payload Mix</span>
-<span className="font-code-sm text-code-sm text-on-surface font-mono">1.42 GB Ingress/Egress</span>
-</div>
-{/* Segmented Progress Track */}
-<div className="w-full h-3 rounded-full bg-surface-container-highest overflow-hidden flex">
-<div className="bg-primary h-full transition-all" style={{width: '78%'}} title="Video: 78%"></div>
-<div className="bg-tertiary h-full transition-all" style={{width: '17%'}} title="Web: 17%"></div>
-<div className="bg-secondary-container h-full transition-all" style={{width: '5%'}} title="Other: 5%"></div>
-</div>
-{/* Legend Indicators */}
-<div className="flex flex-wrap items-center gap-space-md pt-space-2xs font-code-sm text-code-sm">
-<div className="flex items-center gap-space-2xs">
-<span className="w-2 h-2 rounded-full bg-primary"></span>
-<span className="text-on-surface font-semibold">Video 78%</span>
-<span className="text-outline">(H.264/RTP)</span>
-</div>
-<div className="flex items-center gap-space-2xs">
-<span className="w-2 h-2 rounded-full bg-tertiary"></span>
-<span className="text-on-surface font-semibold">Web 17%</span>
-<span className="text-outline">(TLS over IPsec)</span>
-</div>
-<div className="flex items-center gap-space-2xs">
-<span className="w-2 h-2 rounded-full bg-secondary-container"></span>
-<span className="text-on-surface font-semibold">Other 5%</span>
-<span className="text-outline">(DNS/Signaling)</span>
-</div>
-</div>
-</div>
-{/* Entropy & Behavioral Anomaly Index */}
-<div className="md:col-span-4 flex flex-col gap-space-2xs bg-surface-container-low p-space-sm rounded">
-<div className="flex items-center justify-between">
-<span className="font-label-sm text-label-sm uppercase text-outline">Anomaly Score</span>
-<span className="px-space-xs py-0.2 rounded bg-tertiary/10 text-tertiary font-code-sm text-code-sm font-semibold">0.12 NORMAL</span>
-</div>
-<div className="font-headline-sm text-headline-sm text-on-surface">Nominal ESP Dispersion</div>
-<p className="font-code-sm text-code-sm text-on-surface-variant">No sequence desync or covert timing channels detected in ESP payload interval.</p>
-</div>
-</div>
-<div className="flex items-center justify-end">
-<a className="inline-flex items-center gap-space-xs font-code-sm text-code-sm text-primary hover:underline" href="#">
-<span>View Complete Traffic Distribution &amp; Entropy Matrix</span>
-<span className="material-symbols-outlined text-[15px]">open_in_new</span>
-</a>
-</div>
-</div>
-</div>
-{/* Structured Protocol Architecture Matrix (Right Column, Level 1 Matrix) */}
-<div className="w-full xl:w-96 flex flex-col gap-space-lg shrink-0">
-<div className="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md shadow-sm">
-<div className="flex items-center justify-between pb-space-2xs">
-<div className="flex items-center gap-space-xs">
-<span className="font-headline-md text-headline-md text-on-surface">Negotiated Stack</span>
-<span className="font-label-sm text-label-sm px-space-xs py-0.2 rounded bg-tertiary/10 text-tertiary font-mono uppercase">[CONFIRMED]</span>
-</div>
-<span className="material-symbols-outlined text-[18px] text-outline">tune</span>
-</div>
-{/* Protocol Architecture Group */}
-<div className="flex flex-col gap-space-xs">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Protocol Architecture</span>
-<div className="bg-surface-container rounded p-space-sm flex flex-col gap-space-xs font-code-sm text-code-sm">
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">IPsec Operational</span>
-<span className="text-tertiary font-semibold">YES</span>
-</div>
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">IKE Standard</span>
-<span className="text-on-surface font-semibold">IKEv2 (RFC 7296)</span>
-</div>
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">Encapsulation</span>
-<span className="text-on-surface">ESP (YES) • AH (NO)</span>
-</div>
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">Tunnel Mode</span>
-<span className="text-on-surface">Tunnel (Outer IPv4)</span>
-</div>
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">NAT-Traversal</span>
-<span className="text-primary">ACTIVE (UDP 4500)</span>
-</div>
-</div>
-</div>
-{/* Cryptographic Negotiation Group */}
-<div className="flex flex-col gap-space-xs">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Negotiated Cryptography</span>
-<div className="bg-surface-container rounded p-space-sm flex flex-col gap-space-xs font-code-sm text-code-sm">
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">Encryption</span>
-<span className="text-on-surface font-semibold">AES-128-CBC</span>
-</div>
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">Integrity (ICV)</span>
-<span className="text-on-surface">HMAC-SHA1-96</span>
-</div>
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">Key Exchange</span>
-<span className="px-1.5 py-0.2 rounded bg-error-container text-on-error-container font-semibold">DH Group 2 (1024-bit)</span>
-</div>
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">Forward Secrecy</span>
-<span className="text-error font-semibold">PFS DISABLED</span>
-</div>
-<div className="flex justify-between items-center py-0.5">
-<span className="text-on-surface-variant">Peer Authentication</span>
-<span className="text-on-surface">Pre-Shared Key (PSK)</span>
-</div>
-</div>
-</div>
-{/* Diagnostic Audit Context */}
-<div className="bg-surface-container-lowest p-space-sm rounded font-code-sm text-code-sm flex items-center justify-between text-outline">
-<span>Security Association (SA) Count:</span>
-<span className="text-on-surface font-mono">1 IKE / 2 Child ESP</span>
-</div>
-</div>
-</div>
-</div>
-{/* Interactive Forensic Deep-Dive Drawer (Progressive Disclosure - Level 2 / Level 3) */}
-<div className={`fixed inset-y-0 right-0 w-full sm:w-[480px] bg-surface-container-low shadow-xl z-50 transform transition-transform duration-300 flex flex-col ${drawerOpen ? "translate-x-0" : "translate-x-full"}`} id="forensic-drawer">
-{/* Drawer Header */}
-<div className="h-header-height px-space-base bg-surface-container-lowest flex items-center justify-between shrink-0">
-<div className="flex items-center gap-space-xs">
-<span className="material-symbols-outlined text-primary text-[18px]">biotech</span>
-<span className="font-headline-sm text-headline-sm text-on-surface">Forensic Dissection Inspector</span>
-</div>
-<button className="p-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" type="button" onClick={toggleDrawer}>
-<span className="material-symbols-outlined text-[20px]">close</span>
-</button>
-</div>
-{/* Drawer Body */}
-<div className="flex-1 overflow-y-auto p-space-base flex flex-col gap-space-md">
-{/* Target Finding Callout */}
-<div className="bg-surface-container p-space-md rounded flex flex-col gap-space-xs">
-<div className="flex items-center justify-between">
-<span className="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-code-sm text-code-sm font-semibold">CRITICAL PROPOSAL</span>
-<span className="font-code-sm text-code-sm text-tertiary">[CONFIRMED PROTOCOL FACT]</span>
-</div>
-<div className="font-headline-md text-headline-md text-on-surface">Weak Diffie-Hellman Group 2 in IKE_SA</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-          The initiator negotiated Oakley Group 2 (1024-bit MODP) during the initial exchange. Discrete logarithm computations for 1024-bit primes are accessible to well-funded adversaries.
-        </p>
-</div>
-{/* Dissected Packet Context */}
-<div className="flex flex-col gap-space-xs">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Packet Dissection Frame Metadata</span>
-<div className="bg-surface-container-lowest rounded p-space-sm flex flex-col gap-space-xs font-code-sm text-code-sm">
-<div className="flex justify-between py-0.5">
-<span className="text-outline">Target Frame</span>
-<span className="text-primary font-mono font-semibold">Frame #142 (IKE_SA_INIT Request)</span>
-</div>
-<div className="flex justify-between py-0.5">
-<span className="text-outline">Initiator SPI</span>
-<span className="text-on-surface font-mono">0x8a91f3c401340b12</span>
-</div>
-<div className="flex justify-between py-0.5">
-<span className="text-outline">Responder SPI</span>
-<span className="text-on-surface font-mono">0x0000000000000000</span>
-</div>
-<div className="flex justify-between py-0.5">
-<span className="text-outline">Byte Offset</span>
-<span className="text-on-surface font-mono">0x0048 (Transform Substructure)</span>
-</div>
-<div className="flex justify-between py-0.5">
-<span className="text-outline">Proposal ID</span>
-<span className="text-on-surface font-mono">Proposal #1 (Protocol ID: 1 - IKE)</span>
-</div>
-</div>
-</div>
-{/* Dissected Transform Proposal Tree */}
-<div className="flex flex-col gap-space-xs">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Dissected Transform Attributes</span>
-<div className="bg-surface-container rounded p-space-sm flex flex-col gap-space-xs font-code-sm text-code-sm">
-<div className="flex items-center justify-between text-on-surface-variant">
-<span>• ENCR (Transform Type 1)</span>
-<span className="text-on-surface">AES_CBC [Key Length: 128]</span>
-</div>
-<div className="flex items-center justify-between text-on-surface-variant">
-<span>• PRF (Transform Type 2)</span>
-<span className="text-on-surface">PRF_HMAC_SHA1</span>
-</div>
-<div className="flex items-center justify-between text-on-surface-variant">
-<span>• INTEG (Transform Type 3)</span>
-<span className="text-on-surface">AUTH_HMAC_SHA1_96</span>
-</div>
-<div className="flex items-center justify-between bg-error-container/20 p-space-2xs rounded text-on-surface font-semibold">
-<span className="text-error">• D-H (Transform Type 4)</span>
-<span className="text-error font-mono">Group 2 (1024-bit MODP)</span>
-</div>
-</div>
-</div>
-{/* Hex Dissection Snippet */}
-<div className="flex flex-col gap-space-xs">
-<div className="flex items-center justify-between">
-<span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Raw Dissection Payload (Offset 0x0040)</span>
-<span className="font-code-sm text-code-sm text-primary font-mono">Payload: Security Association (33)</span>
-</div>
-<div className="bg-surface-container-lowest p-space-sm rounded font-code-sm text-code-sm text-on-surface-variant leading-relaxed select-all overflow-x-auto">
-<div className="text-outline">0040  00 00 00 28 01 01 04 03  03 00 00 08 01 00 00 80</div>
-<div className="bg-primary/10 text-primary">0050  03 00 00 08 02 00 00 02  03 00 00 08 03 00 00 02</div>
-<div className="text-outline">0060  00 00 00 08 04 00 00 02  00 00 00 88 00 00 00 00</div>
-</div>
-</div>
-{/* Concrete Remediation Action Block */}
-<div className="bg-surface-container-high p-space-md rounded flex flex-col gap-space-sm mt-space-xs">
-<div className="flex items-center gap-space-xs text-primary font-headline-sm text-headline-sm">
-<span className="material-symbols-outlined text-[18px]">verified</span>
-<span>Prescribed Remediation</span>
-</div>
-<p className="font-body-sm text-body-sm text-on-surface">
-          Reconfigure strongSwan / Cisco ASA / FortiOS proposal policy to mandate minimum DH Group 14 (MODP-2048) or prefer Curve25519 / DH Group 19 (ECDH-256). Disable legacy transform fallbacks in responder policy.
-        </p>
-<div className="bg-surface-container-lowest p-space-xs rounded font-code-sm text-code-sm text-on-surface-variant flex items-center justify-between gap-2">
-  <div className="select-all overflow-x-auto">
-    <span className="text-outline"># swanctl.conf / ipsec.conf:</span><br />
-    <span className="text-tertiary">proposals = aes256gcm16-prfsha384-ecp256, aes256-sha256-modp2048</span>
-  </div>
-  <button
-    type="button"
-    className="px-2 py-1 rounded bg-surface-container hover:bg-surface-container-high text-primary hover:text-on-surface text-[10px] font-mono shrink-0 transition-colors"
-    onClick={() => {
-      navigator.clipboard?.writeText("proposals = aes256gcm16-prfsha384-ecp256, aes256-sha256-modp2048");
-      toast({ title: "Copied to Clipboard", body: "swanctl.conf proposal string copied.", kind: "ok" });
-    }}
-  >
-    Copy Patch
-  </button>
-</div>
-</div>
-</div>
-{/* Drawer Footer Actions */}
-<div className="p-space-base bg-surface-container-lowest flex items-center justify-between shrink-0">
-<button className="px-space-md py-space-xs rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button" onClick={toggleDrawer}>
-        Dismiss Inspector
-      </button>
-<button className="px-space-md py-space-xs rounded bg-primary-container hover:bg-primary text-on-primary-container font-label-md text-label-md font-semibold transition-colors flex items-center gap-space-xs" type="button" onClick={() => { downloadFile("pcap-slices.csv", findingsCSV(), "text/csv"); toast({ title: "PCAP slices exported", body: "pcap-slices.csv downloaded.", kind: "ok" }); }}>
-<span className="material-symbols-outlined text-[15px]">file_download</span>
-        Export PCAP Slices
-      </button>
-</div>
-</div>
-</AppShell>
+        {/* Top Command & Ingestion Meta Header */}
+        <div className="w-full bg-surface-container-lowest px-space-xl py-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+          <div className="flex flex-col gap-space-2xs min-w-0">
+            <div className="flex items-center gap-space-xs font-code-sm text-code-sm text-outline">
+              <span className="hover:text-on-surface cursor-pointer">Captures</span>
+              <span>/</span>
+              <span className="text-primary font-medium">{analysis.filename}</span>
+              <span>/</span>
+              <span className="text-on-surface">Forensic Analysis Results</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-space-sm font-code-sm text-code-sm text-on-surface-variant mt-space-2xs">
+              <span className="inline-flex items-center gap-space-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                Ingested {formatClock(analysis.created_at)}
+              </span>
+              <span className="text-outline-variant">•</span>
+              <span>{captureVolume(analysis)}</span>
+              <span className="text-outline-variant">•</span>
+              <span>{capturePackets(analysis)} pkts</span>
+              <span className="text-outline-variant">•</span>
+              <span className="text-primary font-mono tracking-tight">
+                Record {analysis.id.slice(0, 8).toUpperCase()} · {analysis.config_json?.evidence_source ?? "unknown"} evidence
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-space-xs shrink-0">
+            <button
+              className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md"
+              type="button"
+              onClick={() => {
+                downloadFile(
+                  `${analysis.filename}-report.json`,
+                  JSON.stringify(
+                    {
+                      capture: analysis.filename,
+                      evidence_source: analysis.config_json?.evidence_source,
+                      capture_stats: analysis.config_json?.capture,
+                      ipsec_config: analysis.config_json?.ipsec_config,
+                      risk,
+                      security_score: score,
+                      traffic_label: analysis.traffic_label,
+                      traffic_confidence: analysis.traffic_confidence,
+                      anomaly_score: analysis.anomaly_score,
+                      findings: findingList,
+                    },
+                    null,
+                    2
+                  )
+                );
+                toast({ title: "Report exported", body: `${analysis.filename}-report.json downloaded.`, kind: "ok" });
+              }}
+            >
+              <span className="material-symbols-outlined text-[15px] text-primary">download</span>
+              Export Report (JSON)
+            </button>
+            <button
+              className="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-xs rounded text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md"
+              type="button"
+              onClick={() => {
+                toast({ title: "Re-analyze", body: "Re-upload the capture to run the pipeline again.", kind: "info" });
+                router.push("/analyze");
+              }}
+            >
+              <span className="material-symbols-outlined text-[15px]">autorenew</span>
+              Re-analyze
+            </button>
+            <button
+              className="flex items-center gap-space-xs bg-primary-container px-space-sm py-space-xs rounded text-on-primary-container hover:bg-primary transition-colors font-label-md text-label-md font-semibold"
+              type="button"
+              onClick={() => router.push(`/analysis/capture?analysis_id=${analysis.id}`)}
+            >
+              <span className="material-symbols-outlined text-[15px]">terminal</span>
+              Inspect Packets
+            </button>
+          </div>
+        </div>
+
+        {/* Level 1: Hero Executive Posture Assessment */}
+        <div className="px-space-xl py-space-lg bg-surface-container-low">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-center">
+            <div className="lg:col-span-4 flex items-center gap-space-lg">
+              <div className="relative flex items-center justify-center shrink-0 w-24 h-24 bg-surface-container-lowest rounded-xl shadow-md">
+                <svg className="w-20 h-20 -rotate-90" viewBox="0 0 72 72">
+                  <circle className="text-surface-container-highest fill-none" cx="36" cy="36" r="30" stroke="currentColor" strokeWidth="5"></circle>
+                  <circle
+                    className={`${riskIsBad ? "text-error" : "text-tertiary"} fill-none transition-all duration-700 ease-out`}
+                    cx="36"
+                    cy="36"
+                    r="30"
+                    stroke="currentColor"
+                    strokeDasharray="188.5"
+                    strokeDashoffset={gaugeOffset}
+                    strokeLinecap="round"
+                    strokeWidth="5"
+                  ></circle>
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center">
+                  <span className="font-display-serif text-3xl text-on-surface font-semibold tracking-tight">{score ?? "—"}</span>
+                  <span className="font-mono text-[10px] text-outline -mt-1">/ 100</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-space-2xs min-w-0">
+                <div className="flex items-center gap-space-xs">
+                  <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Risk Classification</span>
+                  <span className={`px-space-xs py-0.5 rounded font-code-sm text-code-sm font-semibold ${riskIsBad ? "bg-error-container text-on-error-container" : "bg-tertiary-container/40 text-tertiary"}`}>
+                    {risk}
+                  </span>
+                </div>
+                <div className="font-headline-sm text-headline-sm text-on-surface">
+                  {findingList.length === 0 ? "No rule violations detected" : `${findingList.length} rule violation(s) detected`}
+                </div>
+                <div className="font-code-sm text-code-sm text-on-surface-variant">
+                  {analysis.config_json?.windows_count ?? 0} ML window(s) · anomaly score {analysis.anomaly_score?.toFixed(3) ?? "—"}
+                </div>
+              </div>
+            </div>
+            <div className="lg:col-span-8 bg-surface-container-lowest p-space-md rounded-xl flex items-start gap-space-md shadow-sm">
+              <div className="w-8 h-8 rounded bg-error-container/30 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="material-symbols-outlined text-[18px] text-error">gpp_maybe</span>
+              </div>
+              <div className="flex flex-col gap-space-2xs flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">Primary Analytical Assessment</span>
+                  <span className="font-code-sm text-code-sm text-outline">NIST SP 800-77r1 audit target</span>
+                </div>
+                <p className="font-body-md text-body-md text-on-surface leading-relaxed">
+                  {active
+                    ? active.description
+                    : "The deterministic rule engine found no violations for the negotiated suite in this capture."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Workbench */}
+        <div className="px-space-xl py-space-lg flex flex-col xl:flex-row gap-space-lg">
+          <div className="flex-1 flex flex-col gap-space-lg min-w-0">
+            {/* Key Security Findings */}
+            <div className="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-space-xs">
+                  <span className="font-headline-md text-headline-md text-on-surface">Key Cryptographic Findings</span>
+                  <span className="px-space-xs py-0.5 rounded font-code-sm text-code-sm bg-surface-container-highest text-on-surface-variant">
+                    {findingList.length} Assertion{findingList.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <span className="font-label-sm text-label-sm text-outline">Deterministic rule engine</span>
+              </div>
+              <div className="flex flex-col gap-space-xs font-body-sm text-body-sm">
+                {findingList.length === 0 ? (
+                  <div className="p-space-md rounded bg-surface-container text-on-surface-variant">
+                    No findings were raised for this capture.
+                  </div>
+                ) : (
+                  findingList.map((f, i) => (
+                    <div
+                      key={`${f.category}-${i}`}
+                      className="p-space-md rounded bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-space-md relative overflow-hidden group"
+                      onClick={() => setSelected(i)}
+                    >
+                      {selected === i && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>}
+                      <div className="flex items-start gap-space-md min-w-0">
+                        <span className={`px-space-xs py-0.5 rounded font-code-sm text-code-sm font-semibold shrink-0 ${SEVERITY_TONE[f.severity] ?? SEVERITY_TONE.INFO}`}>
+                          {f.severity}
+                        </span>
+                        <div className="flex flex-col gap-space-2xs min-w-0">
+                          <span className="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors">
+                            {f.category}
+                          </span>
+                          <p className="text-on-surface-variant">{f.description}</p>
+                        </div>
+                      </div>
+                      <div className={`flex items-center gap-space-xs shrink-0 font-code-sm text-code-sm ${selected === i ? "text-primary" : "text-on-surface-variant group-hover:text-primary"}`}>
+                        <span>Inspect</span>
+                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Encrypted Traffic Intelligence */}
+            <div className="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+                <div className="flex items-center gap-space-xs">
+                  <span className="font-headline-md text-headline-md text-on-surface">Encrypted Flow Intelligence</span>
+                  <span className="px-space-xs py-0.2 rounded font-label-sm text-label-sm bg-primary/10 text-primary font-mono uppercase">[INFERRED VIA ML]</span>
+                </div>
+                <span className="font-code-sm text-code-sm text-outline">Classified via packet timing &amp; payload size distributions</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-space-md items-center bg-surface-container-lowest p-space-md rounded">
+                <div className="md:col-span-8 flex flex-col gap-space-xs">
+                  <div className="flex items-center justify-between font-label-sm text-label-sm">
+                    <span className="text-outline uppercase tracking-wider">Window Label Mix</span>
+                    <span className="font-code-sm text-code-sm text-on-surface font-mono">{captureVolume(analysis)} Ingress/Egress</span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-surface-container-highest overflow-hidden flex">
+                    {mix.length === 0 ? (
+                      <div className="bg-surface-variant h-full w-full" title="No windows"></div>
+                    ) : (
+                      mix.map(([label, ratio], i) => (
+                        <div
+                          key={label}
+                          className={`${MIX_COLORS[i % MIX_COLORS.length]} h-full transition-all`}
+                          style={{ width: `${ratio * 100}%` }}
+                          title={`${label}: ${(ratio * 100).toFixed(0)}%`}
+                        ></div>
+                      ))
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-space-md pt-space-2xs font-code-sm text-code-sm">
+                    {mix.map(([label, ratio], i) => (
+                      <div key={label} className="flex items-center gap-space-2xs">
+                        <span className={`w-2 h-2 rounded-full ${MIX_COLORS[i % MIX_COLORS.length]}`}></span>
+                        <span className="text-on-surface font-semibold capitalize">{label}</span>
+                        <span className="text-outline">{(ratio * 100).toFixed(0)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="md:col-span-4 flex flex-col gap-space-2xs bg-surface-container-low p-space-sm rounded">
+                  <div className="flex items-center justify-between">
+                    <span className="font-label-sm text-label-sm uppercase text-outline">Anomaly Score</span>
+                    <span className="px-space-xs py-0.2 rounded bg-tertiary/10 text-tertiary font-code-sm text-code-sm font-semibold">
+                      {analysis.anomaly_score !== null ? analysis.anomaly_score.toFixed(3) : "—"}
+                    </span>
+                  </div>
+                  <div className="font-headline-sm text-headline-sm text-on-surface capitalize">
+                    {analysis.traffic_label ?? "Unclassified"}
+                  </div>
+                  <p className="font-code-sm text-code-sm text-on-surface-variant">
+                    Dominant window label at {((analysis.traffic_confidence ?? 0) * 100).toFixed(1)}% confidence.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-end">
+                <Link
+                  className="inline-flex items-center gap-space-xs font-code-sm text-code-sm text-primary hover:underline"
+                  href={`/analysis/traffic?analysis_id=${analysis.id}`}
+                >
+                  <span>View Complete Traffic Distribution</span>
+                  <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Negotiated Stack */}
+          <div className="w-full xl:w-96 flex flex-col gap-space-lg shrink-0">
+            <div className="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-md shadow-sm">
+              <div className="flex items-center justify-between pb-space-2xs">
+                <div className="flex items-center gap-space-xs">
+                  <span className="font-headline-md text-headline-md text-on-surface">Negotiated Stack</span>
+                  <span className="font-label-sm text-label-sm px-space-xs py-0.2 rounded bg-tertiary/10 text-tertiary font-mono uppercase">
+                    [{analysis.config_json?.evidence_source === "parser" ? "CONFIRMED" : "UNCONFIRMED"}]
+                  </span>
+                </div>
+                <span className="material-symbols-outlined text-[18px] text-outline">tune</span>
+              </div>
+              <div className="flex flex-col gap-space-xs">
+                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Protocol Architecture</span>
+                <div className="bg-surface-container rounded p-space-sm flex flex-col gap-space-xs font-code-sm text-code-sm">
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-on-surface-variant">IKE Standard</span>
+                    <span className="text-on-surface font-semibold">{String(sa.ike_version ?? "UNKNOWN")}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-on-surface-variant">Mode</span>
+                    <span className="text-on-surface">{String(sa.mode ?? "UNKNOWN")}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-on-surface-variant">Anti-Replay</span>
+                    <span className={sa.replay_protection === false ? "text-error font-semibold" : "text-on-surface"}>
+                      {sa.replay_protection === false ? "DISABLED" : "ENABLED"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-on-surface-variant">SA Lifetime</span>
+                    <span className="text-on-surface">{sa.lifetime_seconds ? `${sa.lifetime_seconds}s` : "UNKNOWN"}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-space-xs">
+                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Negotiated Cryptography</span>
+                <div className="bg-surface-container rounded p-space-sm flex flex-col gap-space-xs font-code-sm text-code-sm">
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-on-surface-variant">Encryption</span>
+                    <span className="text-on-surface font-semibold">{String(crypto.encryption_algorithm ?? "UNKNOWN")}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-on-surface-variant">Integrity (ICV)</span>
+                    <span className="text-on-surface">{String(crypto.integrity_algorithm ?? "UNKNOWN")}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-on-surface-variant">Key Exchange</span>
+                    <span className={crypto.dh_group === 2 ? "px-1.5 py-0.2 rounded bg-error-container text-on-error-container font-semibold" : "text-on-surface"}>
+                      {crypto.dh_group ? `DH Group ${crypto.dh_group}` : "UNKNOWN"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-on-surface-variant">Forward Secrecy</span>
+                    <span className={crypto.pfs_enabled ? "text-tertiary font-semibold" : "text-error font-semibold"}>
+                      {crypto.pfs_enabled ? "ENABLED" : "DISABLED"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-surface-container-lowest p-space-sm rounded font-code-sm text-code-sm flex items-center justify-between text-outline">
+                <span>Suite:</span>
+                <span className="text-on-surface font-mono truncate">{suiteString(analysis)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Forensic Deep-Dive Drawer */}
+        <div className={`fixed inset-y-0 right-0 w-full sm:w-[480px] bg-surface-container-low shadow-xl z-50 transform transition-transform duration-300 flex flex-col ${active ? "translate-x-0" : "translate-x-full"}`}>
+          <div className="h-header-height px-space-base bg-surface-container-lowest flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-space-xs">
+              <span className="material-symbols-outlined text-primary text-[18px]">biotech</span>
+              <span className="font-headline-sm text-headline-sm text-on-surface">Forensic Dissection Inspector</span>
+            </div>
+            <button className="p-space-2xs rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" type="button" onClick={() => setSelected(-1)}>
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-space-base flex flex-col gap-space-md">
+            {active ? (
+              <>
+                <div className="bg-surface-container p-space-md rounded flex flex-col gap-space-xs">
+                  <div className="flex items-center justify-between">
+                    <span className={`px-space-xs py-0.5 rounded font-code-sm text-code-sm font-semibold ${SEVERITY_TONE[active.severity] ?? SEVERITY_TONE.INFO}`}>
+                      {active.severity}
+                    </span>
+                    <span className="font-code-sm text-code-sm text-outline">{active.category}</span>
+                  </div>
+                  <div className="font-headline-md text-headline-md text-on-surface">{active.category} finding</div>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">{active.description}</p>
+                </div>
+
+                <div className="flex flex-col gap-space-xs">
+                  <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Parameters Cited</span>
+                  <div className="bg-surface-container-lowest rounded p-space-sm flex flex-col gap-space-xs font-code-sm text-code-sm">
+                    <div className="flex justify-between py-0.5">
+                      <span className="text-outline">Capture</span>
+                      <span className="text-on-surface font-mono truncate">{analysis.filename}</span>
+                    </div>
+                    <div className="flex justify-between py-0.5">
+                      <span className="text-outline">Evidence source</span>
+                      <span className="text-on-surface font-mono">{analysis.config_json?.evidence_source ?? "unknown"}</span>
+                    </div>
+                    <div className="flex justify-between py-0.5">
+                      <span className="text-outline">Encryption</span>
+                      <span className="text-on-surface font-mono">{String(crypto.encryption_algorithm ?? "UNKNOWN")}</span>
+                    </div>
+                    <div className="flex justify-between py-0.5">
+                      <span className="text-outline">Integrity</span>
+                      <span className="text-on-surface font-mono">{String(crypto.integrity_algorithm ?? "UNKNOWN")}</span>
+                    </div>
+                    <div className="flex justify-between py-0.5">
+                      <span className="text-outline">DH Group</span>
+                      <span className={crypto.dh_group === 2 ? "text-error font-mono font-semibold" : "text-on-surface font-mono"}>
+                        {crypto.dh_group ? String(crypto.dh_group) : "UNKNOWN"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-0.5">
+                      <span className="text-outline">PFS</span>
+                      <span className={crypto.pfs_enabled ? "text-tertiary font-mono" : "text-error font-mono font-semibold"}>
+                        {crypto.pfs_enabled ? "ENABLED" : "DISABLED"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-surface-container-lowest p-space-sm rounded font-code-sm text-code-sm text-on-surface-variant leading-relaxed">
+                  Findings are produced by the deterministic rule engine in
+                  <span className="text-on-surface font-mono"> backend/app/security_engine</span> from the parsed
+                  SA parameters — no generative text is involved.
+                </div>
+              </>
+            ) : null}
+          </div>
+          <div className="p-space-base bg-surface-container-lowest flex items-center justify-between shrink-0">
+            <button className="px-space-md py-space-xs rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button" onClick={() => setSelected(-1)}>
+              Dismiss Inspector
+            </button>
+            <button className="px-space-md py-space-xs rounded bg-primary-container hover:bg-primary text-on-primary-container font-label-md text-label-md font-semibold transition-colors flex items-center gap-space-xs" type="button" onClick={exportSlices}>
+              <span className="material-symbols-outlined text-[15px]">file_download</span>
+              Export Findings CSV
+            </button>
+          </div>
+        </div>
+      </AppShell>
     </div>
   );
 }

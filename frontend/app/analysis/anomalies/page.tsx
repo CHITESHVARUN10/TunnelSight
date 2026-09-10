@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { downloadFile, useToast } from "@/lib/mock/toast";
+import { downloadFile, useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
 import { getAnalysis, getAnomalies, type Analysis, type Window } from "@/lib/analysis";
 
@@ -49,9 +49,20 @@ export default function AnomaliesPage() {
     );
     toast({ title: "Vectors exported", body: "anomaly vectors downloaded.", kind: "ok" });
   };
-  const filterWindow = () => toast({ title: "Window filter staged", body: "Focus locked to 02:10–02:40 (mock).", kind: "info" });
-  const correlateRekey = () => toast({ title: "Correlation started", body: "IKE rekey events joined to W-28 (mock).", kind: "info" });
-  const openVectorDrawer = () => toast({ title: "Feature vectors", body: "Full vector drawer is mocked in this prototype.", kind: "info" });
+  const filterWindow = () =>
+    toast({ title: "Window filter", body: "Click any window row to focus it.", kind: "info" });
+  const correlateRekey = () =>
+    toast({
+      title: "Rekey correlation",
+      body: "Rekey correlation requires IKE rekey frames in the capture.",
+      kind: "info",
+    });
+  const openVectorDrawer = () =>
+    toast({
+      title: "Feature vectors",
+      body: "Raw feature vectors are computed server-side per window; export downloads them.",
+      kind: "info",
+    });
   if (!analysisId) {
     return (
       <div className="bg-[#0c0e11] font-sans text-sm text-zinc-300 antialiased">

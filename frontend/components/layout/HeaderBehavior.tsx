@@ -10,7 +10,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { logout } from "@/lib/auth";
-import { downloadFile, useToast } from "@/lib/mock/toast";
+import { downloadFile, useToast } from "@/lib/toast";
 import { GlobalSearchModal } from "@/components/modals/GlobalSearchModal";
 
 export function HeaderBehavior() {
@@ -43,7 +43,7 @@ export function HeaderBehavior() {
       else if (action === "export") {
         downloadFile(
           "tunnelsight-snapshot.json",
-          JSON.stringify({ page: pathname, exported: new Date().toISOString(), source: "prototype mock" }, null, 2)
+          JSON.stringify({ page: pathname, exported: new Date().toISOString() }, null, 2)
         );
         toast({ title: "Snapshot exported", body: "tunnelsight-snapshot.json downloaded.", kind: "ok" });
       } else if (action === "notifications") setNotesOpen((v) => !v);
@@ -87,7 +87,6 @@ export function HeaderBehavior() {
               try {
                 await logout();
               } catch {
-                // session may already be expired; still leave
               }
               setNotesOpen(false);
               toast({ title: "Signed out", body: "Session ended.", kind: "info" });

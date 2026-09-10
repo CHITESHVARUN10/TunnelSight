@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast, downloadFile } from "@/lib/mock/toast";
+import { useToast, downloadFile } from "@/lib/toast";
 import Stat from "@/components/motion/Stat";
 import { AppShell } from "@/components/layout/AppShell";
 import { ArchiveDeleteModal } from "@/components/modals/ArchiveDeleteModal";

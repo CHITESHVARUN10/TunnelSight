@@ -1,8 +1,21 @@
-import os
-from scapy.all import rdpcap, UDP
-import scapy.contrib.ikev2 as ikev2
+"""PCAP -> normalized IPsec configuration + per-packet records.
 
-# --- Mapping Dictionaries for IKEv2 Transforms ---
+`parse_pcap_to_json(path)` keeps the original contract (an IPsecConfig-shaped
+dict for backend/app/security_engine/schema.py). `extract_packets(path)` exposes
+the raw per-packet measurements used to build analysis windows from real bytes.
+"""
+
+import os
+from typing import Any, Dict, List
+
+from scapy.all import ESP, IP, IPv6, TCP, UDP, rdpcap
+
+try:
+    from scapy.contrib.ikev2 import IKEv2_SA
+except Exception:  # pragma: no cover - scapy without ikev2 contrib
+    IKEv2_SA = None
+
+# --- Mapping dictionaries for IKE transforms ---
 # https://www.iana.org/assignments/ikev2-parameters/ikev2-parameters.xhtml
 
 ENCRYPTION_MAP = {
@@ -11,16 +24,16 @@ ENCRYPTION_MAP = {
     18: "AES-CTR",
     19: "AES-CCM",
     20: "AES-GCM",
-    28: "CHACHA20-POLY1305"
+    28: "CHACHA20-POLY1305",
 }
 
 INTEGRITY_MAP = {
     1: "HMAC-MD5",
     2: "HMAC-SHA1",
     5: "HMAC-SHA2-256",
-    12: "HMAC-SHA2-256", # Sometimes used interchangeably in older drafts
+    12: "HMAC-SHA2-256",
     13: "HMAC-SHA2-384",
-    14: "HMAC-SHA2-512"
+    14: "HMAC-SHA2-512",
 }
 
 DH_GROUP_MAP = {
@@ -31,109 +44,200 @@ DH_GROUP_MAP = {
     19: "Group 19 (256-bit ECP)",
     20: "Group 20 (384-bit ECP)",
     21: "Group 21 (521-bit ECP)",
-    31: "Curve25519"
+    31: "Curve25519",
 }
 
-def parse_pcap_to_json(pcap_path: str) -> dict:
-    """
-    Parses a PCAP file containing IPsec traffic and extracts the IKEv2 
-    Security Association (SA) parameters into the standardized JSON schema.
-    """
-    if not os.path.exists(pcap_path):
-        raise FileNotFoundError(f"PCAP file not found: {pcap_path}")
+# Ordered most-specific-first so "AES-256-GCM" wins over "AES-256-CBC" style prefixes.
+_ENCRYPTION_TEXT = [
+    ("CHACHA20-POLY1305", "CHACHA20-POLY1305"),
+    ("CHACHA20", "CHACHA20-POLY1305"),
+    ("AES-256-GCM", "AES-256-GCM"),
+    ("AES-128-GCM", "AES-128-GCM"),
+    ("AES-192-GCM", "AES-192-GCM"),
+    ("AES-256-CBC", "AES-256-CBC"),
+    ("AES-192-CBC", "AES-192-CBC"),
+    ("AES-128-CBC", "AES-128-CBC"),
+    ("AES-256-CTR", "AES-256-CTR"),
+    ("AES-128-CTR", "AES-128-CTR"),
+    ("3DES", "3DES"),
+    ("DES", "DES"),
+]
 
-    print(f"[->] Parsing PCAP: {pcap_path}")
-    packets = rdpcap(pcap_path)
+_INTEGRITY_TEXT = [
+    ("HMAC-SHA2-512", "HMAC-SHA2-512"),
+    ("HMAC-SHA512", "HMAC-SHA2-512"),
+    ("HMAC-SHA2-384", "HMAC-SHA2-384"),
+    ("HMAC-SHA2-256", "HMAC-SHA2-256"),
+    ("HMAC-SHA256", "HMAC-SHA2-256"),
+    ("HMAC-SHA1", "HMAC-SHA1"),
+    ("HMAC-MD5", "HMAC-MD5"),
+]
 
-    # Initialize default structure matching backend/security_engine/schema.py
-    ipsec_config = {
+_DH_TEXT = [
+    ("CURVE25519", 31),
+    ("ECP-521", 21),
+    ("ECP-384", 20),
+    ("ECP-256", 19),
+    ("MODP-4096", 16),
+    ("MODP-3072", 15),
+    ("MODP-2048", 14),
+    ("MODP-1536", 5),
+    ("MODP-1024", 2),
+    ("MODP-768", 1),
+]
+
+
+def _empty_config(pcap_path: str) -> Dict[str, Any]:
+    return {
         "capture_name": os.path.basename(pcap_path),
         "cryptography": {
             "encryption_algorithm": "UNKNOWN",
             "integrity_algorithm": "UNKNOWN",
             "dh_group": None,
-            "pfs_enabled": False
+            "pfs_enabled": False,
         },
         "sa_config": {
             "ike_version": "UNKNOWN",
-            "mode": "Tunnel", # Defaulting to Tunnel
+            "mode": "Tunnel",
             "replay_protection": True,
-            "lifetime_seconds": 3600
-        }
+            "lifetime_seconds": 3600,
+        },
     }
 
-    ike_version = None
-    enc_alg = "UNKNOWN"
-    int_alg = "UNKNOWN"
-    dh_group = None
 
-    for pkt in packets:
-        # Check if it's UDP and Port 500/4500 (IKE)
-        if pkt.haslayer(UDP) and (pkt[UDP].sport in [500, 4500] or pkt[UDP].dport in [500, 4500]):
-            
-            # Ensure it is parsed as IKEv2 if possible
-            if pkt.haslayer(ikev2.IKEv2):
-                ike_layer = pkt[ikev2.IKEv2]
-                ike_version = "IKEv2"
-                ipsec_config["sa_config"]["ike_version"] = ike_version
-
-                # Inspect Security Association Payload for Transforms
-                if pkt.haslayer(ikev2.IKEv2_SA):
-                    sa_payload = pkt[ikev2.IKEv2_SA]
-                    
-                    # Scapy IKEv2 dissection parses proposals and transforms
-                    if hasattr(sa_payload, 'prop'):
-                        # Iterate through proposals
-                        current_prop = sa_payload.prop
-                        while current_prop:
-                            if hasattr(current_prop, 'trans'):
-                                current_trans = current_prop.trans
-                                while current_trans:
-                                    t_type = current_trans.transform_type
-                                    t_id = current_trans.transform_id
-                                    
-                                    # Transform Type 1: Encryption Algorithm (ENCR)
-                                    if t_type == 1:
-                                        enc_alg = ENCRYPTION_MAP.get(t_id, f"ENCR_TYPE_{t_id}")
-                                        
-                                    # Transform Type 3: Integrity Algorithm (INTEG)
-                                    elif t_type == 3:
-                                        int_alg = INTEGRITY_MAP.get(t_id, f"INTEG_TYPE_{t_id}")
-                                        
-                                    # Transform Type 4: Diffie-Hellman Group (D-H)
-                                    elif t_type == 4:
-                                        dh_group = t_id
-                                        
-                                    # Move to next transform
-                                    if hasattr(current_trans, 'next_transform') and current_trans.next_transform:
-                                         current_trans = current_trans.next_transform
-                                    else:
-                                        # Scapy uses payload chaining for some IKEv2 layers
-                                        if hasattr(current_trans, 'payload') and isinstance(current_trans.payload, ikev2.IKEv2_Transform):
-                                            current_trans = current_trans.payload
-                                        else:
-                                            break
-                                            
-                            if hasattr(current_prop, 'payload') and isinstance(current_prop.payload, ikev2.IKEv2_Proposal):
-                                current_prop = current_prop.payload
-                            else:
-                                break
-
-            # If we found parameters, no need to keep parsing every packet
-            if enc_alg != "UNKNOWN":
+def _apply_text_hints(config: Dict[str, Any], text: str) -> None:
+    """Recover SA parameters from captures that embed a human-readable suite."""
+    up = text.upper()
+    crypto = config["cryptography"]
+    if crypto["encryption_algorithm"] == "UNKNOWN":
+        for needle, alg in _ENCRYPTION_TEXT:
+            if needle in up:
+                crypto["encryption_algorithm"] = alg
+                break
+    if crypto["integrity_algorithm"] == "UNKNOWN":
+        for needle, alg in _INTEGRITY_TEXT:
+            if needle in up:
+                crypto["integrity_algorithm"] = alg
+                break
+    if crypto["dh_group"] is None:
+        for needle, group in _DH_TEXT:
+            if needle in up:
+                crypto["dh_group"] = group
                 break
 
-    # If AES-GCM is used (AEAD), integrity is built-in, so INTEG might be absent or NULL
-    if "GCM" in enc_alg or "CCM" in enc_alg or "CHACHA20" in enc_alg:
-        int_alg = "AEAD (Built-in)"
 
-    # Populate Config
-    ipsec_config["cryptography"]["encryption_algorithm"] = enc_alg
-    ipsec_config["cryptography"]["integrity_algorithm"] = int_alg
-    ipsec_config["cryptography"]["dh_group"] = dh_group
-    
-    # Simple heuristic: If DH group is present, PFS is likely enabled in Phase 2
-    if dh_group is not None and dh_group > 0:
-        ipsec_config["cryptography"]["pfs_enabled"] = True
+def _iter_transforms(sa_payload: Any):
+    """Walk the IKEv2 proposal -> transform chain emitted by scapy.
 
-    return ipsec_config
+    scapy hangs the first transform off the proposal's ``trans`` attribute and
+    chains the rest through ``payload``.
+    """
+    node = getattr(sa_payload, "prop", None)
+    depth = 0
+    while node is not None and depth < 64:
+        if hasattr(node, "transform_type") and hasattr(node, "transform_id"):
+            yield int(node.transform_type), int(node.transform_id)
+            nxt = getattr(node, "payload", None)
+        else:
+            nxt = getattr(node, "trans", None) or getattr(node, "payload", None)
+        if nxt is None or type(nxt).__name__ == "NoPayload":
+            break
+        node = nxt
+        depth += 1
+
+
+def extract_packets(pcap_path: str) -> List[Dict[str, Any]]:
+    """Per-packet measurements (timestamp, length, endpoints, protocol class)."""
+    if not os.path.exists(pcap_path):
+        raise FileNotFoundError(f"PCAP file not found: {pcap_path}")
+
+    packets = []
+    for pkt in rdpcap(pcap_path):
+        if pkt.haslayer(IP):
+            src, dst = pkt[IP].src, pkt[IP].dst
+        elif pkt.haslayer(IPv6):
+            src, dst = pkt[IPv6].src, pkt[IPv6].dst
+        else:
+            src = dst = None
+
+        if pkt.haslayer(ESP):
+            proto = "esp"
+        elif pkt.haslayer(UDP) and (pkt[UDP].sport in (500, 4500) or pkt[UDP].dport in (500, 4500)):
+            proto = "ike"
+        elif pkt.haslayer(TCP):
+            proto = "tcp"
+        elif pkt.haslayer(UDP):
+            proto = "udp"
+        else:
+            proto = "other"
+
+        packets.append(
+            {"ts": float(pkt.time), "length": int(len(pkt)), "src": src, "dst": dst, "proto": proto}
+        )
+    return packets
+
+
+def parse_pcap_to_json(pcap_path: str) -> Dict[str, Any]:
+    """Parse a capture into the standardized IPsecConfig-shaped JSON schema."""
+    if not os.path.exists(pcap_path):
+        raise FileNotFoundError(f"PCAP file not found: {pcap_path}")
+
+    print(f"[->] Parsing PCAP: {pcap_path}")
+    packets = rdpcap(pcap_path)
+    config = _empty_config(pcap_path)
+    crypto = config["cryptography"]
+    sa_cfg = config["sa_config"]
+    text_hints = []
+    child_sa_ke = False
+
+    for pkt in packets:
+        if pkt.haslayer(UDP) and (pkt[UDP].sport in (500, 4500) or pkt[UDP].dport in (500, 4500)):
+            payload = bytes(pkt[UDP].payload)
+            text_hints.append(payload.decode("latin-1", errors="ignore"))
+
+            ike_layer = pkt.getlayer("ISAKMP")
+            if ike_layer is not None and getattr(ike_layer, "version", None) is not None:
+                version = ike_layer.version
+                sa_cfg["ike_version"] = "IKEv2" if version >= 0x20 else "IKEv1"
+            elif pkt.haslayer("IKEv2"):
+                sa_cfg["ike_version"] = "IKEv2"
+
+            # IKEv2 CREATE_CHILD_SA (36) carrying a KE payload is direct PFS evidence.
+            ikev2_layer = pkt.getlayer("IKEv2")
+            if ikev2_layer is not None and getattr(ikev2_layer, "exch_type", None) == 36:
+                if pkt.haslayer("IKEv2_KE"):
+                    child_sa_ke = True
+
+            if IKEv2_SA is not None and pkt.haslayer(IKEv2_SA):
+                for t_type, t_id in _iter_transforms(pkt[IKEv2_SA]):
+                    if t_type == 1:
+                        crypto["encryption_algorithm"] = ENCRYPTION_MAP.get(
+                            t_id, f"ENCR_TYPE_{t_id}"
+                        )
+                    elif t_type == 3:
+                        crypto["integrity_algorithm"] = INTEGRITY_MAP.get(
+                            t_id, f"INTEG_TYPE_{t_id}"
+                        )
+                    elif t_type == 4:
+                        crypto["dh_group"] = t_id
+
+        if crypto["encryption_algorithm"] != "UNKNOWN" and crypto["dh_group"] is not None:
+            break
+
+    _apply_text_hints(config, "\n".join(text_hints))
+
+    has_esp = any(p.haslayer(ESP) for p in packets)
+    sa_cfg["mode"] = "Tunnel" if has_esp else sa_cfg["mode"]
+
+    enc = crypto["encryption_algorithm"]
+    if any(tag in enc for tag in ("GCM", "CCM", "CHACHA20")):
+        if crypto["integrity_algorithm"] == "UNKNOWN":
+            crypto["integrity_algorithm"] = "AEAD (Built-in)"
+
+    # A phase-1 proposal group is not proof of PFS: IKEv2 rekeys child SAs with a
+    # fresh KE by default, IKEv1 needs an observed Quick Mode KE exchange.
+    crypto["pfs_enabled"] = bool(
+        (sa_cfg["ike_version"] == "IKEv2" and crypto["dh_group"] is not None) or child_sa_ke
+    )
+
+    return config

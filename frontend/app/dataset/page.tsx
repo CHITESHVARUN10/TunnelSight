@@ -1,30 +1,22 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { downloadFile, useToast } from "@/lib/mock/toast";
+import { useRef, useState } from "react";
+import { useToast } from "@/lib/toast";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default function DatasetPage() {
   const [activeProfile, setActiveProfile] = useState("modern-strong");
-  const [isCapturing, setIsCapturing] = useState(true);
+  const [isCapturing, setIsCapturing] = useState(false);
   const [inspect, setInspect] = useState({
     open: false,
     filename: "synth-modern-01.pcap",
-    sha: "3d120a48b59fa876428e3b1c90ae7b12",
-    split: "70% Train / 15% Val / 15% Test",
+    sha: "—",
+    split: "—",
   });
   const [stanzaApplied, setStanzaApplied] = useState(false);
-  const [livePkts, setLivePkts] = useState(412890);
   const stanzaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const t = setInterval(() => {
-      if (isCapturing) {
-        setLivePkts((p) => p + Math.floor(Math.random() * 80) + 40);
-      }
-    }, 1200);
-    return () => clearInterval(t);
-  }, [isCapturing]);
+  const NOT_WIRED = "This harness view is not connected to the backend yet.";
 
   const openInspect = (filename: string, sha: string, split: string) =>
     setInspect({ open: true, filename, sha, split });
@@ -33,18 +25,12 @@ export default function DatasetPage() {
 
   const handleApplyStanza = () => {
     setStanzaApplied(true);
-    toast({ title: "Stanza applied", body: "Profile stanza loaded into GW-A & GW-B (mock).", kind: "ok" });
+    toast({ title: "Stanza staged", body: NOT_WIRED, kind: "info" });
     if (stanzaTimer.current) clearTimeout(stanzaTimer.current);
     stanzaTimer.current = setTimeout(() => setStanzaApplied(false), 2400);
   };
 
-  const INSPECT_META: Record<string, { sha: string; split: string }> = {
-    "synth-modern-01.pcap": { sha: "3d120a48b59fa876428e3b1c90ae7b12", split: "70% Train / 15% Val / 15% Test" },
-    "weak-vpn-07.pcap": { sha: "7f892a01d9f48209bb31aa49c42b490f", split: "80% Train / 20% Anomaly Test" },
-    "ipv6-transit-03.pcap": { sha: "e82103ba7802fdca981245011cb9304", split: "70% Train / 15% Val / 15% Test" },
-    "bulk-sftp-highburst.parquet": { sha: "1a44c9b2e04319803bf39d019488d1", split: "Columnar Partitioned" },
-    "live-session-capture-active.pcap": { sha: "Computing on stream close...", split: "In-flight Capture Buffer" },
-  };
+  const INSPECT_META: Record<string, { sha: string; split: string }> = {};
 
   const rowFilename = (el: HTMLElement) => {
     const m = (el.closest("tr")?.textContent ?? "").match(/[\w\-]+\.(?:pcap|parquet|pcapng)/);
@@ -53,32 +39,22 @@ export default function DatasetPage() {
 
   const downloadRow = (e: React.MouseEvent<HTMLButtonElement>) => {
     const f = rowFilename(e.currentTarget);
-    const meta = INSPECT_META[f] ?? { sha: "", split: "" };
-    downloadFile(`${f}.sha256.json`, JSON.stringify({ file: f, sha256: meta.sha, split: meta.split }, null, 2), "application/json");
-    toast({ title: "Artifact download started", body: `${f} manifest downloaded (mock).`, kind: "ok" });
+    toast({ title: "Artifact unavailable", body: NOT_WIRED, kind: "info" });
+    void f;
   };
 
   const haltCapture = () => {
     setIsCapturing(false);
-    toast({ title: "Live capture halted", body: "Streaming TAP paused (mock).", kind: "warn" });
+    toast({ title: "Capture sessions", body: NOT_WIRED, kind: "info" });
   };
 
-  const syncGateways = () => toast({ title: "Gateway states synced", body: "GW-A & GW-B synchronized (mock).", kind: "ok" });
-  const exportArtifacts = () => {
-    downloadFile("dataset-export-manifest.json", JSON.stringify({ datasets: Object.keys(INSPECT_META), exported: new Date().toISOString() }, null, 2), "application/json");
-    toast({ title: "Export started", body: ".pcap/.parquet manifest downloaded (mock).", kind: "ok" });
-  };
-  const resetHarness = () => toast({ title: "Harness reset", body: "Testbed harness reset to defaults (mock).", kind: "info" });
-  const generateTraffic = () => {
-    setLivePkts((p) => p + 5000);
-    toast({ title: "Traffic generation started", body: "Synthetic flows injected into TAP (mock).", kind: "ok" });
-  };
-  const configureStream = () => toast({ title: "Custom stream", body: "Stream designer opened (mock).", kind: "info" });
-  const exportArchive = () => {
-    downloadFile(`${inspect.filename}.sha256.json`, JSON.stringify({ file: inspect.filename, sha256: inspect.sha, split: inspect.split }, null, 2), "application/json");
-    toast({ title: "Archive exported", body: `${inspect.filename} manifest downloaded (mock).`, kind: "ok" });
-  };
-  const pageToast = () => toast({ title: "Pagination", body: "Additional pages are mocked in this prototype.", kind: "info" });
+  const syncGateways = () => toast({ title: "Gateway states", body: NOT_WIRED, kind: "info" });
+  const exportArtifacts = () => toast({ title: "Export", body: NOT_WIRED, kind: "info" });
+  const resetHarness = () => toast({ title: "Testbed harness", body: NOT_WIRED, kind: "info" });
+  const generateTraffic = () => toast({ title: "Traffic generation", body: NOT_WIRED, kind: "info" });
+  const configureStream = () => toast({ title: "Stream designer", body: NOT_WIRED, kind: "info" });
+  const exportArchive = () => toast({ title: "Archive export", body: NOT_WIRED, kind: "info" });
+  const pageToast = () => toast({ title: "Pagination", body: NOT_WIRED, kind: "info" });
 
   return (
     <div className="min-h-screen bg-[#0c0e11] text-zinc-100 antialiased selection:bg-teal-500/20 selection:text-teal-200">
@@ -144,7 +120,7 @@ export default function DatasetPage() {
             <button
               onClick={() => {
                 setIsCapturing((v) => !v);
-                toast({ title: "Capture toggled", body: "Streaming TAP state flipped (mock).", kind: "info" });
+                toast({ title: "Capture sessions", body: NOT_WIRED, kind: "info" });
               }}
               type="button"
               className={`px-3 py-1.5 rounded text-xs font-mono transition-colors flex items-center gap-2 border ${
@@ -504,7 +480,7 @@ export default function DatasetPage() {
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-2">
                           <button
-                            onClick={() => openInspect("synth-modern-01.pcap", "3d120a48b59fa876428e3b1c90ae7b12", "70% Train / 15% Val / 15% Test")}
+                            onClick={() => openInspect("synth-modern-01.pcap", "—", "—")}
                             type="button"
                             className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-teal-400 transition-colors"
                           >
@@ -542,7 +518,7 @@ export default function DatasetPage() {
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-2">
                           <button
-                            onClick={() => openInspect("weak-vpn-07.pcap", "7f892a01d9f48209bb31aa49c42b490f", "80% Train / 20% Anomaly Test")}
+                            onClick={() => openInspect("weak-vpn-07.pcap", "—", "—")}
                             type="button"
                             className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-teal-400 transition-colors"
                           >
@@ -578,7 +554,7 @@ export default function DatasetPage() {
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-2">
                           <button
-                            onClick={() => openInspect("ipv6-transit-03.pcap", "e82103ba7802fdca981245011cb9304", "70% Train / 15% Val / 15% Test")}
+                            onClick={() => openInspect("ipv6-transit-03.pcap", "—", "—")}
                             type="button"
                             className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-teal-400 transition-colors"
                           >
@@ -613,7 +589,7 @@ export default function DatasetPage() {
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-2">
                           <button
-                            onClick={() => openInspect("bulk-sftp-highburst.parquet", "1a44c9b2e04319803bf39d019488d1", "Columnar Partitioned")}
+                            onClick={() => openInspect("bulk-sftp-highburst.parquet", "—", "—")}
                             type="button"
                             className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-teal-400 transition-colors"
                           >
@@ -636,7 +612,7 @@ export default function DatasetPage() {
                         <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
                         <span>live-session-capture-active.pcap</span>
                       </td>
-                      <td className="px-4 py-3 text-teal-400 font-semibold">{livePkts.toLocaleString()} pkts</td>
+                      <td className="px-4 py-3 text-teal-400 font-semibold">— pkts</td>
                       <td className="px-4 py-3">
                         <span className="px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/20">
                           Active Profile
@@ -658,7 +634,7 @@ export default function DatasetPage() {
                             Halt
                           </button>
                           <button
-                            onClick={() => openInspect("live-session-capture-active.pcap", "Computing on stream close...", "In-flight Capture Buffer")}
+                            onClick={() => openInspect("live-session-capture-active.pcap", "—", "—")}
                             type="button"
                             className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-teal-400 transition-colors"
                           >
