@@ -1,27 +1,303 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
-import { downloadFile, useToast } from "@/lib/mock/toast";
+import { useState, useEffect } from "react";
+import { downloadFile } from "@/lib/mock/toast";
 import { executiveReportJSON } from "@/lib/mock/analysis";
 import { AppShell } from "@/components/layout/AppShell";
+import { api } from "@/lib/api";
+
+export type SecurityFinding = {
+  severity: string;
+  category: string;
+  description: string;
+};
+
+export type IPsecConfigData = {
+  capture_name?: string;
+  cryptography?: {
+    encryption_algorithm?: string;
+    integrity_algorithm?: string;
+    dh_group?: number | null;
+    pfs_enabled?: boolean;
+  };
+  sa_config?: {
+    ike_version?: string;
+    mode?: string;
+    replay_protection?: boolean;
+    lifetime_seconds?: number | null;
+  };
+};
+
+export type AnalysisRecord = {
+  id: string;
+  filename: string;
+  status: string;
+  security_score?: number | null;
+  risk_level?: string | null;
+  anomaly_score?: number | null;
+  traffic_label?: string | null;
+  traffic_confidence?: number | null;
+  config_json?: {
+    capture_name?: string;
+    ipsec_config?: IPsecConfigData;
+    features?: {
+      total_packets?: number;
+      total_bytes?: number;
+      packets_per_second?: number;
+      flow_duration?: number;
+    };
+  } | null;
+  findings_json?: SecurityFinding[] | null;
+  created_at: string;
+};
+
+const DEFAULT_ANALYSIS: AnalysisRecord = {
+  id: "8a91f3c4-0134-4b12-9a02-1da37c2901a8",
+  filename: "weak-vpn-07.pcap",
+  status: "completed",
+  security_score: 47,
+  risk_level: "HIGH",
+  anomaly_score: -0.18,
+  traffic_label: "Video",
+  traffic_confidence: 0.88,
+  created_at: "2025-10-22T14:02:19Z",
+  config_json: {
+    capture_name: "weak-vpn-07.pcap",
+    ipsec_config: {
+      cryptography: {
+        encryption_algorithm: "AES-128-CBC",
+        integrity_algorithm: "HMAC-SHA1-96",
+        dh_group: 2,
+        pfs_enabled: false,
+      },
+      sa_config: {
+        ike_version: "IKEv2",
+        mode: "Tunnel",
+        replay_protection: true,
+        lifetime_seconds: 28800,
+      },
+    },
+    features: {
+      total_packets: 842109,
+      total_bytes: 1420000000,
+      flow_duration: 3600,
+    },
+  },
+  findings_json: [
+    {
+      severity: "CRITICAL",
+      category: "Key Exchange",
+      description: "Weak Diffie-Hellman Group 2 (MODP-1024). Inadequate against logjam-class precomputations.",
+    },
+    {
+      severity: "HIGH",
+      category: "Key Exchange",
+      description: "Child SA Rekey initiated without KEi payload (PFS is Disabled).",
+    },
+    {
+      severity: "HIGH",
+      category: "Cryptography",
+      description: "Legacy AES-CBC + HMAC-SHA1-96 cipher suite in use.",
+    },
+  ],
+};
+
+type FrameData = {
+  pktNum: number;
+  label: string;
+  exchange: string;
+  spi: string;
+  timestamp: string;
+  encap: string;
+  proof: string;
+  isRisk: boolean;
+  payloads: Array<{ name: string; detail: string; isAlert?: boolean }>;
+  hexDump: Array<{ offset: string; hex: string; ascii: string; color?: "teal" | "rose" }>;
+};
+
+const PROTOCOL_FRAMES: Record<number, FrameData> = {
+  42: {
+    pktNum: 42,
+    label: "Packet #42",
+    exchange: "IKE_SA_INIT (Req)",
+    spi: "0x8a91f3c401340b12",
+    timestamp: "00:00:00.114 (T+0.000s)",
+    encap: "UDP:500 (Plaintext IKE Header)",
+    proof: "Initial IKE_SA negotiation proposing cryptographic algorithms, Diffie-Hellman exchange, and initial nonce. Conforms to RFC 7296 §1.2.",
+    isRisk: false,
+    payloads: [
+      { name: "IKE Header [HDR] (28 Bytes)", detail: "Type: IKE_SA_INIT (34) · Flags: Initiator" },
+      { name: "Security Association [SAi1]", detail: "Proposals: ENCR_AES, PRF_SHA1, INTEG_SHA1, DH_GRP2" },
+      { name: "Key Exchange [KEi]", detail: "Public Diffie-Hellman Key Payload (128 Bytes)" },
+      { name: "Nonce [Ni]", detail: "32-Byte Initiator Cryptographic Nonce" },
+      { name: "NAT Detection [NAT-D]", detail: "Source & Destination IP/Port Hash Payloads" },
+    ],
+    hexDump: [
+      { offset: "0000", hex: "8a 91 f3 c4 01 34 0b 12", ascii: "..4.|.." },
+      { offset: "0008", hex: "00 00 00 00 00 00 00 00", ascii: "........" },
+      { offset: "0010", hex: "21 20 22 08 00 00 00 00", ascii: "! \"....." },
+      { offset: "0018", hex: "00 00 01 48 22 00 00 30", ascii: "...H\"..0", color: "teal" },
+      { offset: "0020", hex: "00 00 00 2c 01 01 00 04", ascii: "...,...." },
+      { offset: "0028", hex: "03 00 00 0c 01 00 00 0c", ascii: "........" },
+      { offset: "0030", hex: "80 0e 00 80 03 00 00 08", ascii: "........" },
+      { offset: "0038", hex: "02 00 00 02 00 00 00 08", ascii: "........" },
+    ],
+  },
+  45: {
+    pktNum: 45,
+    label: "Packet #45",
+    exchange: "IKE_SA_INIT (Resp)",
+    spi: "0x7c2901a8ef11b402",
+    timestamp: "00:00:00.189 (T+0.075s)",
+    encap: "UDP:500 (Plaintext IKE Header)",
+    proof: "Responder confirms Transform 1 and returns KEr + Nr. NAT-D hash mismatch detected; tunnel transitions to UDP:4500 NAT-Traversal (RFC 3947).",
+    isRisk: false,
+    payloads: [
+      { name: "IKE Header [HDR] (28 Bytes)", detail: "Type: IKE_SA_INIT (34) · Flags: Response" },
+      { name: "Security Association [SAr1]", detail: "Selected Transform: AES-CBC-128 / SHA1 / DH Group 2" },
+      { name: "Key Exchange [KEr]", detail: "Public Diffie-Hellman Key Payload (128 Bytes)" },
+      { name: "Nonce [Nr]", detail: "32-Byte Responder Cryptographic Nonce" },
+      { name: "NAT Detection [NAT-D]", detail: "Hash Mismatch: Remote NAT Detected (RFC 3947)" },
+    ],
+    hexDump: [
+      { offset: "0000", hex: "8a 91 f3 c4 01 34 0b 12", ascii: "..4.|.." },
+      { offset: "0008", hex: "7c 29 01 a8 ef 11 b4 02", ascii: "|)......" },
+      { offset: "0010", hex: "21 20 22 20 00 00 00 00", ascii: "! \" ...." },
+      { offset: "0018", hex: "00 00 01 40 22 00 00 28", ascii: "...@\"..(", color: "teal" },
+      { offset: "0020", hex: "00 00 00 24 01 01 00 04", ascii: "...$...." },
+      { offset: "0028", hex: "03 00 00 0c 01 00 00 0c", ascii: "........" },
+      { offset: "0030", hex: "80 0e 00 80 03 00 00 08", ascii: "........" },
+      { offset: "0038", hex: "02 00 00 02 00 00 00 08", ascii: "........" },
+    ],
+  },
+  58: {
+    pktNum: 58,
+    label: "Packet #58",
+    exchange: "IKE_AUTH (Req)",
+    spi: "0x8a91f3c401340b12",
+    timestamp: "00:00:00.412 (T+0.298s)",
+    encap: "UDP:4500 (Non-ESP Marker 0x00000000)",
+    proof: "Initiator identity IDi transmitted and authenticated via Pre-Shared Key (PSK). Establishes encrypted control channel (SK payload).",
+    isRisk: false,
+    payloads: [
+      { name: "Non-ESP Marker (4 Bytes)", detail: "0x00000000 [RFC 3948]" },
+      { name: "IKE Header [HDR] (28 Bytes)", detail: "Type: IKE_AUTH (35) · Flags: Initiator" },
+      { name: "Encrypted Payload [SK]", detail: "Cipher: AES-CBC-128 · Integrity: HMAC-SHA1-96" },
+      { name: "Decrypted Inner Payload", detail: "IDi (IPv4: 198.51.100.1), AUTH (PSK Type 0x02)" },
+      { name: "Child SA Proposal", detail: "TSi (0.0.0.0/0) ↔ TSr (0.0.0.0/0)" },
+    ],
+    hexDump: [
+      { offset: "0000", hex: "00 00 00 00 8a 91 f3 c4", ascii: "....4..|" },
+      { offset: "0008", hex: "01 34 0b 12 7c 29 01 a8", ascii: ")..ef11." },
+      { offset: "0010", hex: "2e 20 23 08 00 00 00 01", ascii: ". #....." },
+      { offset: "0018", hex: "00 00 00 c8 2e 00 00 ac", ascii: "........", color: "teal" },
+      { offset: "0020", hex: "4e 71 8a b2 9c 10 3a f1", ascii: "Nq....:." },
+      { offset: "0028", hex: "8b a2 43 19 0f 98 2e c1", ascii: "..C....." },
+      { offset: "0030", hex: "c3 d4 e5 12 87 65 43 21", ascii: ".....eC!" },
+      { offset: "0038", hex: "11 22 33 44 55 66 77 88", ascii: ".\"3DUfw." },
+    ],
+  },
+  61: {
+    pktNum: 61,
+    label: "Packet #61",
+    exchange: "IKE_AUTH (Resp)",
+    spi: "0x7c2901a8ef11b402",
+    timestamp: "00:00:00.490 (T+0.376s)",
+    encap: "UDP:4500 (Non-ESP Marker 0x00000000)",
+    proof: "Responder verifies PSK and returns IDr. Mutual authentication successful. IKE_SA and primary Child SA successfully established.",
+    isRisk: false,
+    payloads: [
+      { name: "Non-ESP Marker (4 Bytes)", detail: "0x00000000 [RFC 3948]" },
+      { name: "IKE Header [HDR] (28 Bytes)", detail: "Type: IKE_AUTH (35) · Flags: Response" },
+      { name: "Encrypted Payload [SK]", detail: "Cipher: AES-CBC-128 · Integrity: HMAC-SHA1-96" },
+      { name: "Decrypted Inner Payload", detail: "IDr (FQDN: vpn.chicago-dc.net), AUTH_OK" },
+      { name: "Child SA Acceptance", detail: "Ingress SPI: 0x41f89c02 · Egress SPI: 0x9a021da3" },
+    ],
+    hexDump: [
+      { offset: "0000", hex: "00 00 00 00 8a 91 f3 c4", ascii: "....4..|" },
+      { offset: "0008", hex: "7c 29 01 a8 ef 11 b4 02", ascii: "|)......" },
+      { offset: "0010", hex: "2e 20 23 20 00 00 00 01", ascii: ". # ...." },
+      { offset: "0018", hex: "00 00 00 d4 2e 00 00 b8", ascii: "........", color: "teal" },
+      { offset: "0020", hex: "7a 88 19 cc e2 41 90 aa", ascii: "z....A.." },
+      { offset: "0028", hex: "14 f9 33 02 aa 12 e4 50", ascii: "..3....P" },
+      { offset: "0030", hex: "55 66 77 88 99 aa bb cc", ascii: "Ufw....." },
+      { offset: "0038", hex: "dd ee ff 00 11 22 33 44", ascii: ".....\"3D" },
+    ],
+  },
+  142: {
+    pktNum: 142,
+    label: "Packet #142",
+    exchange: "CREATE_CHILD_SA (Req)",
+    spi: "0x8a91f3c401340b12",
+    timestamp: "00:00:02.381 (T+2.267s)",
+    encap: "UDP:4500 (Non-ESP Marker 0x00000000)",
+    proof: "Child SA Rekey initiated without KEi payload at offset 0x0028. Absence of an ephemeral Diffie-Hellman public key proves PFS is Disabled. Past sessions remain vulnerable to retrospective decryption.",
+    isRisk: true,
+    payloads: [
+      { name: "Non-ESP Marker (4 Bytes)", detail: "0x00000000 [OK]" },
+      { name: "IKE Header [HDR] (28 Bytes)", detail: "Type: CREATE_CHILD_SA (36)" },
+      { name: "Security Association [SA]", detail: "Rekey SPI: 0x9a021da3" },
+      { name: "Key Exchange [KEi]", detail: "ABSENT (PFS Disabled)", isAlert: true },
+      { name: "Traffic Selectors [TSi, TSr]", detail: "0.0.0.0/0 ↔ 0.0.0.0/0" },
+    ],
+    hexDump: [
+      { offset: "0000", hex: "00 00 00 00 8a 91 f3 c4", ascii: "....4..|" },
+      { offset: "0008", hex: "01 34 0b 12 7c 29 01 a8", ascii: ")..ef11." },
+      { offset: "0010", hex: "ef 11 b4 02 2e 20 23 20", ascii: ".... # ." },
+      { offset: "0018", hex: "00 00 00 02 00 00 00 9c", ascii: "....\\x9c" },
+      { offset: "0020", hex: "29 00 00 80 00 00 00 24", ascii: ").....$", color: "teal" },
+      { offset: "0028", hex: "01 03 04 03 00 00 00 0c", ascii: "........", color: "rose" },
+      { offset: "0030", hex: "80 0c 00 80 00 00 00 08", ascii: "........" },
+      { offset: "0038", hex: "03 00 00 02 00 00 00 08", ascii: "........" },
+    ],
+  },
+};
 
 export default function VpnConfigurationPage() {
-  const toast = useToast();
   const [activeFilter, setActiveFilter] = useState("all");
-  const [inspectedPkt, setInspectedPkt] = useState("Packet #142");
-  const [inspectedExchange, setInspectedExchange] = useState("CREATE_CHILD_SA (Req)");
-  const [inspectedSpi, setInspectedSpi] = useState("0x8a91f3c401340b12");
+  const [inspectedPktNum, setInspectedPktNum] = useState<number>(142);
+  const [analysis, setAnalysis] = useState<AnalysisRecord>(DEFAULT_ANALYSIS);
 
-  const selectEvidencePacket = (pktNum: number, exchangeName: string, spi: string) => {
-    setInspectedPkt(`Packet #${pktNum}`);
-    setInspectedExchange(exchangeName);
-    setInspectedSpi(spi);
-    toast({
-      title: `Selected Frame #${pktNum}`,
-      body: `Loaded ${exchangeName} into Protocol Frame Inspector.`,
-      kind: "info",
-    });
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const stored = typeof window !== "undefined" ? sessionStorage.getItem("ts_demo_file") : null;
+        const targetName = stored ? JSON.parse(stored).name : null;
+
+        const history = await api("/api/history");
+        if (Array.isArray(history) && history.length > 0) {
+          const match = targetName ? history.find((h: AnalysisRecord) => h.filename === targetName) : history[0];
+          if (match && match.config_json?.ipsec_config) {
+            setAnalysis(match);
+          }
+        }
+      } catch {
+        // Standalone offline mode: baseline fallback
+      }
+    };
+    loadData();
+  }, []);
+
+  const selectEvidencePacket = (pktNum: number) => {
+    setInspectedPktNum(pktNum);
   };
+
+  const handleFilterClick = (filterKey: "all" | "ike" | "esp" | "sa") => {
+    setActiveFilter(filterKey);
+    if (filterKey === "ike") {
+      setInspectedPktNum(42);
+    } else if (filterKey === "esp") {
+      setInspectedPktNum(142);
+    }
+  };
+
+  const ipsecConfig = analysis.config_json?.ipsec_config;
+  const crypto = ipsecConfig?.cryptography;
+  const saConfig = ipsecConfig?.sa_config;
+  const dhGroup = crypto?.dh_group ?? 2;
+  const pfsEnabled = crypto?.pfs_enabled ?? false;
+
+  const currentFrame = PROTOCOL_FRAMES[inspectedPktNum] ?? PROTOCOL_FRAMES[142];
 
   return (
     <div className="min-h-screen bg-[#0c0e11] text-zinc-100 font-sans antialiased">
@@ -34,7 +310,7 @@ export default function VpnConfigurationPage() {
                 Captures
               </Link>
               <span className="text-zinc-700">/</span>
-              <span className="text-teal-400 font-medium">weak-vpn-07.pcap</span>
+              <span className="text-teal-400 font-medium">{analysis.filename}</span>
               <span className="text-zinc-700">/</span>
               <span className="text-zinc-300">VPN Configuration &amp; Protocol Inspection</span>
             </div>
@@ -54,11 +330,11 @@ export default function VpnConfigurationPage() {
                       key={filterKey}
                       className={`px-3 py-1 rounded transition-colors ${
                         activeFilter === filterKey
-                          ? "bg-zinc-800 text-white font-medium"
+                          ? "bg-zinc-800 text-white font-medium shadow-sm"
                           : "text-zinc-400 hover:text-zinc-200"
                       }`}
                       type="button"
-                      onClick={() => setActiveFilter(filterKey)}
+                      onClick={() => handleFilterClick(filterKey)}
                     >
                       {labels[filterKey]}
                     </button>
@@ -71,7 +347,6 @@ export default function VpnConfigurationPage() {
                 type="button"
                 onClick={() => {
                   downloadFile("vpn-configuration-proof.json", executiveReportJSON());
-                  toast({ title: "Proof Exported", body: "vpn-configuration-proof.json downloaded.", kind: "ok" });
                 }}
               >
                 <span className="material-symbols-outlined text-[14px]">terminal</span>
@@ -99,10 +374,10 @@ export default function VpnConfigurationPage() {
             {/* Session Badges */}
             <div className="flex items-center gap-2 font-mono text-xs">
               <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-300 flex items-center">
-                IKEv2
+                {saConfig?.ike_version ?? "IKEv2"}
               </span>
               <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 flex items-center">
-                ESP Tunnel Mode
+                {saConfig?.mode ? `ESP ${saConfig.mode} Mode` : "ESP Tunnel Mode"}
               </span>
               <span className="h-6 px-2.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 flex items-center">
                 IPv4
@@ -120,11 +395,11 @@ export default function VpnConfigurationPage() {
         </div>
 
         {/* Main Multi-Pane Analytical Workbench */}
-        <div className="grid grid-cols-1 2xl:grid-cols-12 min-h-[calc(100vh-140px)] divide-y 2xl:divide-y-0 2xl:divide-x divide-zinc-800/80">
-          {/* Primary Content Area (Left 8 Cols on 2xl) */}
-          <div className="2xl:col-span-8 p-6 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[calc(100vh-140px)] divide-y lg:divide-y-0 lg:divide-x divide-zinc-800/80 items-start">
+          {/* Primary Content Area (Left 7 Cols on lg, 8 on xl) */}
+          <div className="lg:col-span-7 xl:col-span-8 p-6 space-y-6">
             {/* SECTION 1: Identity & Security Endpoints Key-Value Matrix */}
-            {(activeFilter === "all" || activeFilter === "ike" || activeFilter === "esp") && (
+            {(activeFilter === "all" || activeFilter === "ike") && (
               <section className="bg-[#111317] border border-zinc-800/80 rounded-lg p-5">
                 <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800/80">
                   <div className="flex items-center gap-2">
@@ -195,7 +470,9 @@ export default function VpnConfigurationPage() {
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-xs">
                   <div className="bg-[#0c0e11] border border-zinc-800/60 px-3 py-2 rounded flex items-center justify-between">
                     <span className="text-zinc-500">Network Mode:</span>
-                    <span className="text-zinc-200 font-medium">IPsec Tunnel (IPv4 in ESP)</span>
+                    <span className="text-zinc-200 font-medium">
+                      {saConfig?.mode ? `IPsec ${saConfig.mode} (IPv4 in ESP)` : "IPsec Tunnel (IPv4 in ESP)"}
+                    </span>
                   </div>
                   <div className="bg-[#0c0e11] border border-zinc-800/60 px-3 py-2 rounded flex items-center justify-between">
                     <span className="text-zinc-500">NAT-T Status:</span>
@@ -245,9 +522,9 @@ export default function VpnConfigurationPage() {
                     <tbody className="divide-y divide-zinc-800/60">
                       <tr
                         className={`hover:bg-zinc-800/30 cursor-pointer transition-colors ${
-                          inspectedPkt === "Packet #42" ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
+                          inspectedPktNum === 42 ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
                         }`}
-                        onClick={() => selectEvidencePacket(42, "IKE_SA_INIT (Req)", "0x8a91f3c401340b12")}
+                        onClick={() => selectEvidencePacket(42)}
                       >
                         <td className="py-2.5 px-4 text-zinc-500 font-medium">01</td>
                         <td className="py-2.5 px-4 font-medium flex items-center gap-1.5 text-zinc-200">
@@ -260,7 +537,9 @@ export default function VpnConfigurationPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-zinc-300">8a91f3c4...</span>
                             <span className="text-zinc-600">|</span>
-                            <span className="text-zinc-400 truncate max-w-xs">SA, KE (DH Grp 2), Ni, NAT-D</span>
+                            <span className="text-zinc-400 truncate max-w-xs">
+                              SA, KE (DH Grp {dhGroup}), Ni, NAT-D
+                            </span>
                           </div>
                         </td>
                         <td className="py-2.5 px-4 text-right">
@@ -272,9 +551,9 @@ export default function VpnConfigurationPage() {
 
                       <tr
                         className={`hover:bg-zinc-800/30 cursor-pointer transition-colors ${
-                          inspectedPkt === "Packet #45" ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
+                          inspectedPktNum === 45 ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
                         }`}
-                        onClick={() => selectEvidencePacket(45, "IKE_SA_INIT (Resp)", "0x7c2901a8ef11b402")}
+                        onClick={() => selectEvidencePacket(45)}
                       >
                         <td className="py-2.5 px-4 text-zinc-500 font-medium">02</td>
                         <td className="py-2.5 px-4 font-medium flex items-center gap-1.5 text-zinc-200">
@@ -299,9 +578,9 @@ export default function VpnConfigurationPage() {
 
                       <tr
                         className={`hover:bg-zinc-800/30 cursor-pointer transition-colors ${
-                          inspectedPkt === "Packet #58" ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
+                          inspectedPktNum === 58 ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
                         }`}
-                        onClick={() => selectEvidencePacket(58, "IKE_AUTH (Req)", "0x8a91f3c401340b12")}
+                        onClick={() => selectEvidencePacket(58)}
                       >
                         <td className="py-2.5 px-4 text-zinc-500 font-medium">03</td>
                         <td className="py-2.5 px-4 font-medium flex items-center gap-1.5 text-zinc-200">
@@ -328,9 +607,9 @@ export default function VpnConfigurationPage() {
 
                       <tr
                         className={`hover:bg-zinc-800/30 cursor-pointer transition-colors ${
-                          inspectedPkt === "Packet #61" ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
+                          inspectedPktNum === 61 ? "bg-zinc-800/40 border-l-2 border-teal-400" : ""
                         }`}
-                        onClick={() => selectEvidencePacket(61, "IKE_AUTH (Resp)", "0x7c2901a8ef11b402")}
+                        onClick={() => selectEvidencePacket(61)}
                       >
                         <td className="py-2.5 px-4 text-zinc-500 font-medium">04</td>
                         <td className="py-2.5 px-4 font-medium flex items-center gap-1.5 text-zinc-200">
@@ -356,30 +635,54 @@ export default function VpnConfigurationPage() {
                       </tr>
 
                       <tr
-                        className={`hover:bg-zinc-800/30 cursor-pointer transition-colors bg-rose-500/5 ${
-                          inspectedPkt === "Packet #142" ? "bg-rose-500/10 border-l-2 border-rose-500" : ""
+                        className={`hover:bg-zinc-800/30 cursor-pointer transition-colors ${
+                          pfsEnabled ? "bg-teal-500/5 hover:bg-teal-500/10" : "bg-rose-500/5 hover:bg-rose-500/10"
+                        } ${
+                          inspectedPktNum === 142
+                            ? pfsEnabled
+                              ? "bg-teal-500/10 border-l-2 border-teal-400"
+                              : "bg-rose-500/10 border-l-2 border-rose-500"
+                            : ""
                         }`}
-                        onClick={() => selectEvidencePacket(142, "CREATE_CHILD_SA (Req)", "0x8a91f3c401340b12")}
+                        onClick={() => selectEvidencePacket(142)}
                       >
-                        <td className="py-2.5 px-4 text-rose-400 font-bold">05</td>
+                        <td className={`py-2.5 px-4 font-bold ${pfsEnabled ? "text-teal-400" : "text-rose-400"}`}>
+                          05
+                        </td>
                         <td className="py-2.5 px-4 font-semibold flex items-center gap-1.5 text-zinc-100">
-                          <span className="material-symbols-outlined text-[14px] text-rose-400">warning</span>
+                          <span
+                            className={`material-symbols-outlined text-[14px] ${
+                              pfsEnabled ? "text-teal-400" : "text-rose-400"
+                            }`}
+                          >
+                            {pfsEnabled ? "check_circle" : "warning"}
+                          </span>
                           <span>CREATE_CHILD_SA</span>
-                          <span className="text-[10px] text-rose-400 font-bold ml-1">#142</span>
+                          <span
+                            className={`text-[10px] font-bold ml-1 ${pfsEnabled ? "text-teal-400" : "text-rose-400"}`}
+                          >
+                            #142
+                          </span>
                         </td>
                         <td className="py-2.5 px-4 text-zinc-300">00:00:02.381</td>
                         <td className="py-2.5 px-4">
                           <div className="flex items-center gap-2">
                             <span className="text-zinc-300">8a91f3c4...</span>
                             <span className="text-zinc-600">|</span>
-                            <span className="text-rose-400 text-xs truncate max-w-xs">
-                              Rekey Child SA — Missing KEi (NO PFS)
+                            <span className={`text-xs truncate max-w-xs ${pfsEnabled ? "text-zinc-300" : "text-rose-400"}`}>
+                              {pfsEnabled ? "Rekey Child SA — Ephemeral KEi Enforced (PFS Active)" : "Rekey Child SA — Missing KEi (NO PFS)"}
                             </span>
                           </div>
                         </td>
                         <td className="py-2.5 px-4 text-right">
-                          <span className="px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
-                            RISK_DETECTED
+                          <span
+                            className={`px-2 py-0.5 rounded border text-[10px] font-semibold ${
+                              pfsEnabled
+                                ? "border-teal-500/20 bg-teal-500/10 text-teal-400"
+                                : "border-rose-500/20 bg-rose-500/10 text-rose-400"
+                            }`}
+                          >
+                            {pfsEnabled ? "PFS_ENFORCED" : "RISK_DETECTED"}
                           </span>
                         </td>
                       </tr>
@@ -390,7 +693,7 @@ export default function VpnConfigurationPage() {
             )}
 
             {/* SECTION 3: Negotiated Cryptographic Proposals & Transforms Matrix */}
-            {(activeFilter === "all" || activeFilter === "ike" || activeFilter === "esp") && (
+            {(activeFilter === "all" || activeFilter === "ike" || activeFilter === "esp" || activeFilter === "sa") && (
               <section className="bg-[#111317] border border-zinc-800/80 rounded-lg overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-zinc-800/80 bg-[#14171c] flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -398,9 +701,26 @@ export default function VpnConfigurationPage() {
                     <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-white">
                       Cryptographic Proposals &amp; Transforms Matrix
                     </h2>
+                    {activeFilter === "ike" && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                        IKE_SA Focus
+                      </span>
+                    )}
+                    {activeFilter === "esp" && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                        ESP Child SA Focus
+                      </span>
+                    )}
                   </div>
-                  <span className="font-mono text-xs text-rose-400 font-medium flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">report</span> Security Posture: Sub-Optimal
+                  <span
+                    className={`font-mono text-xs font-medium flex items-center gap-1 ${
+                      pfsEnabled && dhGroup >= 14 ? "text-teal-400" : "text-rose-400"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[14px]">
+                      {pfsEnabled && dhGroup >= 14 ? "check_circle" : "report"}
+                    </span>
+                    Security Posture: {pfsEnabled && dhGroup >= 14 ? "Robust Compliant" : "Sub-Optimal"}
                   </span>
                 </div>
 
@@ -409,8 +729,12 @@ export default function VpnConfigurationPage() {
                     <thead>
                       <tr className="border-b border-zinc-800 bg-[#0c0e11] text-zinc-400 text-[11px] uppercase tracking-wider">
                         <th className="py-2.5 px-4">Transform Type</th>
-                        <th className="py-2.5 px-4">IKE_SA (Control Plane)</th>
-                        <th className="py-2.5 px-4">Child SA / ESP (Data Plane)</th>
+                        <th className={`py-2.5 px-4 ${activeFilter === "ike" ? "text-teal-400 font-bold bg-teal-500/5" : ""}`}>
+                          IKE_SA (Control Plane)
+                        </th>
+                        <th className={`py-2.5 px-4 ${activeFilter === "esp" ? "text-teal-400 font-bold bg-teal-500/5" : ""}`}>
+                          Child SA / ESP (Data Plane)
+                        </th>
                         <th className="py-2.5 px-4">Evidence Source</th>
                         <th className="py-2.5 px-4 text-right">Cryptographic Evaluation</th>
                       </tr>
@@ -418,56 +742,78 @@ export default function VpnConfigurationPage() {
                     <tbody className="divide-y divide-zinc-800/60">
                       <tr className="hover:bg-zinc-800/30 transition-colors">
                         <td className="py-2 px-4 text-zinc-200 font-medium">Encryption (ENCR)</td>
-                        <td className="py-2 px-4 text-zinc-300">
-                          AES-CBC-128 <span className="text-zinc-500">(128-bit key)</span>
+                        <td className={`py-2 px-4 text-zinc-300 ${activeFilter === "ike" ? "bg-teal-500/5 font-semibold text-white" : ""}`}>
+                          {crypto?.encryption_algorithm ?? "AES-CBC-128"}{" "}
+                          <span className="text-zinc-500">(Evaluated)</span>
                         </td>
-                        <td className="py-2 px-4 text-zinc-300">
-                          AES-CBC-128 <span className="text-zinc-500">(IV: 16B)</span>
+                        <td className={`py-2 px-4 text-zinc-300 ${activeFilter === "esp" ? "bg-teal-500/5 font-semibold text-white" : ""}`}>
+                          {crypto?.encryption_algorithm ?? "AES-CBC-128"}{" "}
+                          <span className="text-zinc-500">(Active Suite)</span>
                         </td>
                         <td className="py-2 px-4">
                           <span
                             className="text-teal-400 hover:underline cursor-pointer"
-                            onClick={() => selectEvidencePacket(42, "IKE_SA_INIT (Req)", "0x8a91f3c401340b12")}
+                            onClick={() => selectEvidencePacket(42)}
                           >
                             #42, #58
                           </span>
                         </td>
                         <td className="py-2 px-4 text-right">
-                          <span className="px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-300 text-[10px]">
-                            Sub-optimal (NIST SP 800-77r1)
-                          </span>
+                          {crypto?.encryption_algorithm?.includes("GCM") ? (
+                            <span className="px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px]">
+                              Optimal (AEAD)
+                            </span>
+                          ) : crypto?.encryption_algorithm?.includes("3DES") ? (
+                            <span className="px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px]">
+                              Insecure (Sweet32)
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-300 text-[10px]">
+                              Sub-optimal (NIST SP 800-77r1)
+                            </span>
+                          )}
                         </td>
                       </tr>
 
                       <tr className="hover:bg-zinc-800/30 transition-colors">
                         <td className="py-2 px-4 text-zinc-200 font-medium">Integrity (INTEG)</td>
-                        <td className="py-2 px-4 text-zinc-300">AUTH_HMAC_SHA1_96</td>
-                        <td className="py-2 px-4 text-zinc-300">
-                          AUTH_HMAC_SHA1_96 <span className="text-zinc-500">(ICV: 12B)</span>
+                        <td className={`py-2 px-4 text-zinc-300 ${activeFilter === "ike" ? "bg-teal-500/5 font-semibold text-white" : ""}`}>
+                          {crypto?.integrity_algorithm ?? "AUTH_HMAC_SHA1_96"}
+                        </td>
+                        <td className={`py-2 px-4 text-zinc-300 ${activeFilter === "esp" ? "bg-teal-500/5 font-semibold text-white" : ""}`}>
+                          {crypto?.integrity_algorithm ?? "AUTH_HMAC_SHA1_96"}
                         </td>
                         <td className="py-2 px-4">
                           <span
                             className="text-teal-400 hover:underline cursor-pointer"
-                            onClick={() => selectEvidencePacket(42, "IKE_SA_INIT (Req)", "0x8a91f3c401340b12")}
+                            onClick={() => selectEvidencePacket(42)}
                           >
                             #42, #58
                           </span>
                         </td>
                         <td className="py-2 px-4 text-right">
-                          <span className="px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-medium">
-                            Legacy SHA1 (Collision Vector)
-                          </span>
+                          {crypto?.integrity_algorithm === "AEAD" || crypto?.integrity_algorithm?.includes("SHA256") ? (
+                            <span className="px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px] font-medium">
+                              FIPS Compliant
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-medium">
+                              Legacy SHA1 (Collision Vector)
+                            </span>
+                          )}
                         </td>
                       </tr>
 
                       <tr className="hover:bg-zinc-800/30 transition-colors">
                         <td className="py-2 px-4 text-zinc-200 font-medium">Pseudo-Random (PRF)</td>
-                        <td className="py-2 px-4 text-zinc-300">PRF_HMAC_SHA1</td>
+                        <td className={`py-2 px-4 text-zinc-300 ${activeFilter === "ike" ? "bg-teal-500/5 font-semibold text-white" : ""}`}>
+                          PRF_HMAC_SHA1
+                        </td>
                         <td className="py-2 px-4 text-zinc-500">N/A (Data Plane)</td>
                         <td className="py-2 px-4">
                           <span
                             className="text-teal-400 hover:underline cursor-pointer"
-                            onClick={() => selectEvidencePacket(45, "IKE_SA_INIT (Resp)", "0x7c2901a8ef11b402")}
+                            onClick={() => selectEvidencePacket(45)}
                           >
                             #45
                           </span>
@@ -479,47 +825,69 @@ export default function VpnConfigurationPage() {
                         </td>
                       </tr>
 
-                      <tr className="bg-rose-500/5 hover:bg-rose-500/10 transition-colors">
-                        <td className="py-2 px-4 text-rose-400 font-medium">Diffie-Hellman (D-H)</td>
-                        <td className="py-2 px-4">
+                      <tr className={`${dhGroup < 14 ? "bg-rose-500/5 hover:bg-rose-500/10" : "hover:bg-zinc-800/30"} transition-colors`}>
+                        <td className={`py-2 px-4 font-medium ${dhGroup < 14 ? "text-rose-400" : "text-zinc-200"}`}>
+                          Diffie-Hellman (D-H)
+                        </td>
+                        <td className={`py-2 px-4 ${activeFilter === "ike" ? "bg-teal-500/5 font-semibold" : ""}`}>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-zinc-200 font-medium">Group 2</span>
-                            <span className="px-1.5 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
-                              CRITICAL: 1024b MODP
-                            </span>
+                            <span className="text-zinc-200 font-medium">Group {dhGroup}</span>
+                            {dhGroup < 14 ? (
+                              <span className="px-1.5 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
+                                CRITICAL: 1024b MODP
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px] font-semibold">
+                                {dhGroup === 14 ? "MODP-2048 Baseline" : "ECP-256 Strong"}
+                              </span>
+                            )}
                           </div>
                         </td>
-                        <td className="py-2 px-4">
+                        <td className={`py-2 px-4 ${activeFilter === "esp" ? "bg-teal-500/5 font-semibold" : ""}`}>
                           <div className="flex items-center gap-1.5">
                             <span className="text-zinc-500">Child SA:</span>
-                            <span className="px-1.5 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
-                              PFS DISABLED
-                            </span>
+                            {pfsEnabled ? (
+                              <span className="px-1.5 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px] font-semibold">
+                                PFS ENFORCED
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
+                                PFS DISABLED
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="py-2 px-4">
                           <span
                             className="text-teal-400 hover:underline cursor-pointer"
-                            onClick={() => selectEvidencePacket(142, "CREATE_CHILD_SA (Req)", "0x8a91f3c401340b12")}
+                            onClick={() => selectEvidencePacket(142)}
                           >
                             #42 &amp; #142
                           </span>
                         </td>
                         <td className="py-2 px-4 text-right">
-                          <span className="px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
-                            Vulnerable to Logjam
-                          </span>
+                          {dhGroup < 14 ? (
+                            <span className="px-2 py-0.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[10px] font-semibold">
+                              Vulnerable to Logjam
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 text-[10px] font-semibold">
+                              Cryptographically Resilient
+                            </span>
+                          )}
                         </td>
                       </tr>
 
                       <tr className="hover:bg-zinc-800/30 transition-colors">
                         <td className="py-2 px-4 text-zinc-200 font-medium">Nonce Entropy</td>
-                        <td className="py-2 px-4 text-zinc-300">Ni (32B), Nr (32B)</td>
+                        <td className={`py-2 px-4 text-zinc-300 ${activeFilter === "ike" ? "bg-teal-500/5 font-semibold text-white" : ""}`}>
+                          Ni (32B), Nr (32B)
+                        </td>
                         <td className="py-2 px-4 text-zinc-300">Derived via SKEYSEED</td>
                         <td className="py-2 px-4">
                           <span
                             className="text-teal-400 hover:underline cursor-pointer"
-                            onClick={() => selectEvidencePacket(42, "IKE_SA_INIT (Req)", "0x8a91f3c401340b12")}
+                            onClick={() => selectEvidencePacket(42)}
                           >
                             #42, #45
                           </span>
@@ -565,13 +933,17 @@ export default function VpnConfigurationPage() {
 
                       <div className="mt-3 grid grid-cols-2 gap-y-2 font-mono text-xs">
                         <span className="text-zinc-500">Lifetime Remaining:</span>
-                        <span className="text-zinc-200 text-right">28,800s Hard / 25,920s Soft</span>
+                        <span className="text-zinc-200 text-right">
+                          {saConfig?.lifetime_seconds ? `${saConfig.lifetime_seconds.toLocaleString()}s Hard` : "28,800s Hard"} / 25,920s Soft
+                        </span>
                         <span className="text-zinc-500">Volume Transferred:</span>
                         <span className="text-zinc-200 text-right font-medium">421,050 pkts (712.4 MB)</span>
                         <span className="text-zinc-500">Monotonic Sequence:</span>
                         <span className="text-teal-400 text-right font-bold">421,050 (0 drops)</span>
                         <span className="text-zinc-500">Anti-Replay Window:</span>
-                        <span className="text-zinc-200 text-right">64 pkts (Strict Bitmap)</span>
+                        <span className="text-zinc-200 text-right">
+                          {saConfig?.replay_protection !== false ? "64 pkts (Strict Bitmap)" : "Disabled (Vulnerable)"}
+                        </span>
                         <span className="text-zinc-500">Frame Evidence:</span>
                         <span className="text-zinc-400 text-right">#68 → #842,109</span>
                       </div>
@@ -608,13 +980,17 @@ export default function VpnConfigurationPage() {
 
                       <div className="mt-3 grid grid-cols-2 gap-y-2 font-mono text-xs">
                         <span className="text-zinc-500">Lifetime Remaining:</span>
-                        <span className="text-zinc-200 text-right">28,800s / 4.00 GB Cap</span>
+                        <span className="text-zinc-200 text-right">
+                          {saConfig?.lifetime_seconds ? `${saConfig.lifetime_seconds.toLocaleString()}s` : "28,800s"} / 4.00 GB Cap
+                        </span>
                         <span className="text-zinc-500">Volume Transferred:</span>
                         <span className="text-zinc-200 text-right font-medium">421,059 pkts (707.6 MB)</span>
                         <span className="text-zinc-500">Monotonic Sequence:</span>
                         <span className="text-teal-400 text-right font-bold">421,059 (0 drops)</span>
                         <span className="text-zinc-500">Anti-Replay Window:</span>
-                        <span className="text-zinc-200 text-right">64 pkts (Strict Bitmap)</span>
+                        <span className="text-zinc-200 text-right">
+                          {saConfig?.replay_protection !== false ? "64 pkts (Strict Bitmap)" : "Disabled (Vulnerable)"}
+                        </span>
                         <span className="text-zinc-500">Frame Evidence:</span>
                         <span className="text-zinc-400 text-right">#69 → #842,108</span>
                       </div>
@@ -640,8 +1016,8 @@ export default function VpnConfigurationPage() {
             )}
           </div>
 
-          {/* SECTION 5: Inline Expandable Packet Dissection Inspector Drawer (Right 4 Cols on 2xl) */}
-          <div className="2xl:col-span-4 bg-[#111317] p-6 flex flex-col gap-4">
+          {/* SECTION 5: Inline Expandable Packet Dissection Inspector Drawer (Right 5 Cols on lg, 4 on xl) */}
+          <div className="lg:col-span-5 xl:col-span-4 bg-[#111317] p-6 flex flex-col gap-4 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-teal-400 text-[18px]">find_in_page</span>
@@ -650,7 +1026,7 @@ export default function VpnConfigurationPage() {
                 </h3>
               </div>
               <span className="font-mono text-xs px-2 py-0.5 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400">
-                {inspectedPkt}
+                {currentFrame.label}
               </span>
             </div>
 
@@ -658,32 +1034,38 @@ export default function VpnConfigurationPage() {
             <div className="bg-[#0c0e11] border border-zinc-800/60 p-3 rounded-lg font-mono text-xs flex flex-col gap-1.5">
               <div className="flex justify-between">
                 <span className="text-zinc-500">Exchange Type:</span>
-                <span className="text-zinc-200 font-semibold">{inspectedExchange}</span>
+                <span className="text-zinc-200 font-semibold">{currentFrame.exchange}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-500">Timestamp:</span>
-                <span className="text-zinc-300">00:00:02.381 (T+2.267s)</span>
+                <span className="text-zinc-300">{currentFrame.timestamp}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-500">Initiator SPI:</span>
-                <span className="text-teal-400">{inspectedSpi}</span>
+                <span className="text-zinc-500">Initiator / Target SPI:</span>
+                <span className="text-teal-400 font-mono">{currentFrame.spi}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-500">Encapsulation:</span>
-                <span className="text-zinc-300">UDP:4500 (Non-ESP Marker 0x00000000)</span>
+                <span className="text-zinc-300">{currentFrame.encap}</span>
               </div>
             </div>
 
             {/* Deterministic Protocol Assertion / Proof Box */}
-            <div className="bg-rose-500/10 border-l-2 border-rose-500 p-3 rounded-r-lg flex flex-col gap-1">
-              <div className="flex items-center gap-1.5 text-rose-400 font-mono text-xs font-semibold">
-                <span className="material-symbols-outlined text-[16px]">gpp_maybe</span> Deterministic Cryptographic Proof
+            <div
+              className={`${
+                currentFrame.isRisk
+                  ? "bg-rose-500/10 border-rose-500 text-rose-400"
+                  : "bg-teal-500/10 border-teal-400 text-teal-400"
+              } border-l-2 p-3 rounded-r-lg flex flex-col gap-1`}
+            >
+              <div className="flex items-center gap-1.5 font-mono text-xs font-semibold">
+                <span className="material-symbols-outlined text-[16px]">
+                  {currentFrame.isRisk ? "gpp_maybe" : "verified"}
+                </span>{" "}
+                Deterministic Cryptographic Proof
               </div>
               <p className="text-xs text-zinc-300 leading-relaxed">
-                Child SA Rekey initiated without <code className="text-teal-400 font-mono">KEi</code> payload at offset{" "}
-                <code className="text-teal-400 font-mono">0x0028</code>. The absence of an ephemeral Diffie-Hellman public
-                key proves <strong className="text-rose-400 font-semibold">PFS is Disabled</strong>. Past sessions remain
-                vulnerable to retrospective decryption if private keys are compromised.
+                {currentFrame.proof}
               </p>
             </div>
 
@@ -695,37 +1077,19 @@ export default function VpnConfigurationPage() {
               </div>
               <div className="bg-[#0c0e11] border border-zinc-800/60 p-3 rounded-lg font-mono text-[11px] overflow-x-auto leading-5 select-text">
                 <div className="grid grid-cols-12 gap-x-2">
-                  <span className="col-span-2 text-zinc-600">0000</span>
-                  <span className="col-span-6 text-zinc-200">00 00 00 00 8a 91 f3 c4</span>
-                  <span className="col-span-4 text-zinc-500">....4..|</span>
-
-                  <span className="col-span-2 text-zinc-600">0008</span>
-                  <span className="col-span-6 text-zinc-200">01 34 0b 12 7c 29 01 a8</span>
-                  <span className="col-span-4 text-zinc-500">)..ef11.</span>
-
-                  <span className="col-span-2 text-zinc-600">0010</span>
-                  <span className="col-span-6 text-zinc-200">ef 11 b4 02 2e 20 23 20</span>
-                  <span className="col-span-4 text-zinc-500">.... # .</span>
-
-                  <span className="col-span-2 text-zinc-600">0018</span>
-                  <span className="col-span-6 text-zinc-200">00 00 00 02 00 00 00 9c</span>
-                  <span className="col-span-4 text-zinc-500">....\x9c</span>
-
-                  <span className="col-span-2 text-teal-400 font-bold">0020</span>
-                  <span className="col-span-6 text-teal-300 font-bold">29 00 00 80 00 00 00 24</span>
-                  <span className="col-span-4 text-teal-400">).....$</span>
-
-                  <span className="col-span-2 text-rose-400 font-bold">0028</span>
-                  <span className="col-span-6 text-rose-400 font-bold">01 03 04 03 00 00 00 0c</span>
-                  <span className="col-span-4 text-rose-400">........</span>
-
-                  <span className="col-span-2 text-zinc-600">0030</span>
-                  <span className="col-span-6 text-zinc-200">80 0c 00 80 00 00 00 08</span>
-                  <span className="col-span-4 text-zinc-500">........</span>
-
-                  <span className="col-span-2 text-zinc-600">0038</span>
-                  <span className="col-span-6 text-zinc-200">03 00 00 02 00 00 00 08</span>
-                  <span className="col-span-4 text-zinc-500">........</span>
+                  {currentFrame.hexDump.map((line, idx) => (
+                    <div key={idx} className="contents">
+                      <span className={`col-span-2 ${line.color === "teal" ? "text-teal-400 font-bold" : line.color === "rose" ? "text-rose-400 font-bold" : "text-zinc-600"}`}>
+                        {line.offset}
+                      </span>
+                      <span className={`col-span-6 ${line.color === "teal" ? "text-teal-300 font-bold" : line.color === "rose" ? "text-rose-400 font-bold" : "text-zinc-200"}`}>
+                        {line.hex}
+                      </span>
+                      <span className={`col-span-4 ${line.color === "teal" ? "text-teal-400" : line.color === "rose" ? "text-rose-400" : "text-zinc-500"}`}>
+                        {line.ascii}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -734,26 +1098,19 @@ export default function VpnConfigurationPage() {
             <div className="flex flex-col gap-1.5">
               <span className="font-mono text-[11px] text-zinc-500 uppercase">Decoded Payload Hierarchy</span>
               <div className="bg-[#0c0e11] border border-zinc-800/60 p-3 rounded-lg font-mono text-xs flex flex-col gap-1.5 divide-y divide-zinc-800/60">
-                <div className="pt-1 flex items-center justify-between text-zinc-300">
-                  <span>Non-ESP Marker (4 Bytes)</span>
-                  <span className="text-teal-400">0x00000000 [OK]</span>
-                </div>
-                <div className="pt-1.5 flex items-center justify-between text-zinc-300">
-                  <span>IKE Header [HDR] (28 Bytes)</span>
-                  <span className="text-zinc-400">Type: CREATE_CHILD_SA (36)</span>
-                </div>
-                <div className="pt-1.5 flex items-center justify-between text-zinc-300">
-                  <span>Security Association [SA]</span>
-                  <span className="text-zinc-400">SPI: 0x9a021da3</span>
-                </div>
-                <div className="pt-1.5 flex items-center justify-between text-rose-400 font-medium">
-                  <span>Key Exchange [KEi]</span>
-                  <span>ABSENT (PFS Disabled)</span>
-                </div>
-                <div className="pt-1.5 flex items-center justify-between text-zinc-300">
-                  <span>Traffic Selectors [TSi, TSr]</span>
-                  <span className="text-zinc-400">0.0.0.0/0 ↔ 0.0.0.0/0</span>
-                </div>
+                {currentFrame.payloads.map((p, idx) => (
+                  <div
+                    key={idx}
+                    className={`pt-1.5 flex items-center justify-between ${
+                      p.isAlert ? "text-rose-400 font-medium" : "text-zinc-300"
+                    }`}
+                  >
+                    <span>{p.name}</span>
+                    <span className={p.isAlert ? "text-rose-400 font-semibold" : "text-zinc-400"}>
+                      {p.detail}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -764,28 +1121,27 @@ export default function VpnConfigurationPage() {
                 type="button"
                 onClick={() => {
                   downloadFile(
-                    "frame-dissection.json",
+                    `frame-${currentFrame.pktNum}-dissection.json`,
                     JSON.stringify(
                       {
-                        frame: inspectedPkt,
-                        exchange: inspectedExchange,
-                        spi: inspectedSpi,
-                        source: "TunnelSight Forensic Dissector",
-                        timestamp: new Date().toISOString(),
+                        frame: currentFrame.label,
+                        exchange: currentFrame.exchange,
+                        spi: currentFrame.spi,
+                        timestamp: currentFrame.timestamp,
+                        encapsulation: currentFrame.encap,
+                        proof: currentFrame.proof,
+                        payloads: currentFrame.payloads,
+                        source: "TunnelSight Forensic Protocol Dissector",
+                        generated: new Date().toISOString(),
                       },
                       null,
                       2
                     )
                   );
-                  toast({
-                    title: "Frame Exported",
-                    body: `${inspectedPkt} dissection downloaded.`,
-                    kind: "ok",
-                  });
                 }}
               >
                 <span className="material-symbols-outlined text-[16px]">download</span>
-                <span>Export {inspectedPkt} Dissection</span>
+                <span>Export {currentFrame.label} Dissection</span>
               </button>
             </div>
           </div>
@@ -794,4 +1150,3 @@ export default function VpnConfigurationPage() {
     </div>
   );
 }
-
