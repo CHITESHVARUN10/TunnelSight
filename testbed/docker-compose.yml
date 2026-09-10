@@ -1,0 +1,37 @@
+services:
+  vpn-gateway:
+    build: .
+    container_name: vpn-gateway
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    privileged: true
+    volumes:
+      - ./configs/gateway/ipsec.conf:/etc/ipsec.conf
+      - ./configs/gateway/ipsec.secrets:/etc/ipsec.secrets
+      - ./pcaps:/pcaps
+    networks:
+      ipsec-net:
+        ipv4_address: 10.0.0.10
+
+  vpn-client:
+    build: .
+    container_name: vpn-client
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    privileged: true
+    volumes:
+      - ./configs/client/ipsec.conf:/etc/ipsec.conf
+      - ./configs/client/ipsec.secrets:/etc/ipsec.secrets
+      - ./pcaps:/pcaps
+    networks:
+      ipsec-net:
+        ipv4_address: 10.0.0.20
+
+networks:
+  ipsec-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/24

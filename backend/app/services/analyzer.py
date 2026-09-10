@@ -1,9 +1,16 @@
 import os
+import sys
 import joblib
 import pandas as pd
 import random
 from typing import Dict, Any
 
+# Add root directory to path to import the parser
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.abspath(os.path.join(current_dir, "../../../"))
+sys.path.append(root_dir)
+
+from parser.pcap_parser import parse_pcap_to_json
 from security_engine.engine import SecurityRuleEngine
 from security_engine.schema import IPsecConfig
 
@@ -30,27 +37,33 @@ class AnalyzerService:
         # Load Rule Engine
         self.rule_engine = SecurityRuleEngine()
 
-    def parse_pcap_mock(self, filename: str) -> Dict[str, Any]:
+    def parse_pcap(self, filename: str) -> Dict[str, Any]:
         """
-        Mock PCAP parser for Phase 1. 
-        In Phase 2, this will call Zeek/Spicy to extract real data.
+        Parses the real PCAP using our Python extraction pipeline.
+        Extracts real IPsec Config, but generates mock ML features 
+        until the flow extraction pipeline is completed.
         """
-        # 1. Generate fake IPsec config for the rule engine
-        config_json = {
-            "capture_name": filename,
-            "cryptography": {
-                "encryption_algorithm": random.choice(["AES-256-GCM", "AES-128-CBC", "3DES"]),
-                "integrity_algorithm": random.choice(["AEAD", "HMAC-SHA256"]),
-                "dh_group": random.choice([19, 14, 2]),
-                "pfs_enabled": random.choice([True, False])
-            },
-            "sa_config": {
-                "ike_version": random.choice(["IKEv2", "IKEv1"]),
-                "mode": random.choice(["Tunnel", "Transport"]),
-                "replay_protection": random.choice([True, False]),
-                "lifetime_seconds": 3600
+        try:
+            # 1. Parse real IPsec config using Scapy parser
+            config_json = parse_pcap_to_json(filename)
+        except Exception as e:
+            print(f"[!] PCAP parsing failed, falling back to mock data: {e}")
+            # Fallback for empty/invalid PCAPs
+            config_json = {
+                "capture_name": os.path.basename(filename),
+                "cryptography": {
+                    "encryption_algorithm": "UNKNOWN",
+                    "integrity_algorithm": "UNKNOWN",
+                    "dh_group": None,
+                    "pfs_enabled": False
+                },
+                "sa_config": {
+                    "ike_version": "UNKNOWN",
+                    "mode": "UNKNOWN",
+                    "replay_protection": True,
+                    "lifetime_seconds": 3600
+                }
             }
-        }
         
         # 2. Generate fake ML features (matching the 18 columns)
         ml_features = {
@@ -80,8 +93,8 @@ class AnalyzerService:
         """
         Runs the full analysis pipeline: Parser -> Rule Engine & ML Models
         """
-        # 1. Parse PCAP (Mock)
-        parsed_data = self.parse_pcap_mock(filename)
+        # 1. Parse real PCAP
+        parsed_data = self.parse_pcap(filename)
         ipsec_config_dict = parsed_data["config"]
         ml_features_dict = parsed_data["features"]
         
