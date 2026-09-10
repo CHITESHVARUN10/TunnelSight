@@ -10,6 +10,18 @@ import pandas as pd
 from app.security_engine.engine import SecurityRuleEngine
 from app.security_engine.schema import IPsecConfig
 
+try:
+    import sys
+
+    _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../"))
+    if _REPO_ROOT not in sys.path:
+        sys.path.insert(0, _REPO_ROOT)
+    from parser.pcap_parser import parse_pcap_to_json
+
+    _PARSER_AVAILABLE = True
+except Exception:
+    _PARSER_AVAILABLE = False
+
 FEATURES = [
     "mean_packet_size",
     "median_packet_size",
@@ -32,6 +44,7 @@ FEATURES = [
 ]
 
 MOCK_NOTE = "mock-seeded evidence (not packet-derived); real parser implements the same ParsedWindow interface"
+PARSER_NOTE = "ipsec_config parsed from capture bytes via parser/pcap_parser.py; window ML features remain seeded mock"
 
 
 class AnalyzerService:
@@ -54,9 +67,8 @@ class AnalyzerService:
     def _seeded_rng(self, filename: str) -> random.Random:
         return random.Random(hashlib.sha256(filename.encode()).digest())
 
-    def parse_pcap_mock(self, filename: str) -> List[Dict[str, Any]]:
-        rng = self._seeded_rng(filename)
-        config = {
+    def _mock_config(self, rng: random.Random, filename: str) -> Dict[str, Any]:
+        return {
             "capture_name": filename,
             "cryptography": {
                 "encryption_algorithm": rng.choice(["AES-256-GCM", "AES-128-CBC", "3DES"]),
@@ -71,6 +83,35 @@ class AnalyzerService:
                 "lifetime_seconds": 3600,
             },
         }
+
+    def _real_config(self, pcap_path: str, filename: str) -> Dict[str, Any]:
+        raw = parse_pcap_to_json(pcap_path)
+        crypto = raw.get("cryptography", {}) or {}
+        sa = raw.get("sa_config", {}) or {}
+        dh = crypto.get("dh_group")
+        return {
+            "capture_name": filename,
+            "cryptography": {
+                "encryption_algorithm": str(crypto.get("encryption_algorithm") or "UNKNOWN"),
+                "integrity_algorithm": str(crypto.get("integrity_algorithm") or "UNKNOWN"),
+                "dh_group": dh if isinstance(dh, int) else None,
+                "pfs_enabled": bool(crypto.get("pfs_enabled", False)),
+            },
+            "sa_config": {
+                "ike_version": str(sa.get("ike_version") or "UNKNOWN"),
+                "mode": str(sa.get("mode") or "UNKNOWN"),
+                "replay_protection": bool(sa.get("replay_protection", True)),
+                "lifetime_seconds": sa.get("lifetime_seconds") if isinstance(sa.get("lifetime_seconds"), int) else 3600,
+            },
+        }
+
+    def parse_pcap_mock(self, filename: str) -> List[Dict[str, Any]]:
+        rng = self._seeded_rng(filename)
+        config = self._mock_config(rng, filename)
+        return self._build_windows(rng, filename, config)
+
+    def _build_windows(self, rng: random.Random, filename: str, config: Dict[str, Any]) -> List[Dict[str, Any]]:
+        _ = filename
         n_windows = rng.randint(3, 8)
         windows = []
         for i in range(n_windows):
@@ -108,10 +149,23 @@ class AnalyzerService:
             )
         return windows
 
-    def analyze(self, filename: str) -> Dict[str, Any]:
-        windows = self.parse_pcap_mock(filename)
-        config = IPsecConfig(**windows[0]["ipsec_config"])
-        rule_result = self.rule_engine.evaluate(config)
+    def analyze(self, filename: str, pcap_path: str | None = None) -> Dict[str, Any]:
+        rng = self._seeded_rng(filename)
+        note = MOCK_NOTE
+        evidence_source = "mock"
+        if pcap_path and _PARSER_AVAILABLE:
+            try:
+                config = self._real_config(pcap_path, filename)
+                IPsecConfig(**config)
+                note = PARSER_NOTE
+                evidence_source = "parser"
+            except Exception:
+                config = self._mock_config(rng, filename)
+        else:
+            config = self._mock_config(rng, filename)
+
+        windows = self._build_windows(rng, filename, config)
+        rule_result = self.rule_engine.evaluate(IPsecConfig(**config))
         findings = [
             {"severity": f.severity, "category": f.category, "description": f.description}
             for f in rule_result.findings
@@ -145,7 +199,7 @@ class AnalyzerService:
         winning_confs = [c for l, c in zip(labels, confidences) if l == top_label]
 
         return {
-            "ipsec_config": windows[0]["ipsec_config"],
+            "ipsec_config": config,
             "windows": window_results,
             "security_score": rule_result.total_score,
             "risk_level": rule_result.risk_level,
@@ -153,6 +207,8 @@ class AnalyzerService:
             "traffic_label": str(top_label),
             "traffic_confidence": float(sum(winning_confs) / len(winning_confs)),
             "anomaly_score": float(min(scores)),
+            "note": note,
+            "evidence_source": evidence_source,
         }
 
 

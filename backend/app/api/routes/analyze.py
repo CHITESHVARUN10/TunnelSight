@@ -1,4 +1,7 @@
-"""Analyze upload: seeded-mock parser -> rule engine + ML .pkl inference."""
+"""Analyze upload: real parser (fallback seeded mock) -> rule engine + ML .pkl inference."""
+
+import os
+import tempfile
 
 from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 from sqlalchemy.orm import Session
@@ -8,7 +11,7 @@ from app.models.analysis import Analysis
 from app.models.analysis_window import AnalysisWindow
 from app.models.user import User
 from app.schemas.analysis import AnalysisOut
-from app.services.analyzer import MOCK_NOTE, analyzer
+from app.services.analyzer import analyzer
 
 router = APIRouter()
 
@@ -17,7 +20,7 @@ MAX_BYTES = 256 * 1024 * 1024
 
 
 @router.post("", response_model=AnalysisOut, status_code=201)
-def analyze(
+async def analyze(
     response: Response,
     file: UploadFile = File(...),
     user: User = Depends(get_current_user),
@@ -35,21 +38,32 @@ def analyze(
     db.commit()
     db.refresh(row)
 
+    suffix = ext or ".pcap"
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
     try:
-        results = analyzer.analyze(filename)
+        contents = await file.read()
+        tmp.write(contents)
+        tmp.close()
+        results = analyzer.analyze(filename, pcap_path=tmp.name)
     except Exception as exc:
         row.status = "failed"
-        row.config_json = {"error": str(exc), "note": MOCK_NOTE}
+        row.config_json = {"error": str(exc)}
         db.commit()
         db.refresh(row)
         response.headers["Location"] = f"/api/history/{row.id}"
         return row
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
 
     row.status = "completed"
     row.config_json = {
         "ipsec_config": results["ipsec_config"],
         "windows_count": len(results["windows"]),
-        "note": MOCK_NOTE,
+        "note": results.get("note", ""),
+        "evidence_source": results.get("evidence_source", "mock"),
     }
     row.anomaly_score = results["anomaly_score"]
     row.traffic_label = results["traffic_label"]
