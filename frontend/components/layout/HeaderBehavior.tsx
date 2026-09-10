@@ -9,7 +9,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { mockLogout } from "@/lib/mock/session";
+import { logout } from "@/lib/auth";
 import { downloadFile, useToast } from "@/lib/mock/toast";
 import { GlobalSearchModal } from "@/components/modals/GlobalSearchModal";
 
@@ -83,10 +83,14 @@ export function HeaderBehavior() {
             </div>
           ))}
           <button
-            onClick={() => {
-              mockLogout();
+            onClick={async () => {
+              try {
+                await logout();
+              } catch {
+                // session may already be expired; still leave
+              }
               setNotesOpen(false);
-              toast({ title: "Signed out", body: "Mock session cleared (prototype).", kind: "info" });
+              toast({ title: "Signed out", body: "Session ended.", kind: "info" });
               router.push("/login");
             }}
             className="mt-1 pt-1 border-t border-zinc-800/80 flex w-full items-center gap-2 rounded-sm p-2 text-left hover:bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 transition-colors"

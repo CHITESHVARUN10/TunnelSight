@@ -4,80 +4,80 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast, downloadFile } from "@/lib/mock/toast";
-import { executiveReportJSON } from "@/lib/mock/analysis";
 import Stat from "@/components/motion/Stat";
 import { AppShell } from "@/components/layout/AppShell";
 import { ArchiveDeleteModal } from "@/components/modals/ArchiveDeleteModal";
-
-const ROW_RISK: Record<string, string> = {
-  "branch-emea-gw04.pcap": "HIGH",
-  "site2site-prod.pcapng": "LOW",
-  "dc-west-vpn.pcap": "MEDIUM",
-  "weak-vpn-07.pcap": "HIGH",
-  "aws-transit-gw01.pcapng": "LOW",
-  "legacy-radius-ipsec.pcap": "CRITICAL",
-  "edge-gw-04-us-east.pcap": "HIGH",
-};
+import { deleteAnalysis, getAnalysis, listHistory, type Analysis } from "@/lib/analysis";
 
 const RISK_OPTIONS = ["All", "CRITICAL", "HIGH", "MEDIUM", "LOW"];
 
-const ROW_SEARCH_TEXT: Record<string, string> = {
-  "branch-emea-gw04.pcap":
-    "branch-emea-gw04.pcap pcap ikev2 tunnel 61 high 2 hours ago oct 24 14:12 j.chen 192.0.2.14 description",
-  "site2site-prod.pcapng":
-    "site2site-prod.pcapng pcapng ikev2 tunnel 94 low 5 hours ago oct 24 11:38 m.vasquez description",
-  "dc-west-vpn.pcap":
-    "dc-west-vpn.pcap pcap ikev1 tunnel 67 medium yesterday oct 23 18:04 s.patel description",
-  "weak-vpn-07.pcap":
-    "weak-vpn-07.pcap pcap ikev2 tunnel 47 high oct 22 14:02 j.chen flag",
-  "aws-transit-gw01.pcapng":
-    "aws-transit-gw01.pcapng pcapng ikev2 transport 88 low oct 21 09:15 automations description",
-  "legacy-radius-ipsec.pcap":
-    "legacy-radius-ipsec.pcap pcap ikev1 tunnel 38 critical oct 19 22:40 r.kumar warning",
-  "edge-gw-04-us-east.pcap":
-    "edge-gw-04-us-east.pcap pcap ikev2 tunnel 52 high oct 18 16:55 j.chen description",
-};
-
 export default function HistoryPage() {
   const [filter, setFilter] = useState("");
-  const [selectedCapture, setSelectedCapture] = useState("weak-vpn-07.pcap");
+  const [rows, setRows] = useState<Analysis[]>([]);
+  const [total, setTotal] = useState(0);
+  const [selected, setSelected] = useState<Analysis | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [risk, setRisk] = useState("All");
   const [density, setDensity] = useState<"spacious" | "compact">("spacious");
   const [archiveDeleteModal, setArchiveDeleteModal] = useState<{ open: boolean; capture: string; mode: "archive" | "delete" }>({
     open: false,
-    capture: "branch-emea-gw04.pcap",
+    capture: "",
     mode: "archive",
   });
   const router = useRouter();
   const toast = useToast();
 
-  function matchesFilter(capture: string) {
-    const q = filter.toLowerCase().trim();
-    if (q) {
-      const hay = ROW_SEARCH_TEXT[capture] ?? capture.toLowerCase();
-      if (!hay.includes(q)) return false;
+  const reload = async (q = filter, r = risk) => {
+    try {
+      const res = await listHistory({ q: q || undefined, risk: r === "All" ? undefined : r, limit: 50 });
+      setRows(res.items);
+      setTotal(res.total);
+      if (!selected && res.items.length > 0) setSelected(res.items[0]);
+    } catch (err) {
+      toast({ title: "History unavailable", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
     }
-    if (risk !== "All" && ROW_RISK[capture] !== risk) return false;
-    return true;
-  }
+  };
+
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function cycleRisk() {
     const next = RISK_OPTIONS[(RISK_OPTIONS.indexOf(risk) + 1) % RISK_OPTIONS.length];
     setRisk(next);
+    reload(filter, next);
     toast({ title: `Risk filter: ${next}`, body: next === "All" ? "Showing all captures." : `Showing ${next} captures only.`, kind: "info" });
   }
 
-  function handleRowClick(capture: string) {
-    setSelectedCapture(capture);
-    setDrawerOpen(true);
+  async function handleRowClick(id: string) {
+    try {
+      const row = await getAnalysis(id);
+      setSelected(row);
+      setDrawerOpen(true);
+    } catch (err) {
+      toast({ title: "Load failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
   }
 
   function handleReset() {
     setFilter("");
     setRisk("All");
     setDrawerOpen(true);
+    reload("", "All");
     toast({ title: "Filters reset", body: "Reset search query and risk filter.", kind: "info" });
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      await deleteAnalysis(id);
+      setRows((rs) => rs.filter((r) => r.id !== id));
+      setTotal((t) => Math.max(0, t - 1));
+      if (selected?.id === id) setSelected(null);
+      toast({ title: "Purged", body: "Analysis and windows deleted.", kind: "ok" });
+    } catch (err) {
+      toast({ title: "Delete failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
   }
 
   useEffect(() => {
@@ -165,6 +165,9 @@ export default function HistoryPage() {
                   type="text"
                   value={filter}
                   onInput={(e) => setFilter(e.currentTarget.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") reload(e.currentTarget.value, risk);
+                  }}
                 />
                 <span className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded pointer-events-none">
                   ⌘K
@@ -271,379 +274,66 @@ export default function HistoryPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800/50 text-zinc-300" id="table-body">
-                    {/* Row 1 */}
-                    <tr
-                      className={`${density === "compact" ? "h-10" : "h-12"} transition-colors cursor-pointer ${
-                        selectedCapture === "branch-emea-gw04.pcap"
-                          ? "bg-teal-500/[0.06] border-l-2 border-l-teal-400"
-                          : "hover:bg-zinc-800/40"
-                      }`}
-                      data-capture="branch-emea-gw04.pcap"
-                      onClick={() => handleRowClick("branch-emea-gw04.pcap")}
-                      style={{ display: matchesFilter("branch-emea-gw04.pcap") ? undefined : "none" }}
-                    >
-                      <td className="px-3 text-center">
-                        <span className="w-2 h-2 rounded-full bg-teal-400 inline-block" title="Completed Audit"></span>
-                      </td>
-                      <td className="px-3 font-semibold text-zinc-200">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-base text-zinc-500">description</span>
-                          <span className="truncate">branch-emea-gw04.pcap</span>
-                          <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1 py-0.5 rounded">pcap</span>
-                        </div>
-                      </td>
-                      <td className="px-3 text-zinc-400">IKEv2</td>
-                      <td className="px-3 text-zinc-500">Tunnel</td>
-                      <td className="px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-12 bg-zinc-800 h-1.5 rounded overflow-hidden">
-                            <div className="bg-rose-500 h-full w-[61%]"></div>
+                    {rows.map((row) => (
+                      <tr
+                        key={row.id}
+                        className={`${density === "compact" ? "h-10" : "h-12"} transition-colors cursor-pointer ${
+                          selected?.id === row.id
+                            ? "bg-teal-500/[0.06] border-l-2 border-l-teal-400"
+                            : "hover:bg-zinc-800/40"
+                        }`}
+                        data-capture={row.filename}
+                        onClick={() => handleRowClick(row.id)}
+                      >
+                        <td className="px-3 text-center">
+                          <span
+                            className={`w-2 h-2 rounded-full inline-block ${row.status === "completed" ? "bg-teal-400" : row.status === "failed" ? "bg-rose-500" : "bg-amber-400"}`}
+                            title={row.status}
+                          ></span>
+                        </td>
+                        <td className="px-3 font-semibold text-zinc-200">
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-base text-zinc-500">description</span>
+                            <span className="truncate">{row.filename}</span>
                           </div>
-                          <span className="font-semibold text-rose-400">61/100</span>
-                        </div>
-                      </td>
-                      <td className="px-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                          HIGH
-                        </span>
-                      </td>
-                      <td className="px-3 text-zinc-400">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-zinc-200">2 hours ago</span>
-                          <span className="text-[10px] text-zinc-500">Oct 24, 14:12 · j.chen</span>
-                        </div>
-                      </td>
-                      <td className="px-4 text-right">
-                        <button
-                          type="button"
-                          className="px-2.5 py-1 rounded text-teal-400 hover:bg-zinc-800 transition-colors inline-flex items-center gap-1"
-                        >
-                          <span>Inspect</span>
-                          <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 2 */}
-                    <tr
-                      className={`${density === "compact" ? "h-10" : "h-12"} transition-colors cursor-pointer ${
-                        selectedCapture === "site2site-prod.pcapng"
-                          ? "bg-teal-500/[0.06] border-l-2 border-l-teal-400"
-                          : "hover:bg-zinc-800/40"
-                      }`}
-                      data-capture="site2site-prod.pcapng"
-                      onClick={() => handleRowClick("site2site-prod.pcapng")}
-                      style={{ display: matchesFilter("site2site-prod.pcapng") ? undefined : "none" }}
-                    >
-                      <td className="px-3 text-center">
-                        <span className="w-2 h-2 rounded-full bg-teal-400 inline-block" title="Completed Audit"></span>
-                      </td>
-                      <td className="px-3 font-semibold text-zinc-200">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-base text-zinc-500">description</span>
-                          <span className="truncate">site2site-prod.pcapng</span>
-                          <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1 py-0.5 rounded">pcapng</span>
-                        </div>
-                      </td>
-                      <td className="px-3 text-zinc-400">IKEv2</td>
-                      <td className="px-3 text-zinc-500">Tunnel</td>
-                      <td className="px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-12 bg-zinc-800 h-1.5 rounded overflow-hidden">
-                            <div className="bg-teal-400 h-full w-[94%]"></div>
-                          </div>
-                          <span className="font-semibold text-teal-400">94/100</span>
-                        </div>
-                      </td>
-                      <td className="px-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-500/15 text-teal-300 border border-teal-500/30">
-                          LOW
-                        </span>
-                      </td>
-                      <td className="px-3 text-zinc-400">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-zinc-200">5 hours ago</span>
-                          <span className="text-[10px] text-zinc-500">Oct 24, 11:38 · m.vasquez</span>
-                        </div>
-                      </td>
-                      <td className="px-4 text-right">
-                        <button
-                          type="button"
-                          className="px-2.5 py-1 rounded text-teal-400 hover:bg-zinc-800 transition-colors inline-flex items-center gap-1"
-                        >
-                          <span>Inspect</span>
-                          <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 3 */}
-                    <tr
-                      className={`${density === "compact" ? "h-10" : "h-12"} transition-colors cursor-pointer ${
-                        selectedCapture === "dc-west-vpn.pcap"
-                          ? "bg-teal-500/[0.06] border-l-2 border-l-teal-400"
-                          : "hover:bg-zinc-800/40"
-                      }`}
-                      data-capture="dc-west-vpn.pcap"
-                      onClick={() => handleRowClick("dc-west-vpn.pcap")}
-                      style={{ display: matchesFilter("dc-west-vpn.pcap") ? undefined : "none" }}
-                    >
-                      <td className="px-3 text-center">
-                        <span className="w-2 h-2 rounded-full bg-teal-400 inline-block" title="Completed Audit"></span>
-                      </td>
-                      <td className="px-3 font-semibold text-zinc-200">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-base text-zinc-500">description</span>
-                          <span className="truncate">dc-west-vpn.pcap</span>
-                          <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1 py-0.5 rounded">pcap</span>
-                        </div>
-                      </td>
-                      <td className="px-3 text-zinc-400">IKEv1</td>
-                      <td className="px-3 text-zinc-500">Tunnel</td>
-                      <td className="px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-12 bg-zinc-800 h-1.5 rounded overflow-hidden">
-                            <div className="bg-amber-500 h-full w-[67%]"></div>
-                          </div>
-                          <span className="font-semibold text-amber-400">67/100</span>
-                        </div>
-                      </td>
-                      <td className="px-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                          MEDIUM
-                        </span>
-                      </td>
-                      <td className="px-3 text-zinc-400">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-zinc-200">Yesterday</span>
-                          <span className="text-[10px] text-zinc-500">Oct 23, 18:04 · s.patel</span>
-                        </div>
-                      </td>
-                      <td className="px-4 text-right">
-                        <button
-                          type="button"
-                          className="px-2.5 py-1 rounded text-teal-400 hover:bg-zinc-800 transition-colors inline-flex items-center gap-1"
-                        >
-                          <span>Inspect</span>
-                          <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 4: weak-vpn-07.pcap (Active Focus) */}
-                    <tr
-                      className={`${density === "compact" ? "h-10" : "h-12"} transition-colors cursor-pointer ${
-                        selectedCapture === "weak-vpn-07.pcap"
-                          ? "bg-teal-500/[0.08] border-l-2 border-l-teal-400"
-                          : "hover:bg-zinc-800/40"
-                      }`}
-                      data-capture="weak-vpn-07.pcap"
-                      onClick={() => handleRowClick("weak-vpn-07.pcap")}
-                      style={{ display: matchesFilter("weak-vpn-07.pcap") ? undefined : "none" }}
-                    >
-                      <td className="px-3 text-center">
-                        <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse inline-block" title="Active Focus"></span>
-                      </td>
-                      <td className="px-3 font-semibold text-teal-300">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-base text-teal-400">flag</span>
-                          <span className="truncate">weak-vpn-07.pcap</span>
-                          <span className="text-[10px] bg-teal-500/20 text-teal-300 border border-teal-500/30 px-1 py-0.5 rounded">
-                            pcap
+                        </td>
+                        <td className="px-3 text-zinc-400">{String(row.config_json?.ipsec_config?.sa_config?.ike_version ?? "—")}</td>
+                        <td className="px-3 text-zinc-500">{String(row.config_json?.ipsec_config?.sa_config?.mode ?? "—")}</td>
+                        <td className="px-3">
+                          <span className="font-semibold text-zinc-200">{row.security_score ?? "—"}/100</span>
+                        </td>
+                        <td className="px-3">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-800 text-zinc-200 border border-zinc-700">
+                            {row.risk_level ?? row.status}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-3 text-zinc-300 font-medium">IKEv2</td>
-                      <td className="px-3 text-zinc-500">Tunnel</td>
-                      <td className="px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-12 bg-zinc-800 h-1.5 rounded overflow-hidden">
-                            <div className="bg-rose-500 h-full w-[47%]"></div>
-                          </div>
-                          <span className="font-semibold text-rose-400">47/100</span>
-                        </div>
-                      </td>
-                      <td className="px-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40">
-                          HIGH
-                        </span>
-                      </td>
-                      <td className="px-3 text-zinc-400">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-zinc-200">Oct 22</span>
-                          <span className="text-[10px] text-zinc-500">Oct 22, 14:02 · j.chen</span>
-                        </div>
-                      </td>
-                      <td className="px-4 text-right">
-                        <button
-                          type="button"
-                          className="px-2.5 py-1 rounded text-zinc-950 bg-teal-500 font-semibold transition-colors inline-flex items-center gap-1 shadow-sm text-[11px]"
-                        >
-                          <span>Active</span>
-                          <span className="material-symbols-outlined text-xs">read_more</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 5 */}
-                    <tr
-                      className={`${density === "compact" ? "h-10" : "h-12"} transition-colors cursor-pointer ${
-                        selectedCapture === "aws-transit-gw01.pcapng"
-                          ? "bg-teal-500/[0.06] border-l-2 border-l-teal-400"
-                          : "hover:bg-zinc-800/40"
-                      }`}
-                      data-capture="aws-transit-gw01.pcapng"
-                      onClick={() => handleRowClick("aws-transit-gw01.pcapng")}
-                      style={{ display: matchesFilter("aws-transit-gw01.pcapng") ? undefined : "none" }}
-                    >
-                      <td className="px-3 text-center">
-                        <span className="w-2 h-2 rounded-full bg-teal-400 inline-block" title="Completed Audit"></span>
-                      </td>
-                      <td className="px-3 font-semibold text-zinc-200">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-base text-zinc-500">description</span>
-                          <span className="truncate">aws-transit-gw01.pcapng</span>
-                          <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1 py-0.5 rounded">pcapng</span>
-                        </div>
-                      </td>
-                      <td className="px-3 text-zinc-400">IKEv2</td>
-                      <td className="px-3 text-zinc-500">Transport</td>
-                      <td className="px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-12 bg-zinc-800 h-1.5 rounded overflow-hidden">
-                            <div className="bg-teal-400 h-full w-[88%]"></div>
-                          </div>
-                          <span className="font-semibold text-teal-400">88/100</span>
-                        </div>
-                      </td>
-                      <td className="px-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-500/15 text-teal-300 border border-teal-500/30">
-                          LOW
-                        </span>
-                      </td>
-                      <td className="px-3 text-zinc-400">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-zinc-200">Oct 21</span>
-                          <span className="text-[10px] text-zinc-500">Oct 21, 09:15 · automations</span>
-                        </div>
-                      </td>
-                      <td className="px-4 text-right">
-                        <button
-                          type="button"
-                          className="px-2.5 py-1 rounded text-teal-400 hover:bg-zinc-800 transition-colors inline-flex items-center gap-1"
-                        >
-                          <span>Inspect</span>
-                          <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 6 */}
-                    <tr
-                      className={`${density === "compact" ? "h-10" : "h-12"} transition-colors cursor-pointer ${
-                        selectedCapture === "legacy-radius-ipsec.pcap"
-                          ? "bg-teal-500/[0.06] border-l-2 border-l-teal-400"
-                          : "hover:bg-zinc-800/40"
-                      }`}
-                      data-capture="legacy-radius-ipsec.pcap"
-                      onClick={() => handleRowClick("legacy-radius-ipsec.pcap")}
-                      style={{ display: matchesFilter("legacy-radius-ipsec.pcap") ? undefined : "none" }}
-                    >
-                      <td className="px-3 text-center">
-                        <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" title="Critical Policy Violation"></span>
-                      </td>
-                      <td className="px-3 font-semibold text-rose-300">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-base text-rose-400">warning</span>
-                          <span className="truncate">legacy-radius-ipsec.pcap</span>
-                          <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1 py-0.5 rounded">pcap</span>
-                        </div>
-                      </td>
-                      <td className="px-3 text-zinc-400">IKEv1</td>
-                      <td className="px-3 text-zinc-500">Tunnel</td>
-                      <td className="px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-12 bg-zinc-800 h-1.5 rounded overflow-hidden">
-                            <div className="bg-rose-600 h-full w-[38%]"></div>
-                          </div>
-                          <span className="font-semibold text-rose-400">38/100</span>
-                        </div>
-                      </td>
-                      <td className="px-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/25 text-rose-300 border border-rose-500/40 animate-pulse">
-                          CRITICAL
-                        </span>
-                      </td>
-                      <td className="px-3 text-zinc-400">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-zinc-200">Oct 19</span>
-                          <span className="text-[10px] text-zinc-500">Oct 19, 22:40 · r.kumar</span>
-                        </div>
-                      </td>
-                      <td className="px-4 text-right">
-                        <button
-                          type="button"
-                          className="px-2.5 py-1 rounded text-teal-400 hover:bg-zinc-800 transition-colors inline-flex items-center gap-1"
-                        >
-                          <span>Inspect</span>
-                          <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 7 */}
-                    <tr
-                      className={`${density === "compact" ? "h-10" : "h-12"} transition-colors cursor-pointer ${
-                        selectedCapture === "edge-gw-04-us-east.pcap"
-                          ? "bg-teal-500/[0.06] border-l-2 border-l-teal-400"
-                          : "hover:bg-zinc-800/40"
-                      }`}
-                      data-capture="edge-gw-04-us-east.pcap"
-                      onClick={() => handleRowClick("edge-gw-04-us-east.pcap")}
-                      style={{ display: matchesFilter("edge-gw-04-us-east.pcap") ? undefined : "none" }}
-                    >
-                      <td className="px-3 text-center">
-                        <span className="w-2 h-2 rounded-full bg-teal-400 inline-block" title="Completed Audit"></span>
-                      </td>
-                      <td className="px-3 font-semibold text-zinc-200">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-base text-zinc-500">description</span>
-                          <span className="truncate">edge-gw-04-us-east.pcap</span>
-                          <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1 py-0.5 rounded">pcap</span>
-                        </div>
-                      </td>
-                      <td className="px-3 text-zinc-400">IKEv2</td>
-                      <td className="px-3 text-zinc-500">Tunnel</td>
-                      <td className="px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-12 bg-zinc-800 h-1.5 rounded overflow-hidden">
-                            <div className="bg-rose-500 h-full w-[52%]"></div>
-                          </div>
-                          <span className="font-semibold text-rose-400">52/100</span>
-                        </div>
-                      </td>
-                      <td className="px-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                          HIGH
-                        </span>
-                      </td>
-                      <td className="px-3 text-zinc-400">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-zinc-200">Oct 18</span>
-                          <span className="text-[10px] text-zinc-500">Oct 18, 16:55 · j.chen</span>
-                        </div>
-                      </td>
-                      <td className="px-4 text-right">
-                        <button
-                          type="button"
-                          className="px-2.5 py-1 rounded text-teal-400 hover:bg-zinc-800 transition-colors inline-flex items-center gap-1"
-                        >
-                          <span>Inspect</span>
-                          <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                        </button>
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="px-3 text-zinc-400">
+                          <span className="text-[11px]">{new Date(row.created_at).toLocaleString()}</span>
+                        </td>
+                        <td className="px-4 text-right">
+                          <button
+                            type="button"
+                            className="px-2.5 py-1 rounded text-teal-400 hover:bg-zinc-800 transition-colors inline-flex items-center gap-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/analysis/results?analysis_id=${row.id}`);
+                            }}
+                          >
+                            <span>Inspect</span>
+                            <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {rows.length === 0 && (
+                      <tr>
+                        <td colSpan={8} className="px-3 py-8 text-center text-zinc-500">
+                          No analyses yet. <Link href="/analyze" className="text-teal-400 underline">Upload a capture</Link>.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
+                    
                 </table>
               </div>
 
@@ -651,8 +341,8 @@ export default function HistoryPage() {
               <div className="bg-[#0f1115] border-t border-zinc-800/80 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-zinc-500">
                 <div className="flex items-center gap-3">
                   <span>
-                    Showing <strong className="text-zinc-200 font-semibold">1–7</strong> of{" "}
-                    <strong className="text-zinc-200 font-semibold">1,428</strong> captures
+                    Showing <strong className="text-zinc-200 font-semibold">{rows.length}</strong> of{" "}
+                    <strong className="text-zinc-200 font-semibold">{total}</strong> captures
                   </span>
                   <span className="text-zinc-700">|</span>
                   <span className="text-teal-400">Sorted by Date (Newest First)</span>
@@ -678,7 +368,7 @@ export default function HistoryPage() {
             </div>
 
             {/* Right-Side Capture Detail Drawer */}
-            {drawerOpen && (
+            {drawerOpen && selected && (
               <aside
                 className="w-full xl:w-96 bg-[#111317] border border-zinc-800/80 rounded-lg shadow-xl flex flex-col shrink-0 overflow-hidden self-start sticky top-6"
                 id="detail-drawer"
@@ -690,13 +380,13 @@ export default function HistoryPage() {
                     <div className="flex flex-col min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="font-mono text-xs text-zinc-200 font-semibold truncate" id="drawer-capture-name">
-                          {selectedCapture}
+                          {selected.filename}
                         </span>
                         <span className="font-mono text-[9px] bg-teal-500/15 text-teal-300 px-1 py-0.5 rounded border border-teal-500/30 uppercase">
                           Selected
                         </span>
                       </div>
-                      <span className="font-mono text-[10px] text-zinc-500">Oct 22, 2025 · 14:02:19 UTC</span>
+                      <span className="font-mono text-[10px] text-zinc-500">{new Date(selected.created_at).toLocaleString()}</span>
                     </div>
                   </div>
                   <button
@@ -719,12 +409,12 @@ export default function HistoryPage() {
                   <div className="bg-[#0c0e11] border border-zinc-800 rounded p-3.5 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-baseline gap-1.5">
-                        <span className="font-display-serif text-3xl font-semibold text-rose-400 tracking-tight">47</span>
+                        <span className="font-display-serif text-3xl font-semibold text-rose-400 tracking-tight">{selected.security_score ?? "—"}</span>
                         <span className="font-mono text-xs text-zinc-500">/ 100</span>
                         <span className="font-mono text-[10px] text-zinc-500 uppercase ml-1">Posture Score</span>
                       </div>
                       <span className="px-2 py-0.5 rounded font-mono text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40 uppercase">
-                        HIGH RISK
+                        {selected.risk_level ?? selected.status} RISK
                       </span>
                     </div>
                     <p className="text-xs text-zinc-400 leading-relaxed">
@@ -762,36 +452,20 @@ export default function HistoryPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-zinc-500 font-mono text-[10px] uppercase tracking-wider">
                       <span>Cryptographic Findings</span>
-                      <span className="text-rose-400 font-medium">3 Detected</span>
+                      <span className="text-rose-400 font-medium">{selected.findings_json?.length ?? 0} Detected</span>
                     </div>
                     <div className="space-y-1.5">
-                      <div className="p-2.5 rounded bg-[#0c0e11] border border-zinc-800/80 flex items-start gap-2">
-                        <span className="font-mono text-[10px] font-semibold text-rose-400 bg-rose-500/20 px-1 py-0.5 rounded border border-rose-500/30 shrink-0">
-                          P0
-                        </span>
-                        <div className="space-y-0.5 leading-tight">
-                          <span className="text-xs text-zinc-200 font-medium block">Weak DH Group 2 (MODP-1024)</span>
-                          <span className="font-mono text-[10px] text-zinc-500 block">RFC 8247 deprecates bit length &lt; 2048.</span>
+                      {(selected.findings_json ?? []).slice(0, 5).map((f, i) => (
+                        <div key={i} className="p-2.5 rounded bg-[#0c0e11] border border-zinc-800/80 flex items-start gap-2">
+                          <span className="font-mono text-[10px] font-semibold text-rose-400 bg-rose-500/20 px-1 py-0.5 rounded border border-rose-500/30 shrink-0">
+                            {f.severity}
+                          </span>
+                          <div className="space-y-0.5 leading-tight">
+                            <span className="text-xs text-zinc-200 font-medium block">{f.category}</span>
+                            <span className="font-mono text-[10px] text-zinc-500 block">{f.description}</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-2.5 rounded bg-[#0c0e11] border border-zinc-800/80 flex items-start gap-2">
-                        <span className="font-mono text-[10px] font-semibold text-amber-400 bg-amber-500/20 px-1 py-0.5 rounded border border-amber-500/30 shrink-0">
-                          P1
-                        </span>
-                        <div className="space-y-0.5 leading-tight">
-                          <span className="text-xs text-zinc-200 font-medium block">PFS Disabled on CHILD_SA</span>
-                          <span className="font-mono text-[10px] text-zinc-500 block">Perfect Forward Secrecy omitted during phase 2.</span>
-                        </div>
-                      </div>
-                      <div className="p-2.5 rounded bg-[#0c0e11] border border-zinc-800/80 flex items-start gap-2">
-                        <span className="font-mono text-[10px] font-semibold text-amber-400 bg-amber-500/20 px-1 py-0.5 rounded border border-amber-500/30 shrink-0">
-                          P2
-                        </span>
-                        <div className="space-y-0.5 leading-tight">
-                          <span className="text-xs text-zinc-200 font-medium block">3DES-CBC Cipher Offered</span>
-                          <span className="font-mono text-[10px] text-zinc-500 block">Sweet32 vulnerable transform proposed in SA payload.</span>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
 
@@ -824,7 +498,7 @@ export default function HistoryPage() {
                   {/* Actions */}
                   <div className="space-y-2 pt-2 border-t border-zinc-800 font-mono text-xs">
                     <button
-                      onClick={() => router.push("/analysis/results")}
+                      onClick={() => router.push(`/analysis/results?analysis_id=${selected.id}`)}
                       className="w-full py-2 bg-teal-500 hover:bg-teal-400 text-zinc-950 font-semibold rounded flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                       type="button"
                     >
@@ -834,8 +508,11 @@ export default function HistoryPage() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => {
-                          downloadFile("weak-vpn-07-executive-report.json", executiveReportJSON());
-                          toast({ title: "Report generated", body: "weak-vpn-07-executive-report.json downloaded.", kind: "ok" });
+                          downloadFile(
+                            `${selected.filename}-report.json`,
+                            JSON.stringify({ capture: selected.filename, risk: selected.risk_level, security_score: selected.security_score, traffic_label: selected.traffic_label, findings: selected.findings_json }, null, 2)
+                          );
+                          toast({ title: "Report generated", body: `${selected.filename}-report.json downloaded.`, kind: "ok" });
                         }}
                         className="py-1.5 bg-[#0c0e11] hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded flex items-center justify-center gap-1 transition-colors"
                         type="button"
@@ -844,7 +521,7 @@ export default function HistoryPage() {
                         <span>Report</span>
                       </button>
                       <button
-                        onClick={() => router.push("/analysis/compare")}
+                        onClick={() => router.push(`/analysis/compare?alpha=${selected.id}`)}
                         className="py-1.5 bg-[#0c0e11] hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded flex items-center justify-center gap-1 transition-colors"
                         type="button"
                       >
@@ -854,7 +531,7 @@ export default function HistoryPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-2 pt-1 border-t border-zinc-800/60">
                       <button
-                        onClick={() => setArchiveDeleteModal({ open: true, capture: selectedCapture, mode: "archive" })}
+                        onClick={() => setArchiveDeleteModal({ open: true, capture: selected.id, mode: "archive" })}
                         className="py-1.5 bg-[#0c0e11] hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-teal-400 rounded flex items-center justify-center gap-1 transition-colors text-xs font-mono"
                         type="button"
                       >
@@ -862,7 +539,7 @@ export default function HistoryPage() {
                         <span>Archive</span>
                       </button>
                       <button
-                        onClick={() => setArchiveDeleteModal({ open: true, capture: selectedCapture, mode: "delete" })}
+                        onClick={() => setArchiveDeleteModal({ open: true, capture: selected.id, mode: "delete" })}
                         className="py-1.5 bg-[#0c0e11] hover:bg-rose-950/30 border border-zinc-800 hover:border-rose-800/50 text-zinc-400 hover:text-rose-400 rounded flex items-center justify-center gap-1 transition-colors text-xs font-mono"
                         type="button"
                       >
@@ -879,8 +556,11 @@ export default function HistoryPage() {
         <ArchiveDeleteModal
           isOpen={archiveDeleteModal.open}
           onClose={() => setArchiveDeleteModal((s) => ({ ...s, open: false }))}
-          captureName={archiveDeleteModal.capture}
+          captureName={selected?.filename ?? archiveDeleteModal.capture}
           initialMode={archiveDeleteModal.mode}
+          onSuccess={(mode) => {
+            if (mode === "delete" && selected) handleDelete(selected.id);
+          }}
         />
       </AppShell>
     </div>

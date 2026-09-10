@@ -1,29 +1,87 @@
 "use client";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/mock/toast";
-import { executiveReportJSON, findingsCSV } from "@/lib/mock/analysis"; import Stat from "@/components/motion/Stat";
+import Stat from "@/components/motion/Stat";
 import { AppShell } from "@/components/layout/AppShell";
+import { getAnalysis, getFindings, type Analysis } from "@/lib/analysis";
+
+type Finding = { severity: string; category: string; description: string };
 
 export default function FindingsPage() {
   const toast = useToast();
-  const [selectedRow, setSelectedRow] = useState<string | null>("row-fnd-01");
+  const params = useSearchParams();
+  const analysisId = params.get("analysis_id");
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [findings, setFindings] = useState<Finding[]>([]);
+  const [score, setScore] = useState<number | null>(null);
+  const [risk, setRisk] = useState<string | null>(null);
+  const [selectedRow, setSelectedRow] = useState<number | null>(0);
   const [severity, setSeverity] = useState("all");
   const [evidence, setEvidence] = useState("all");
   const [query, setQuery] = useState("");
   const [inspectorOpen, setInspectorOpen] = useState(false);
+
+  const reload = async (sev = severity, q = query) => {
+    if (!analysisId) return;
+    try {
+      const [a, f] = await Promise.all([
+        getAnalysis(analysisId),
+        getFindings(analysisId, { severity: sev === "all" ? undefined : sev.toUpperCase(), q: q || undefined }),
+      ]);
+      setAnalysis(a);
+      setFindings(f.findings ?? []);
+      setScore(f.security_score);
+      setRisk(f.risk_level);
+    } catch (err) {
+      toast({ title: "Findings unavailable", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+    }
+  };
+
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [analysisId]);
+
+  if (!analysisId) {
+    return (
+      <div className="bg-[#0c0e11] font-sans text-sm text-zinc-300 antialiased">
+        <AppShell active="/analysis/findings" innerClassName="flex flex-col w-full text-zinc-200">
+          <div className="p-8 text-sm">No analysis selected. <Link className="underline" href="/analyze">Upload a capture</Link>.</div>
+        </AppShell>
+      </div>
+    );
+  }
+  const counts = (sev: string) => findings.filter((f) => f.severity === sev).length;
   function pickSeverity(s: string, label: string) {
     setSeverity(s);
-    toast({ title: `Severity filter: ${label}`, body: "Finding queue filtered (mock).", kind: "info" });
+    reload(s, query);
+    toast({ title: `Severity filter: ${label}`, body: "Finding queue filtered.", kind: "info" });
   }
   function pickEvidence(e: string, label: string) {
     setEvidence(e);
-    toast({ title: `Evidence filter: ${label}`, body: "Finding queue filtered (mock).", kind: "info" });
+    toast({ title: `Evidence filter: ${label}`, body: "All rule findings are deterministic.", kind: "info" });
   }
-  function selectRow(id: string) {
+  function selectRow(id: number) {
     setSelectedRow(id);
     setInspectorOpen(true);
   }
+  const selected = selectedRow !== null ? findings[selectedRow] : undefined;
+  const exportCSV = () => {
+    const rows = [["severity", "category", "description"], ...findings.map((f) => [f.severity, f.category, f.description])];
+    downloadFile(`${analysis?.filename ?? "findings"}.csv`, rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n"), "text/csv");
+    toast({ title: "Findings exported", body: "findings.csv downloaded.", kind: "ok" });
+  };
+  const exportPlan = () => {
+    downloadFile(
+      `${analysis?.filename ?? "remediation"}-plan.json`,
+      JSON.stringify({ capture: analysis?.filename, risk, security_score: score, findings }, null, 2)
+    );
+    toast({ title: "Remediation plan exported", body: "plan downloaded.", kind: "ok" });
+  };
   return (
     <div className="bg-[#0c0e11] font-sans text-sm text-zinc-300 antialiased selection:bg-teal-500/20 selection:text-teal-200">
       <AppShell active="/analysis/findings" innerClassName="flex flex-col w-full text-zinc-200">
@@ -34,20 +92,20 @@ export default function FindingsPage() {
             <div className="flex items-center gap-2 font-mono text-xs text-zinc-500">
               <Link href="/history" className="hover:text-zinc-300 transition-colors">Captures</Link>
               <span>/</span>
-              <span className="text-teal-400 font-medium">weak-vpn-07.pcap</span>
+              <span className="text-teal-400 font-medium">{analysis?.filename ?? "—"}</span>
               <span>/</span>
               <span className="text-zinc-200 font-medium">Security Findings &amp; Threat Matrix</span>
             </div>
             <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 text-xs text-zinc-400">
               <span className="flex items-center gap-2 text-zinc-100 font-medium">
                 <span className="w-2 h-2 rounded-full bg-rose-500 inline-block animate-pulse"></span>
-                <span className="font-display-serif font-bold text-base text-white tabular-nums"><Stat to={7} /></span> Security Findings Identified
+                <span className="font-display-serif font-bold text-base text-white tabular-nums"><Stat to={findings.length} /></span> Security Findings Identified
               </span>
               <span className="text-zinc-700">|</span>
-              <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono font-semibold">2 Critical</span>
-              <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono font-semibold">2 High</span>
-              <span className="px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono">2 Medium</span>
-              <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/50 font-mono">1 Low</span>
+              <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono font-semibold">{counts("CRITICAL")} Critical</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono font-semibold">{counts("HIGH")} High</span>
+              <span className="px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono">{counts("MEDIUM")} Medium</span>
+              <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/50 font-mono">{counts("LOW")} Low</span>
               <span className="text-zinc-700">|</span>
               <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">Framework: NIST SP 800-77r1 &amp; RFC 8247</span>
             </div>
@@ -56,7 +114,7 @@ export default function FindingsPage() {
             <button
               className="flex items-center gap-2 px-3.5 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-200 hover:bg-zinc-800/80 transition-colors rounded text-xs font-mono font-medium"
               type="button"
-              onClick={() => { downloadFile("findings.csv", findingsCSV(), "text/csv"); toast({ title: "Findings exported", body: "findings.csv downloaded.", kind: "ok" }); }}
+              onClick={exportCSV}
             >
               <span className="material-symbols-outlined text-[15px]">file_download</span>
               <span>Export CSV</span>
@@ -64,7 +122,7 @@ export default function FindingsPage() {
             <button
               className="flex items-center gap-2 px-3.5 py-1.5 bg-teal-500/10 border border-teal-500/30 text-teal-300 hover:bg-teal-500/20 transition-colors rounded text-xs font-medium font-mono"
               type="button"
-              onClick={() => { downloadFile("executive-remediation-plan.json", executiveReportJSON()); toast({ title: "Remediation plan exported", body: "executive-remediation-plan.json downloaded.", kind: "ok" }); }}
+              onClick={exportPlan}
             >
               <span className="material-symbols-outlined text-[15px] text-teal-400">verified_user</span>
               <span>Remediation Plan</span>
@@ -100,8 +158,8 @@ export default function FindingsPage() {
               <div className="bg-zinc-900/50 rounded p-1.5 border border-zinc-800/50 flex flex-col justify-between"><span className="text-zinc-600 text-[10px]">L5/I2</span></div>
               <div className="bg-zinc-900/50 rounded p-1.5 border border-zinc-800/50 flex flex-col justify-between"><span className="text-zinc-600 text-[10px]">L5/I3</span></div>
               <div
-                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === "row-fnd-04" ? "bg-rose-950/50 border-rose-500 ring-1 ring-rose-500" : "bg-rose-950/20 border-rose-500/40 hover:bg-rose-950/40"}`}
-                onClick={() => selectRow("row-fnd-04")}
+                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === 0 ? "bg-rose-950/50 border-rose-500 ring-1 ring-rose-500" : "bg-rose-950/20 border-rose-500/40 hover:bg-rose-950/40"}`}
+                onClick={() => selectRow(0)}
               >
                 <span className="text-rose-400 text-[10px] font-semibold">L5/I4</span>
                 <div className="bg-rose-600 text-white px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-tight truncate" title="FND-2024-04: High-Velocity Upstream Egress Anomaly">
@@ -113,8 +171,8 @@ export default function FindingsPage() {
               {/* Row 4 (Likelihood 4) */}
               <div className="bg-zinc-900/50 rounded p-1.5 border border-zinc-800/50 flex flex-col justify-between"><span className="text-zinc-600 text-[10px]">L4/I1</span></div>
               <div
-                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === "row-fnd-06" ? "bg-sky-950/50 border-sky-500 ring-1 ring-sky-500" : "bg-sky-950/20 border-sky-500/30 hover:bg-sky-950/40"}`}
-                onClick={() => selectRow("row-fnd-06")}
+                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === 1 ? "bg-sky-950/50 border-sky-500 ring-1 ring-sky-500" : "bg-sky-950/20 border-sky-500/30 hover:bg-sky-950/40"}`}
+                onClick={() => selectRow(1)}
               >
                 <span className="text-zinc-500 text-[10px]">L4/I2</span>
                 <div className="bg-sky-900/60 text-sky-200 border border-sky-500/30 px-1.5 py-0.5 rounded text-[10px] font-medium tracking-tight truncate" title="FND-2024-06: NAT-T UDP Encapsulation Without Jitter">
@@ -122,8 +180,8 @@ export default function FindingsPage() {
                 </div>
               </div>
               <div
-                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === "row-fnd-05" ? "bg-sky-950/50 border-sky-500 ring-1 ring-sky-500" : "bg-sky-950/20 border-sky-500/30 hover:bg-sky-950/40"}`}
-                onClick={() => selectRow("row-fnd-05")}
+                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === 2 ? "bg-sky-950/50 border-sky-500 ring-1 ring-sky-500" : "bg-sky-950/20 border-sky-500/30 hover:bg-sky-950/40"}`}
+                onClick={() => selectRow(2)}
               >
                 <span className="text-zinc-500 text-[10px]">L4/I3</span>
                 <div className="bg-sky-900/60 text-sky-200 border border-sky-500/30 px-1.5 py-0.5 rounded text-[10px] font-medium tracking-tight truncate" title="FND-2024-05: PSK Authentication with Weak Proofing">
@@ -131,8 +189,8 @@ export default function FindingsPage() {
                 </div>
               </div>
               <div
-                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === "row-fnd-02" ? "bg-amber-950/50 border-amber-500 ring-1 ring-amber-500" : "bg-amber-950/20 border-amber-500/40 hover:bg-amber-950/40"}`}
-                onClick={() => selectRow("row-fnd-02")}
+                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === 3 ? "bg-amber-950/50 border-amber-500 ring-1 ring-amber-500" : "bg-amber-950/20 border-amber-500/40 hover:bg-amber-950/40"}`}
+                onClick={() => selectRow(3)}
               >
                 <span className="text-amber-400 text-[10px] font-semibold">L4/I4</span>
                 <div className="bg-amber-600 text-white px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-tight truncate" title="FND-2024-02: PFS Disabled on Rekey">
@@ -140,8 +198,8 @@ export default function FindingsPage() {
                 </div>
               </div>
               <div
-                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === "row-fnd-01" ? "bg-rose-950/70 border-rose-400 ring-1 ring-teal-400" : "bg-rose-950/30 border-rose-500/50 hover:bg-rose-950/50"}`}
-                onClick={() => selectRow("row-fnd-01")}
+                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === 4 ? "bg-rose-950/70 border-rose-400 ring-1 ring-teal-400" : "bg-rose-950/30 border-rose-500/50 hover:bg-rose-950/50"}`}
+                onClick={() => selectRow(4)}
               >
                 <span className="text-rose-400 text-[10px] font-bold">L4/I5</span>
                 <div className="bg-rose-600 text-white px-1.5 py-0.5 rounded text-[10px] font-bold tracking-tight shadow-md truncate" title="FND-2024-01: Weak Diffie-Hellman Group 2">
@@ -153,8 +211,8 @@ export default function FindingsPage() {
               <div className="bg-zinc-900/50 rounded p-1.5 border border-zinc-800/50 flex flex-col justify-between"><span className="text-zinc-600 text-[10px]">L3/I1</span></div>
               <div className="bg-zinc-900/50 rounded p-1.5 border border-zinc-800/50 flex flex-col justify-between"><span className="text-zinc-600 text-[10px]">L3/I2</span></div>
               <div
-                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === "row-fnd-03" ? "bg-amber-950/50 border-amber-500 ring-1 ring-amber-500" : "bg-amber-950/20 border-amber-500/30 hover:bg-amber-950/40"}`}
-                onClick={() => selectRow("row-fnd-03")}
+                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === 5 ? "bg-amber-950/50 border-amber-500 ring-1 ring-amber-500" : "bg-amber-950/20 border-amber-500/30 hover:bg-amber-950/40"}`}
+                onClick={() => selectRow(5)}
               >
                 <span className="text-zinc-500 text-[10px]">L3/I3</span>
                 <div className="bg-amber-900/60 text-amber-200 border border-amber-500/30 px-1.5 py-0.5 rounded text-[10px] font-medium tracking-tight truncate" title="FND-2024-03: Legacy AES-CBC + SHA-1 Suite">
@@ -167,8 +225,8 @@ export default function FindingsPage() {
               {/* Row 2 (Likelihood 2) */}
               <div className="bg-zinc-900/50 rounded p-1.5 border border-zinc-800/50 flex flex-col justify-between"><span className="text-zinc-600 text-[10px]">L2/I1</span></div>
               <div
-                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === "row-fnd-07" ? "bg-zinc-800 border-zinc-500 ring-1 ring-zinc-400" : "bg-zinc-900/60 border-zinc-800 hover:bg-zinc-800/60"}`}
-                onClick={() => selectRow("row-fnd-07")}
+                className={`rounded p-1.5 border flex flex-col justify-between cursor-pointer transition-colors ${selectedRow === 6 ? "bg-zinc-800 border-zinc-500 ring-1 ring-zinc-400" : "bg-zinc-900/60 border-zinc-800 hover:bg-zinc-800/60"}`}
+                onClick={() => selectRow(6)}
               >
                 <span className="text-zinc-500 text-[10px]">L2/I2</span>
                 <div className="bg-zinc-800 text-zinc-300 border border-zinc-700/60 px-1.5 py-0.5 rounded text-[10px] font-medium tracking-tight truncate">
@@ -313,10 +371,17 @@ export default function FindingsPage() {
               <span className="material-symbols-outlined text-[16px] text-zinc-500">search</span>
               <input
                 className="bg-transparent border-0 p-0 text-xs text-zinc-200 placeholder:text-zinc-500 focus:outline-none w-full font-mono"
-                placeholder="Filter by CVE, transform, RFC..."
+                placeholder="Filter by description..."
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") reload(severity, query);
+                  if (e.key === "Escape") {
+                    setQuery("");
+                    reload(severity, "");
+                  }
+                }}
               />
               <kbd className="font-mono text-[10px] text-zinc-500 bg-zinc-800 px-1 py-0.5 rounded border border-zinc-700">ESC</kbd>
             </div>
@@ -334,306 +399,52 @@ export default function FindingsPage() {
             </div>
 
             <div className="divide-y divide-zinc-800/50 flex flex-col text-xs">
-              {/* Row 1 */}
-              <div
-                className={`px-4 py-3 grid grid-cols-12 gap-3 items-center transition-colors cursor-pointer ${selectedRow === "row-fnd-01" ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
-                id="row-fnd-01"
-                onClick={() => selectRow("row-fnd-01")}
-              >
-                <div className="col-span-3 flex items-center gap-2">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">CRITICAL</span>
-                  <span className="font-mono text-teal-400 font-semibold">FND-2024-01</span>
+              {findings.map((f, i) => (
+                <div
+                  key={i}
+                  className={`px-4 py-3 grid grid-cols-12 gap-3 items-center transition-colors cursor-pointer ${selectedRow === i ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
+                  onClick={() => selectRow(i)}
+                >
+                  <div className="col-span-3 flex items-center gap-2">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">{f.severity}</span>
+                    <span className="font-mono text-zinc-400">F-{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <div className="col-span-4 flex flex-col min-w-0">
+                    <span className="font-semibold text-white truncate">{f.category}</span>
+                    <span className="text-zinc-400 text-[11px] truncate">{f.description}</span>
+                  </div>
+                  <div className="col-span-3 flex flex-col min-w-0 font-mono">
+                    <span className="text-zinc-200 truncate">{analysis?.filename ?? "—"}</span>
+                    <span className="text-zinc-500 text-[11px] truncate">{risk ?? ""} · {score ?? "—"}/100</span>
+                  </div>
+                  <div className="col-span-2 flex flex-col items-end gap-0.5">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-teal-300 bg-teal-500/10 border border-teal-500/20 font-medium">CONFIRMED</span>
+                    <span className="font-mono text-[10px] text-zinc-500">Deterministic</span>
+                  </div>
                 </div>
-                <div className="col-span-4 flex flex-col min-w-0">
-                  <span className="font-semibold text-white truncate">Weak DH Group 2 (MODP-1024)</span>
-                  <span className="text-zinc-400 text-[11px] truncate">Cryptography · Key Exchange</span>
-                </div>
-                <div className="col-span-3 flex flex-col min-w-0 font-mono">
-                  <span className="text-zinc-200 truncate">IKEv2 Control Plane</span>
-                  <span className="text-zinc-500 text-[11px] truncate">Frames #42, #45</span>
-                </div>
-                <div className="col-span-2 flex flex-col items-end gap-0.5">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-teal-300 bg-teal-500/10 border border-teal-500/20 font-medium">CONFIRMED</span>
-                  <span className="font-mono text-[10px] text-zinc-500">Deterministic</span>
-                </div>
-              </div>
-
-              {/* Row 2 */}
-              <div
-                className={`px-4 py-3 grid grid-cols-12 gap-3 items-center transition-colors cursor-pointer ${selectedRow === "row-fnd-02" ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
-                id="row-fnd-02"
-                onClick={() => selectRow("row-fnd-02")}
-              >
-                <div className="col-span-3 flex items-center gap-2">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">HIGH</span>
-                  <span className="font-mono text-zinc-400">FND-2024-02</span>
-                </div>
-                <div className="col-span-4 flex flex-col min-w-0">
-                  <span className="font-medium text-white truncate">PFS Disabled on Rekey</span>
-                  <span className="text-zinc-400 text-[11px] truncate">Key Management · Ephemeral KE</span>
-                </div>
-                <div className="col-span-3 flex flex-col min-w-0 font-mono">
-                  <span className="text-zinc-200 truncate">ESP Data SA (0x9a02)</span>
-                  <span className="text-zinc-500 text-[11px] truncate">Frame #142</span>
-                </div>
-                <div className="col-span-2 flex flex-col items-end gap-0.5">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-teal-300 bg-teal-500/10 border border-teal-500/20 font-medium">CONFIRMED</span>
-                  <span className="font-mono text-[10px] text-zinc-500">Deterministic</span>
-                </div>
-              </div>
-
-              {/* Row 3 */}
-              <div
-                className={`px-4 py-3 grid grid-cols-12 gap-3 items-center transition-colors cursor-pointer ${selectedRow === "row-fnd-04" ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
-                id="row-fnd-04"
-                onClick={() => selectRow("row-fnd-04")}
-              >
-                <div className="col-span-3 flex items-center gap-2">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">CRITICAL</span>
-                  <span className="font-mono text-zinc-400">FND-2024-04</span>
-                </div>
-                <div className="col-span-4 flex flex-col min-w-0">
-                  <span className="font-medium text-white truncate">High-Velocity Upstream Egress</span>
-                  <span className="text-zinc-400 text-[11px] truncate">Behavioral Anomaly · Flow Burst</span>
-                </div>
-                <div className="col-span-3 flex flex-col min-w-0 font-mono">
-                  <span className="text-zinc-200 truncate">Tunnel 0x0c3e8019a</span>
-                  <span className="text-zinc-500 text-[11px] truncate">Window W-28</span>
-                </div>
-                <div className="col-span-2 flex flex-col items-end gap-0.5">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-amber-300 bg-amber-500/10 border border-dashed border-amber-500/30 font-medium">INFERRED</span>
-                  <span className="font-mono text-[10px] text-zinc-500">ML Isolation</span>
-                </div>
-              </div>
-
-              {/* Row 4 */}
-              <div
-                className={`px-4 py-3 grid grid-cols-12 gap-3 items-center transition-colors cursor-pointer ${selectedRow === "row-fnd-03" ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
-                id="row-fnd-03"
-                onClick={() => selectRow("row-fnd-03")}
-              >
-                <div className="col-span-3 flex items-center gap-2">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">HIGH</span>
-                  <span className="font-mono text-zinc-400">FND-2024-03</span>
-                </div>
-                <div className="col-span-4 flex flex-col min-w-0">
-                  <span className="font-medium text-white truncate">Legacy AES-CBC + SHA-1 Suite</span>
-                  <span className="text-zinc-400 text-[11px] truncate">Cryptography · Cipher Mode</span>
-                </div>
-                <div className="col-span-3 flex flex-col min-w-0 font-mono">
-                  <span className="text-zinc-200 truncate">ESP &amp; IKE_SA Suite</span>
-                  <span className="text-zinc-500 text-[11px] truncate">Frames #42, #58</span>
-                </div>
-                <div className="col-span-2 flex flex-col items-end gap-0.5">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-teal-300 bg-teal-500/10 border border-teal-500/20 font-medium">CONFIRMED</span>
-                  <span className="font-mono text-[10px] text-zinc-500">Deterministic</span>
-                </div>
-              </div>
-
-              {/* Row 5 */}
-              <div
-                className={`px-4 py-3 grid grid-cols-12 gap-3 items-center transition-colors cursor-pointer ${selectedRow === "row-fnd-05" ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
-                id="row-fnd-05"
-                onClick={() => selectRow("row-fnd-05")}
-              >
-                <div className="col-span-3 flex items-center gap-2">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30">MEDIUM</span>
-                  <span className="font-mono text-zinc-400">FND-2024-05</span>
-                </div>
-                <div className="col-span-4 flex flex-col min-w-0">
-                  <span className="font-medium text-white truncate">PSK Auth with Weak ID Proofing</span>
-                  <span className="text-zinc-400 text-[11px] truncate">Authentication · IKE_AUTH</span>
-                </div>
-                <div className="col-span-3 flex flex-col min-w-0 font-mono">
-                  <span className="text-zinc-200 truncate">Control Plane</span>
-                  <span className="text-zinc-500 text-[11px] truncate">Frames #58, #61</span>
-                </div>
-                <div className="col-span-2 flex flex-col items-end gap-0.5">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-teal-300 bg-teal-500/10 border border-teal-500/20 font-medium">CONFIRMED</span>
-                  <span className="font-mono text-[10px] text-zinc-500">Deterministic</span>
-                </div>
-              </div>
-
-              {/* Row 6 */}
-              <div
-                className={`px-4 py-3 grid grid-cols-12 gap-3 items-center transition-colors cursor-pointer ${selectedRow === "row-fnd-06" ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
-                id="row-fnd-06"
-                onClick={() => selectRow("row-fnd-06")}
-              >
-                <div className="col-span-3 flex items-center gap-2">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30">MEDIUM</span>
-                  <span className="font-mono text-zinc-400">FND-2024-06</span>
-                </div>
-                <div className="col-span-4 flex flex-col min-w-0">
-                  <span className="font-medium text-white truncate">NAT-T Periodic Burst Fingerprint</span>
-                  <span className="text-zinc-400 text-[11px] truncate">Network · Cadence Anomaly</span>
-                </div>
-                <div className="col-span-3 flex flex-col min-w-0 font-mono">
-                  <span className="text-zinc-200 truncate">UDP:4500 NAT-T</span>
-                  <span className="text-zinc-500 text-[11px] truncate">Frame #45</span>
-                </div>
-                <div className="col-span-2 flex flex-col items-end gap-0.5">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-teal-300 bg-teal-500/10 border border-teal-500/20 font-medium">CONFIRMED</span>
-                  <span className="font-mono text-[10px] text-zinc-500">Heuristic</span>
-                </div>
-              </div>
-
-              {/* Row 7 */}
-              <div
-                className={`px-4 py-3 grid grid-cols-12 gap-3 items-center transition-colors cursor-pointer ${selectedRow === "row-fnd-07" ? "bg-zinc-800/70 border-l-2 border-teal-400" : "hover:bg-zinc-800/30"}`}
-                id="row-fnd-07"
-                onClick={() => selectRow("row-fnd-07")}
-              >
-                <div className="col-span-3 flex items-center gap-2">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700/60">LOW</span>
-                  <span className="font-mono text-zinc-500">FND-2024-07</span>
-                </div>
-                <div className="col-span-4 flex flex-col min-w-0">
-                  <span className="font-medium text-white truncate">ESP Sequence Counter Jump (+4)</span>
-                  <span className="text-zinc-400 text-[11px] truncate">Integrity · Replay Window</span>
-                </div>
-                <div className="col-span-3 flex flex-col min-w-0 font-mono">
-                  <span className="text-zinc-200 truncate">SPI: 0x9a021da3</span>
-                  <span className="text-zinc-500 text-[11px] truncate">Frames #890-#891</span>
-                </div>
-                <div className="col-span-2 flex flex-col items-end gap-0.5">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono text-teal-300 bg-teal-500/10 border border-teal-500/20 font-medium">CONFIRMED</span>
-                  <span className="font-mono text-[10px] text-zinc-500">Dropped Burst</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-zinc-900/90 px-4 py-2.5 flex items-center justify-between text-zinc-400 font-mono text-xs border-t border-zinc-800">
-              <span>7 findings evaluated · Deterministic engine OK</span>
-              <div className="flex items-center gap-4">
-                <span>Sort: <strong className="text-zinc-200">Severity (Desc)</strong></span>
-                <span>Page 1 of 1</span>
-              </div>
+              ))}
+              {findings.length === 0 && (
+                <div className="px-4 py-8 text-center text-zinc-500 font-mono text-xs">No findings match this filter.</div>
+              )}
             </div>
           </div>
 
-          {/* Forensic Inspector Drawer */}
-          <div className={inspectorOpen ? "xl:col-span-5 bg-[#111317] rounded-lg border border-zinc-800/90 flex flex-col p-5 gap-4" : "xl:col-span-5 bg-[#111317] rounded-lg border border-zinc-800/90 flex flex-col p-5 gap-4 hidden"}>
-            <div className="flex items-start justify-between pb-3 border-b border-zinc-800">
-              <div className="flex flex-col gap-1">
+          {/* Inspector drawer: selected finding detail */}
+          <div className="xl:col-span-5 bg-[#111317] rounded-lg border border-zinc-800/90 p-5 flex flex-col gap-3">
+            {selected ? (
+              <>
                 <div className="flex items-center gap-2">
-                  <span className="bg-rose-500 text-white px-2 py-0.5 rounded font-mono text-[10px] font-bold">CRITICAL</span>
-                  <span className="font-mono text-xs text-teal-400 font-bold">FND-2024-01</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono text-teal-300 bg-teal-500/10 border border-teal-500/20">CONFIRMED Protocol Fact</span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">{selected.severity}</span>
+                  <span className="text-sm text-white font-semibold">{selected.category}</span>
                 </div>
-                <h2 className="text-lg font-semibold text-white tracking-tight mt-1">Weak Diffie-Hellman Group 2 (MODP-1024)</h2>
-              </div>
-              <button
-                className="text-zinc-400 hover:text-white p-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors"
-                title="Close details"
-                type="button"
-                onClick={() => setInspectorOpen(false)}
-              >
-                <span className="material-symbols-outlined text-[16px]">close</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 font-mono text-xs bg-zinc-900/60 p-3 rounded border border-zinc-800/70">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-zinc-500 uppercase text-[10px] block">Protocol Stage</span>
-                <span className="text-zinc-200 font-medium">IKE_SA_INIT (Exchange 34)</span>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-zinc-500 uppercase text-[10px] block">Packet Reference</span>
-                <span className="text-teal-400 font-medium">Frame #42 (T+0.114s)</span>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-zinc-500 uppercase text-[10px] block">Initiator SPI</span>
-                <span className="text-zinc-300">0x8a91f3c401340b12</span>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-zinc-500 uppercase text-[10px] block">Selected Transform</span>
-                <span className="text-rose-400 font-medium">Transform Type 4: ID 0x0002</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">Forensic Hex Dissector (Frame #42)</span>
-                <span className="font-mono text-xs text-teal-400">Offset 0x0040 - 0x0050</span>
-              </div>
-              <div className="bg-[#0c0e11] p-3 rounded font-mono text-[11px] leading-relaxed text-zinc-300 select-text border border-zinc-800/80">
-                <div className="text-zinc-500 pb-1 font-semibold flex justify-between border-b border-zinc-800/50 mb-1">
-                  <span>INDEX  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F</span>
-                  <span>ASCII</span>
+                <p className="text-xs text-zinc-400 leading-relaxed">{selected.description}</p>
+                <div className="font-mono text-[11px] text-zinc-500">
+                  Capture: <span className="text-zinc-300">{analysis?.filename ?? "—"}</span>
                 </div>
-                <div className="flex justify-between hover:bg-zinc-800/40 px-1 rounded">
-                  <span><span className="text-zinc-600">0040:</span>  03 00 00 0c 01 00 00 0c  <mark className="bg-teal-500/20 text-teal-300 font-bold px-0.5">00 00 00 08 04 00 00 02</mark></span>
-                  <span className="text-zinc-600">........ .......</span>
-                </div>
-                <div className="flex justify-between hover:bg-zinc-800/40 px-1 rounded">
-                  <span><span className="text-zinc-600">0050:</span>  00 00 00 08 02 00 00 02  00 00 00 08 03 00 00 02</span>
-                  <span className="text-zinc-600">........ ........</span>
-                </div>
-                <div className="mt-2 text-teal-400 text-[10px] flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[14px]">info</span>
-                  <span>Byte [0x0048-0x004F] specifies Proposal Transform 4: DH Group 2 (MODP-1024)</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-rose-950/20 border border-rose-500/30 p-3 rounded flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-rose-400 text-xs font-semibold">
-                <span className="material-symbols-outlined text-[16px]">gavel</span>
-                <span>NIST SP 800-77r1 &amp; RFC 8247 §2.4 Violation</span>
-              </div>
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                Group 2 yields &lt;80 bits of cryptographic strength. Modern Number Field Sieve (NFS) enables passive factoring of 1024-bit primes. Adversaries passively capturing traffic can deduce <span className="font-mono text-teal-400">SKEYSEED</span> and decrypt child ESP payloads retroactively.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-400">Remediation Stanza (strongSwan ipsec.conf)</span>
-                <button
-                  className="text-teal-400 hover:text-teal-300 font-mono text-xs flex items-center gap-1 transition-colors"
-                  type="button"
-                  onClick={() => { navigator.clipboard.writeText("ike = aes256gcm16-prfsha384-ecp256,aes256-sha256-modp2048!"); toast({ title: "Snippet copied", body: "Remediation stanza copied to clipboard.", kind: "ok" }); }}
-                >
-                  <span className="material-symbols-outlined text-[14px]">content_copy</span>
-                  <span>Copy Snippet</span>
-                </button>
-              </div>
-              <div className="bg-[#0c0e11] p-3 rounded font-mono text-xs text-teal-300 select-text leading-relaxed border border-zinc-800/80">
-                <span className="text-zinc-600"># Enforce Group 14 or Group 19 (Curve25519)</span><br />
-                <span className="text-zinc-400">conn enterprise-production-edge</span><br />
-                &nbsp;&nbsp;ike = aes256gcm16-prfsha384-ecp256,aes256-sha256-modp2048!<br />
-                &nbsp;&nbsp;esp = aes256gcm16-ecp256!<br />
-                <span className="text-zinc-600"># Forbids fallback to DH Group 2</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between gap-2.5 pt-1">
-              <button
-                className="flex-1 py-2 bg-teal-500 hover:bg-teal-400 text-black font-semibold text-xs rounded transition-colors flex items-center justify-center gap-2 shadow-md"
-                type="button"
-                onClick={() => toast({ title: "Policy patch staged", body: "Mock apply: strongSwan proposal update queued.", kind: "ok" })}
-              >
-                <span className="material-symbols-outlined text-[16px]">verified</span>
-                <span>Apply Policy Patch</span>
-              </button>
-              <button
-                className="p-2 bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white rounded transition-colors"
-                title="Export Forensic Bundle"
-                type="button"
-                onClick={() => { downloadFile("forensic-bundle.json", executiveReportJSON()); toast({ title: "Forensic bundle exported", body: "forensic-bundle.json downloaded.", kind: "ok" }); }}
-              >
-                <span className="material-symbols-outlined text-[16px]">download</span>
-              </button>
-              <button
-                className="p-2 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-rose-400 rounded transition-colors"
-                title="Ignore / Mark False Positive"
-                type="button"
-                onClick={() => toast({ title: "Finding flagged", body: "Marked for review (mock).", kind: "warn" })}
-              >
-                <span className="material-symbols-outlined text-[16px]">flag</span>
-              </button>
-            </div>
+              </>
+            ) : (
+              <span className="text-xs font-mono text-zinc-500">Select a finding to inspect.</span>
+            )}
           </div>
         </section>
       </AppShell>

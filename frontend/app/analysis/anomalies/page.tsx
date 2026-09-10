@@ -1,24 +1,66 @@
 "use client";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/mock/toast";
 import { AppShell } from "@/components/layout/AppShell";
+import { getAnalysis, getAnomalies, type Analysis, type Window } from "@/lib/analysis";
 
 export default function AnomaliesPage() {
   const [activeTab, setActiveTab] = useState("all");
   const toast = useToast();
-  const adjustThreshold = () => toast({ title: "Threshold preset", body: "τ ≥ 0.72 applied to iForest v3.2 (mock).", kind: "info" });
+  const params = useSearchParams();
+  const analysisId = params.get("analysis_id");
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [windows, setWindows] = useState<Window[]>([]);
+  const [engine, setEngine] = useState("if v1");
+  const [threshold, setThreshold] = useState<number | null>(null);
+  const anomalous = windows.filter((w) => w.is_anomaly);
+
+  useEffect(() => {
+    if (!analysisId) return;
+    let dead = false;
+    (async () => {
+      try {
+        const [a, an] = await Promise.all([getAnalysis(analysisId), getAnomalies(analysisId)]);
+        if (!dead) {
+          setAnalysis(a);
+          setWindows(an.windows);
+          setEngine(an.engine);
+          setThreshold(an.threshold);
+        }
+      } catch (err) {
+        if (!dead) toast({ title: "Anomalies unavailable", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+      }
+    })();
+    return () => {
+      dead = true;
+    };
+  }, [analysisId, toast]);
+
+  const adjustThreshold = () => toast({ title: "Threshold", body: "Use ?threshold= on the API to filter raw IF scores (lower = more anomalous).", kind: "info" });
   const exportVectors = () => {
     downloadFile(
-      "anomaly-vectors-w28.json",
-      JSON.stringify({ capture: "weak-vpn-07.pcap", window: "W-28", score: 0.91, threshold: 0.72, engine: "iForest v3.2" }, null, 2),
+      `${analysis?.filename ?? "anomaly"}-vectors.json`,
+      JSON.stringify({ capture: analysis?.filename, engine, threshold, windows }, null, 2),
       "application/json"
     );
-    toast({ title: "Vectors exported", body: "anomaly-vectors-w28.json downloaded.", kind: "ok" });
+    toast({ title: "Vectors exported", body: "anomaly vectors downloaded.", kind: "ok" });
   };
   const filterWindow = () => toast({ title: "Window filter staged", body: "Focus locked to 02:10–02:40 (mock).", kind: "info" });
   const correlateRekey = () => toast({ title: "Correlation started", body: "IKE rekey events joined to W-28 (mock).", kind: "info" });
   const openVectorDrawer = () => toast({ title: "Feature vectors", body: "Full vector drawer is mocked in this prototype.", kind: "info" });
+  if (!analysisId) {
+    return (
+      <div className="bg-[#0c0e11] font-sans text-sm text-zinc-300 antialiased">
+        <AppShell active="">
+          <div className="p-8 text-sm">No analysis selected. <Link className="underline" href="/analyze">Upload a capture</Link>.</div>
+        </AppShell>
+      </div>
+    );
+  }
   return (
     <div className="bg-[#0c0e11] font-sans text-sm text-zinc-300 antialiased selection:bg-teal-500/20 selection:text-teal-200">
       <AppShell active="">
@@ -31,7 +73,7 @@ export default function AnomaliesPage() {
               <span className="text-zinc-700">/</span>
               <span className="text-teal-400 font-medium flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[14px]">terminal</span>
-                weak-vpn-07.pcap
+                {analysis?.filename ?? "—"}
               </span>
               <span className="text-zinc-700">/</span>
               <span className="text-zinc-200 font-medium">Anomaly Detection &amp; Baseline Drift</span>
@@ -44,18 +86,15 @@ export default function AnomaliesPage() {
           </div>
 
           <div className="flex items-center gap-3 text-xs text-zinc-400 font-mono">
-            <div className="hidden md:flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded">
-              <span className="text-zinc-500">Engine:</span>
-              <span className="text-zinc-200 font-medium">iForest v3.2</span>
-              <span className="text-zinc-700">|</span>
-              <span className="text-zinc-500">Profile:</span>
-              <span className="text-teal-400 font-medium">Edge-48h</span>
-              <span className="text-zinc-700">|</span>
-              <span className="text-zinc-500">Threshold:</span>
-              <span className="text-rose-400 font-medium">τ ≥ 0.72</span>
-              <span className="text-zinc-700">|</span>
-              <span className="text-zinc-400">1.8ms</span>
-            </div>
+              <div className="hidden md:flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded">
+                <span className="text-zinc-500">Engine:</span>
+                <span className="text-zinc-200 font-medium">{engine}</span>
+                <span className="text-zinc-700">|</span>
+                <span className="text-zinc-500">Anomalous windows:</span>
+                <span className="text-rose-400 font-medium">{anomalous.length}/{windows.length}</span>
+                <span className="text-zinc-700">|</span>
+                <span className="text-zinc-400">lower score = more anomalous</span>
+              </div>
             <div className="flex items-center gap-2">
               <button
                 className="px-3 py-1.5 rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 transition-colors font-mono flex items-center gap-1.5 text-xs"

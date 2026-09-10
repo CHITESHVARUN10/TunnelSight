@@ -210,15 +210,22 @@ export function DecapsulationPipelineDiagram() {
       {/* Top Diagram Bar: Controls & Step Track */}
       <div className="p-4 border-b border-white/[0.06] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 font-mono text-[10px] text-[#b0aea5] uppercase tracking-wider mb-0.5">
-            <span className="w-2 h-2 rounded-full bg-[#d97757]" />
-            <span>Interactive Simulator</span>
-            <span>·</span>
-            <span className="text-[#f7f4ee]">DPDK Decapsulation Pipeline</span>
-          </div>
+            <div className="flex items-center gap-2 font-mono text-[10px] text-[#b0aea5] uppercase tracking-wider mb-0.5">
+              <span className="w-2 h-2 rounded-full bg-[#d97757]" />
+              <span>Illustrative Simulator</span>
+              <span>·</span>
+              <span className="text-[#f7f4ee]">Packet Anatomy (Not Live Parsing)</span>
+            </div>
           <h4 className="text-[#f7f4ee] font-display-serif text-lg font-bold">
-            11-Stage Protocol Peeling &amp; Audit Engine
+            Analysis Pipeline: Upload → Seeded Evidence → ML → Score
           </h4>
+
+          <p className="pt-2 font-mono text-[11px] text-[#8c8a82] leading-relaxed max-w-2xl">
+            Illustrative walkthrough — the current backend runs a seeded mock (not DPDK/zero-copy).
+            Real stages today: extension + size check → seeded IPsecConfig + 3–8 windows of 18 features →
+            RandomForest label + IsolationForest score per window → rule-engine total → typed columns +
+            analysis_windows rows.
+          </p>
         </div>
 
         {/* Play / Next / Prev Controls */}

@@ -3,23 +3,37 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { login } from "@/lib/auth";
 import { mockLogin } from "@/lib/mock/session";
-import { DEMO_EMAIL } from "@/lib/mock/flag";
 import { useToast } from "@/lib/mock/toast";
+
+const ALLOW_MOCK_FALLBACK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
 export default function LoginPage() {
   const router = useRouter();
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
+    const email = String(data.get("email") ?? "");
+    const password = String(data.get("password") ?? "");
     try {
-      const user = mockLogin(String(data.get("email") ?? ""), String(data.get("password") ?? ""));
-      toast({ title: `Welcome, ${user.displayName}`, body: "Forensic session initialized.", kind: "ok" });
+      const user = await login(email, password);
+      toast({ title: `Welcome, ${user.email}`, body: "Forensic session initialized.", kind: "ok" });
       router.push("/overview");
     } catch (err) {
+      if (ALLOW_MOCK_FALLBACK && err instanceof Error && !/^4\d\d/.test(err.message)) {
+        try {
+          const user = mockLogin(email, password);
+          toast({ title: `Welcome, ${user.displayName}`, body: "Offline demo session.", kind: "warn" });
+          router.push("/overview");
+          return;
+        } catch {
+          // fall through to real error toast
+        }
+      }
       toast({ title: "Sign in failed", body: err instanceof Error ? err.message : "Invalid credentials.", kind: "warn" });
     }
   }
@@ -122,10 +136,9 @@ export default function LoginPage() {
                     className="w-full h-9 px-3 bg-[#14171c] border border-zinc-800 rounded-sm text-xs font-mono text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-teal-500/50 transition-colors" 
                     id="work-email" 
                     name="email" 
-                    placeholder="analyst@enterprise.internal" 
-                    defaultValue={DEMO_EMAIL}
-                    required 
-                    type="email" 
+                    placeholder="analyst@enterprise.internal"
+                    required
+                    type="email"
                   />
                 </div>
 
@@ -145,10 +158,9 @@ export default function LoginPage() {
                       className="w-full h-9 px-3 pr-10 bg-[#14171c] border border-zinc-800 rounded-sm text-xs font-mono text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-teal-500/50 transition-colors" 
                       id="auth-password" 
                       name="password" 
-                      placeholder="••••••••••••••••" 
-                      defaultValue="tunnelsight-demo"
-                      required 
-                      type={showPassword ? "text" : "password"} 
+                      placeholder="••••••••••••••••"
+                      required
+                      type={showPassword ? "text" : "password"}
                     />
                     <button 
                       aria-label="Toggle password visibility" 
@@ -181,7 +193,7 @@ export default function LoginPage() {
                 </button>
 
                 <p className="pt-2 text-center text-[11px] font-mono text-zinc-500">
-                  Prototype demo account: <span className="text-teal-400">{DEMO_EMAIL}</span> · <span className="text-teal-400">tunnelsight-demo</span>
+                  Authorized analysts only. Sessions expire after 7 days of inactivity.
                 </p>
               </form>
 

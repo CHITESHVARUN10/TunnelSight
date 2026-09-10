@@ -1,22 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { api } from "@/lib/api";
 
 type TokenState = "valid" | "success" | "expired" | "invalid";
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetForm />
+    </Suspense>
+  );
+}
+
+function ResetForm() {
   const router = useRouter();
+  const params = useSearchParams();
   const [tokenState, setTokenState] = useState<TokenState>("valid");
-  const [newPassword, setNewPassword] = useState("Kx8!mQ9#vL2p$Zt1");
-  const [confirmPassword, setConfirmPassword] = useState("Kx8!mQ9#vL2p$Zt1");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [formError, setFormError] = useState("");
 
-  function handleFormSubmit(e: React.FormEvent) {
+  async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setTokenState("success");
+    setFormError("");
+    if (newPassword !== confirmPassword) {
+      setFormError("Passphrases do not match.");
+      return;
+    }
+    const token = params.get("token") ?? "";
+    if (!token) {
+      setTokenState("invalid");
+      return;
+    }
+    try {
+      await api("/api/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({ token, new_password: newPassword }),
+      });
+      setTokenState("success");
+    } catch (err) {
+      setTokenState("expired");
+    }
   }
 
   const strength =
@@ -25,11 +54,6 @@ export default function ResetPasswordPage() {
       : newPassword.length < 12
         ? { label: "MODERATE", className: "text-amber-400 font-semibold" }
         : { label: "STRONG (CNSA 1.0 COMPLIANT)", className: "text-teal-400 font-semibold" };
-
-  const tokenTabClassName = (s: TokenState) =>
-    s === tokenState
-      ? "px-2.5 py-1 rounded-sm text-teal-400 bg-zinc-800 border border-zinc-700 font-medium transition-colors"
-      : "px-2.5 py-1 rounded-sm text-zinc-500 hover:text-zinc-300 transition-colors";
 
   return (
     <div className="bg-[#0c0e11] text-zinc-300 min-h-screen flex flex-col justify-between antialiased selection:bg-teal-500/20 selection:text-teal-300">
@@ -104,19 +128,8 @@ export default function ResetPasswordPage() {
 
           {/* Right Column: Reset Workspace (7 cols) */}
           <div className="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-between bg-[#111317]">
-            
-            <div>
-              {/* Simulation Header */}
-              <div className="flex items-center justify-between pb-5 mb-6 border-b border-zinc-800">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">TOKEN STATE SIMULATION:</span>
-                <div className="inline-flex rounded-sm border border-zinc-800 p-0.5 bg-[#14171c] text-[11px] font-mono">
-                  <button id="btn-valid" className={tokenTabClassName("valid")} onClick={() => setTokenState("valid")}>Valid</button>
-                  <button id="btn-success" className={tokenTabClassName("success")} onClick={() => setTokenState("success")}>Success</button>
-                  <button id="btn-expired" className={tokenTabClassName("expired")} onClick={() => setTokenState("expired")}>Expired</button>
-                  <button id="btn-invalid" className={tokenTabClassName("invalid")} onClick={() => setTokenState("invalid")}>Invalid</button>
-                </div>
-              </div>
 
+            <div>
               {/* STATE 1: VALID RESET TOKEN */}
               <div id="state-valid" className={tokenState === "valid" ? "space-y-6" : "hidden"}>
                 <div className="space-y-1.5">
@@ -221,6 +234,9 @@ export default function ResetPasswordPage() {
                   </div>
 
                   {/* Primary Action */}
+                  {formError !== "" && (
+                    <p className="text-[11px] font-mono text-rose-400">{formError}</p>
+                  )}
                   <button 
                     type="submit" 
                     className="w-full h-9 bg-teal-500 hover:bg-teal-400 text-black font-semibold text-xs font-mono rounded-sm transition-colors flex items-center justify-center gap-2 shadow-sm mt-2"

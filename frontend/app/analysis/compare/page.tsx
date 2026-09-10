@@ -1,8 +1,12 @@
 "use client";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { downloadFile, useToast } from "@/lib/mock/toast";
 import { AppShell } from "@/components/layout/AppShell";
+import { compareAnalyses, listHistory, type Analysis } from "@/lib/analysis";
 
 const REMEDIATION_STANZA = `connections {
     edge-interconnect {
@@ -105,6 +109,51 @@ export default function VpnComparePage() {
   const [swapped, setSwapped] = useState(false);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toast = useToast();
+  const params = useSearchParams();
+  const [options, setOptions] = useState<Analysis[]>([]);
+  const [alphaId, setAlphaId] = useState(params.get("alpha") ?? "");
+  const [betaId, setBetaId] = useState(params.get("beta") ?? "");
+  const [result, setResult] = useState<{ alpha: Analysis; beta: Analysis; deltas: { field: string; alpha: unknown; beta: unknown }[] } | null>(null);
+
+  useEffect(() => {
+    let dead = false;
+    (async () => {
+      try {
+        const res = await listHistory({ limit: 50 });
+        if (!dead) {
+          setOptions(res.items);
+          if (!alphaId && res.items[0]) setAlphaId(res.items[0].id);
+          if (!betaId && res.items[1]) setBetaId(res.items[1].id);
+        }
+      } catch {
+        // options stay empty; user can paste IDs
+      }
+    })();
+    return () => {
+      dead = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!alphaId || !betaId) return;
+    let dead = false;
+    (async () => {
+      try {
+        const r = (await compareAnalyses(alphaId, betaId)) as {
+          alpha: Analysis;
+          beta: Analysis;
+          deltas: { field: string; alpha: unknown; beta: unknown }[];
+        };
+        if (!dead) setResult(r);
+      } catch (err) {
+        if (!dead) toast({ title: "Compare failed", body: err instanceof Error ? err.message : "Try again.", kind: "warn" });
+      }
+    })();
+    return () => {
+      dead = true;
+    };
+  }, [alphaId, betaId, toast]);
 
   const handleCopyStanza = () => {
     navigator.clipboard.writeText(REMEDIATION_STANZA).then(() => {
@@ -132,15 +181,10 @@ export default function VpnComparePage() {
       JSON.stringify(
         {
           timestamp: new Date().toISOString(),
-          alpha: swapped ? "cloud-transit-gw04" : "corp-edge-vpn01",
-          beta: swapped ? "corp-edge-vpn01" : "cloud-transit-gw04",
+          alpha: result?.alpha.filename ?? alphaId,
+          beta: result?.beta.filename ?? betaId,
           standard: "NIST SP 800-77r1 / CNSA 1.0",
-          deltas: DELTA_ROWS.map((r) => ({
-            parameter: r.parameter,
-            left: swapped ? r.beta : r.alpha,
-            right: swapped ? r.alpha : r.beta,
-            impact: r.impact,
-          })),
+          deltas: result?.deltas ?? [],
         },
         null,
         2
@@ -153,65 +197,40 @@ export default function VpnComparePage() {
     toast({ title: label, body: detail, kind: "info" });
   }
 
-  const alphaDeployment = swapped
-    ? {
-        id: "cloud-transit-gw04",
-        label: "Deployment Alpha",
-        badge: "CNSA COMPLIANT",
-        badgeTone: "teal",
-        score: "94",
-        scoreTone: "text-teal-400",
-        pcap: "hardened-edge-02.pcap",
-        sha: "3d12…90ae",
-        lifetime: "128+ bits",
-        lifetimeSub: "Quantum-Resistant",
-        rfcStatus: "COMPLIANT",
-        cnsaStatus: "VERIFIED PASS",
-      }
-    : {
-        id: "corp-edge-vpn01",
-        label: "Deployment Alpha",
-        badge: "LEGACY AUDIT",
-        badgeTone: "red",
-        score: "61",
-        scoreTone: "text-rose-400",
-        pcap: "weak-vpn-07.pcap",
-        sha: "7f89…c42b",
-        lifetime: "<80 bits",
-        lifetimeSub: "NFS Pre-computation",
-        rfcStatus: "NON-COMPLIANT",
-        cnsaStatus: "FAIL",
-      };
+  const alpha = result?.alpha;
+  const beta = result?.beta;
+  const deltas = (result?.deltas ?? []).filter((d) => !diffsOnly || d.alpha !== d.beta);
+  const fmt = (v: unknown) => (v === null || v === undefined ? "—" : typeof v === "object" ? JSON.stringify(v) : String(v));
 
-  const betaDeployment = swapped
-    ? {
-        id: "corp-edge-vpn01",
-        label: "Deployment Beta",
-        badge: "LEGACY AUDIT",
-        badgeTone: "red",
-        score: "61",
-        scoreTone: "text-rose-400",
-        pcap: "weak-vpn-07.pcap",
-        sha: "7f89…c42b",
-        lifetime: "<80 bits",
-        lifetimeSub: "NFS Pre-computation",
-        rfcStatus: "NON-COMPLIANT",
-        cnsaStatus: "FAIL",
-      }
-    : {
-        id: "cloud-transit-gw04",
-        label: "Deployment Beta",
-        badge: "CNSA COMPLIANT",
-        badgeTone: "teal",
-        score: "94",
-        scoreTone: "text-teal-400",
-        pcap: "hardened-edge-02.pcap",
-        sha: "3d12…90ae",
-        lifetime: "128+ bits",
-        lifetimeSub: "Quantum-Resistant",
-        rfcStatus: "COMPLIANT",
-        cnsaStatus: "VERIFIED PASS",
-      };
+  const alphaDeployment = {
+    id: alpha?.id ?? alphaId,
+    label: "Deployment Alpha",
+    badge: alpha?.risk_level ?? "—",
+    badgeTone: "red",
+    score: alpha?.security_score !== null && alpha?.security_score !== undefined ? String(alpha.security_score) : "—",
+    scoreTone: "text-rose-400",
+    pcap: alpha?.filename ?? "—",
+    sha: "—",
+    lifetime: "—",
+    lifetimeSub: alpha?.traffic_label ? `traffic: ${alpha.traffic_label}` : "",
+    rfcStatus: alpha?.status ?? "—",
+    cnsaStatus: alpha?.risk_level ?? "—",
+  };
+
+  const betaDeployment = {
+    id: beta?.id ?? betaId,
+    label: "Deployment Beta",
+    badge: beta?.risk_level ?? "—",
+    badgeTone: "teal",
+    score: beta?.security_score !== null && beta?.security_score !== undefined ? String(beta.security_score) : "—",
+    scoreTone: "text-teal-400",
+    pcap: beta?.filename ?? "—",
+    sha: "—",
+    lifetime: "—",
+    lifetimeSub: beta?.traffic_label ? `traffic: ${beta.traffic_label}` : "",
+    rfcStatus: beta?.status ?? "—",
+    cnsaStatus: beta?.risk_level ?? "—",
+  };
 
   return (
     <div className="min-h-screen bg-[#0c0e11] text-zinc-100 font-sans antialiased">
@@ -579,8 +598,39 @@ export default function VpnComparePage() {
                   Cryptographic &amp; Operational Posture Matrix
                 </h2>
                 <span className="px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900 text-zinc-400 font-mono text-[11px]">
-                  6 Divergent Parameters
+                  {deltas.length} Divergent Parameters
                 </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  className="bg-zinc-900 border border-zinc-800 rounded font-mono text-[11px] text-zinc-200 px-2 py-1"
+                  value={alphaId}
+                  onChange={(e) => setAlphaId(e.target.value)}
+                >
+                  {options.map((o) => (
+                    <option key={o.id} value={o.id}>{o.filename}</option>
+                  ))}
+                </select>
+                <button
+                  className="px-2 py-1 rounded border border-zinc-800 text-zinc-300 font-mono text-[11px]"
+                  type="button"
+                  onClick={handleSwap}
+                >
+                  ⇄ Swap
+                </button>
+                <select
+                  className="bg-zinc-900 border border-zinc-800 rounded font-mono text-[11px] text-zinc-200 px-2 py-1"
+                  value={betaId}
+                  onChange={(e) => setBetaId(e.target.value)}
+                >
+                  {options.map((o) => (
+                    <option key={o.id} value={o.id}>{o.filename}</option>
+                  ))}
+                </select>
+                <label className="flex items-center gap-1 font-mono text-[11px] text-zinc-400">
+                  <input type="checkbox" checked={diffsOnly} onChange={(e) => setDiffsOnly(e.target.checked)} />
+                  diffs only
+                </label>
               </div>
               <span className="text-xs font-mono text-zinc-500">Click any row to inspect forensic evidence</span>
             </div>
@@ -590,68 +640,44 @@ export default function VpnComparePage() {
                 <thead>
                   <tr className="border-b border-zinc-800 bg-[#0c0e11] text-zinc-400 text-[11px] uppercase tracking-wider">
                     <th className="py-3 px-4 w-3/12" scope="col">Parameter</th>
-                    <th className="py-3 px-4 w-3/12" scope="col">{alphaDeployment.id} (A)</th>
-                    <th className="py-3 px-4 w-3/12" scope="col">{betaDeployment.id} (B)</th>
+                    <th className="py-3 px-4 w-3/12" scope="col">{alpha?.filename ?? "A"} (A)</th>
+                    <th className="py-3 px-4 w-3/12" scope="col">{beta?.filename ?? "B"} (B)</th>
                     <th className="py-3 px-4 w-2/12" scope="col">Impact / Delta</th>
                     <th className="py-3 px-4 w-1/12 text-right" scope="col">Inspect</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/60">
-                  {DELTA_ROWS.map((row, idx) => {
-                    const leftVal = swapped ? row.beta : row.alpha;
-                    const rightVal = swapped ? row.alpha : row.beta;
-                    const isDiff = leftVal !== rightVal;
-                    if (diffsOnly && !isDiff) return null;
-
-                    return (
-                      <tr
-                        key={idx}
-                        className="hover:bg-zinc-800/30 transition-colors cursor-pointer"
-                        onClick={() => inspectDelta(row.parameter, row.evidenceNote)}
-                      >
-                        <td className="py-3 px-4 text-zinc-200 font-medium">{row.parameter}</td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded font-mono text-xs ${
-                              row.alphaTone === "error"
-                                ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                                : "bg-zinc-900 text-zinc-300 border border-zinc-800"
-                            }`}
-                          >
-                            {leftVal}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded font-mono text-xs ${
-                              row.betaTone === "teal"
-                                ? "bg-teal-500/10 text-teal-400 border border-teal-500/20"
-                                : "bg-zinc-900 text-zinc-300 border border-zinc-800"
-                            }`}
-                          >
-                            {rightVal}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase inline-flex items-center gap-1 ${
-                              row.impactType === "critical"
-                                ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                                : "bg-teal-500/10 text-teal-400 border border-teal-500/20"
-                            }`}
-                          >
-                            <span className="material-symbols-outlined text-[12px]">
-                              {row.impactType === "critical" ? "error" : "arrow_upward"}
-                            </span>
-                            {row.impact}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right text-zinc-400 hover:text-teal-400">
-                          <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {deltas.map((d, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-zinc-800/30 transition-colors cursor-pointer"
+                      onClick={() => inspectDelta(d.field, `${fmt(d.alpha)} → ${fmt(d.beta)}`)}
+                    >
+                      <td className="py-3 px-4 text-zinc-200 font-medium">{d.field}</td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded font-mono text-xs bg-zinc-900 text-zinc-300 border border-zinc-800">
+                          {fmt(swapped ? d.beta : d.alpha)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded font-mono text-xs bg-zinc-900 text-zinc-300 border border-zinc-800">
+                          {fmt(swapped ? d.alpha : d.beta)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase inline-flex items-center gap-1 bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                          <span className="material-symbols-outlined text-[12px]">arrow_upward</span>
+                          diff
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right text-zinc-400 hover:text-teal-400">
+                        <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                      </td>
+                    </tr>
+                  ))}
+                  {deltas.length === 0 && (
+                    <tr><td colSpan={5} className="py-6 px-4 text-center text-zinc-500">No divergent parameters.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>

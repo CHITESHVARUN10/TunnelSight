@@ -1,33 +1,91 @@
-"""Phase 0 stub: accept upload, store pending history row, return UNKNOWN."""
+"""Analyze upload: real parser (fallback seeded mock) -> rule engine + ML .pkl inference."""
 
-from fastapi import APIRouter, Depends, UploadFile
+import os
+import tempfile
+
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
 from app.models.analysis import Analysis
+from app.models.analysis_window import AnalysisWindow
 from app.models.user import User
 from app.schemas.analysis import AnalysisOut
 from app.services.analyzer import analyzer
 
 router = APIRouter()
 
-@router.post("", response_model=AnalysisOut)
-def analyze(file: UploadFile, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+ALLOWED_EXTENSIONS = {".pcap", ".pcapng", ".cap", ".erf"}
+MAX_BYTES = 256 * 1024 * 1024
+
+
+@router.post("", response_model=AnalysisOut, status_code=201)
+async def analyze(
+    response: Response,
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     filename = file.filename or "upload.pcap"
-    
-    # Run the full pipeline (Mock Parser -> Rule Engine & ML Models)
-    results = analyzer.analyze(filename)
-    
-    # Save to the database
-    row = Analysis(
-        user_id=user.id, 
-        filename=filename, 
-        status="completed", 
-        config_json=results,  # Store the entire bundled result (Security Score, ML Class, Findings)
-        anomaly_score=results["anomaly_score"]
-    )
+    ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"unsupported file type: {ext or '(none)'}")
+    if file.size is not None and file.size > MAX_BYTES:
+        raise HTTPException(status_code=413, detail="file too large")
+
+    row = Analysis(user_id=user.id, filename=filename, status="processing")
     db.add(row)
     db.commit()
     db.refresh(row)
-    
+
+    suffix = ext or ".pcap"
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+    try:
+        contents = await file.read()
+        tmp.write(contents)
+        tmp.close()
+        results = analyzer.analyze(filename, pcap_path=tmp.name)
+    except Exception as exc:
+        row.status = "failed"
+        row.config_json = {"error": str(exc)}
+        db.commit()
+        db.refresh(row)
+        response.headers["Location"] = f"/api/history/{row.id}"
+        return row
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
+
+    row.status = "completed"
+    row.config_json = {
+        "ipsec_config": results["ipsec_config"],
+        "windows_count": len(results["windows"]),
+        "note": results.get("note", ""),
+        "evidence_source": results.get("evidence_source", "mock"),
+    }
+    row.anomaly_score = results["anomaly_score"]
+    row.traffic_label = results["traffic_label"]
+    row.traffic_confidence = results["traffic_confidence"]
+    row.security_score = results["security_score"]
+    row.risk_level = results["risk_level"]
+    row.findings_json = results["findings"]
+    for w in results["windows"]:
+        db.add(
+            AnalysisWindow(
+                analysis_id=row.id,
+                window_id=w["window_id"],
+                window_start=w["window_start"],
+                window_end=w["window_end"],
+                packet_count=w["packet_count"],
+                traffic_label=w["traffic_label"],
+                traffic_confidence=w["traffic_confidence"],
+                anomaly_score=w["anomaly_score"],
+                is_anomaly=w["is_anomaly"],
+            )
+        )
+    db.commit()
+    db.refresh(row)
+    response.headers["Location"] = f"/api/history/{row.id}"
     return row

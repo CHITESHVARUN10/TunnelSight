@@ -2,35 +2,32 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { api } from "@/lib/api";
 
-type RecoveryState = "default" | "invalid" | "notfound" | "sent";
+type RecoveryState = "default" | "invalid" | "sent";
 
 export default function ForgotPasswordPage() {
   const [recoveryState, setRecoveryState] = useState<RecoveryState>("default");
-  const [email, setEmail] = useState("analyst@enterprise.internal");
-  const [sentEmail, setSentEmail] = useState("analyst@enterprise.internal");
+  const [email, setEmail] = useState("");
+  const [sentEmail, setSentEmail] = useState("");
+  const [error, setError] = useState("");
 
-  function setState(state: RecoveryState) {
-    if (state === "default") {
-      setEmail("analyst@enterprise.internal");
-    } else if (state === "invalid") {
-      setEmail("analyst_invalid_format");
-    } else if (state === "notfound") {
-      setEmail("unknown.agent@external.net");
-    }
-    setRecoveryState(state);
-  }
-
-  function handleFormSubmit(e: React.FormEvent) {
+  async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSentEmail(email || "analyst@enterprise.internal");
-    setRecoveryState("sent");
+    setError("");
+    try {
+      await api("/api/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+      setSentEmail(email);
+      setRecoveryState("sent");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      if (/^422/.test(msg)) setRecoveryState("invalid");
+      else setError(msg.replace(/^\d+\s+\w+\s*/, "") || "Request failed. Try again.");
+    }
   }
-
-  const tabClassName = (s: RecoveryState) =>
-    s === recoveryState
-      ? "px-2.5 py-1 rounded-sm bg-zinc-800 text-teal-400 border border-zinc-700 font-medium transition-all"
-      : "px-2.5 py-1 rounded-sm text-zinc-500 hover:text-zinc-300 transition-all";
 
   return (
     <div className="bg-[#0c0e11] text-zinc-300 min-h-screen flex flex-col justify-between antialiased selection:bg-teal-500/20 selection:text-teal-300">
@@ -102,17 +99,6 @@ export default function ForgotPasswordPage() {
           {/* Right Column: Reset Form / States (7 cols) */}
           <div className="md:w-7/12 p-8 md:p-12 flex flex-col justify-between bg-[#111317]">
             <div>
-              {/* State Switcher Header for Demo / Inspection */}
-              <div className="flex items-center justify-between pb-5 mb-6 border-b border-zinc-800">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">STATE PREVIEW:</span>
-                <div className="flex items-center gap-1 bg-[#14171c] p-1 rounded-sm border border-zinc-800 text-[11px] font-mono">
-                  <button id="tab-default" className={tabClassName("default")} onClick={() => setState("default")}>Default</button>
-                  <button id="tab-invalid" className={tabClassName("invalid")} onClick={() => setState("invalid")}>Invalid Email</button>
-                  <button id="tab-notfound" className={tabClassName("notfound")} onClick={() => setState("notfound")}>Not Found</button>
-                  <button id="tab-sent" className={tabClassName("sent")} onClick={() => setState("sent")}>Email Sent</button>
-                </div>
-              </div>
-
               {/* Form View (Default / Errors) */}
               <div id="reset-form-container" className={recoveryState === "sent" ? "hidden" : undefined}>
                 <div className="mb-6 space-y-1.5">
@@ -135,16 +121,10 @@ export default function ForgotPasswordPage() {
                   </div>
                 )}
 
-                {/* Error Banner: Not Found */}
-                {recoveryState === "notfound" && (
-                  <div id="alert-notfound" className="mb-5 p-3 rounded-sm border border-amber-800/50 bg-amber-950/40 flex items-start gap-3">
-                    <span className="material-symbols-outlined text-[16px] text-amber-400 mt-0.5 shrink-0">warning</span>
-                    <div className="text-xs">
-                      <div className="font-medium text-amber-400 font-mono uppercase tracking-wide">Account Not Found</div>
-                      <div className="text-zinc-300 mt-0.5 font-mono text-[11px]">
-                        No analyst identity matches this address. Verify your deployment domain or contact your organization&apos;s SecOps administrator.
-                      </div>
-                    </div>
+                {error !== "" && (
+                  <div className="mb-5 p-3 rounded-sm border border-rose-800/50 bg-rose-950/40 flex items-start gap-3">
+                    <span className="material-symbols-outlined text-[16px] text-rose-400 mt-0.5 shrink-0">error</span>
+                    <div className="text-xs text-zinc-300 font-mono text-[11px]">{error}</div>
                   </div>
                 )}
 
@@ -162,10 +142,8 @@ export default function ForgotPasswordPage() {
                       placeholder="analyst@enterprise.internal"
                       required
                       className={`w-full h-9 px-3 bg-[#14171c] border rounded-sm text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none font-mono transition-colors ${
-                        recoveryState === "invalid" 
-                          ? "border-rose-500 focus:border-rose-500" 
-                          : recoveryState === "notfound" 
-                          ? "border-amber-500 focus:border-amber-500" 
+                        recoveryState === "invalid"
+                          ? "border-rose-500 focus:border-rose-500"
                           : "border-zinc-800 focus:border-teal-500/50"
                       }`}
                     />
@@ -218,8 +196,8 @@ export default function ForgotPasswordPage() {
                 </p>
 
                 <div className="space-y-3 pt-2">
-                  <button 
-                    onClick={() => setState("default")}
+                  <button
+                    onClick={handleFormSubmit}
                     className="w-full h-9 bg-[#14171c] hover:bg-zinc-800 border border-zinc-800 text-zinc-200 font-mono text-xs rounded-sm flex items-center justify-center gap-2 transition-colors"
                   >
                     <span>Resend Instructions</span>

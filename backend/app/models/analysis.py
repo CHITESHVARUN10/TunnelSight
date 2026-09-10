@@ -9,6 +9,7 @@ from app.db.base import Base
 
 
 class Analysis(Base):
+
     """Per-user history row. 'pending' on upload; pipeline fills ML/rule-engine columns."""
 
     __tablename__ = "analyses"

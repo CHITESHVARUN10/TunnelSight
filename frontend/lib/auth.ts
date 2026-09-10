@@ -10,4 +10,4 @@ export const login = (email: string, password: string) =>
 
 export const logout = () => api("/api/auth/logout", { method: "POST" });
 
-export const me = (): Promise<User> => api("/api/me");
+export const me = (): Promise<User> => api("/api/auth/me");
